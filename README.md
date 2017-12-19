@@ -2,6 +2,7 @@ openStyleTransfer: Edge Computing for live-video Style Transfer
 ========================================================
 Copyright (C) 2017-2018 Carnegie Mellon University
 This is a developing project and some features might not be stable yet.
+
 By utilizing Gabriel, platform for wearable cognitive assistance applications, the live
 video from the mobile is streamed to the cloudlet on which the style-transfer
 application is running.
