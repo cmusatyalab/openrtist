@@ -29,7 +29,7 @@ How to use
 2. Run the style app
 	Use the following command to run the style app:
 	```
-    $ cd <gabriel-repo>/server/style_app/style_<mode>_app/
+    $ cd <gabriel-repo>/server/style_app/style_<app_type>_app/
     $ ./proxy.py -s x.x.x.x:8021
     Discovery Control VM
     INFO     execute : java -jar /home/ubuntu/Workspace/gabriel/server/gabriel/lib/gabriel_upnp_client.jar
@@ -45,7 +45,7 @@ How to use
      u'video_tcp_streaming_ip': u'x.x.x.x',
      u'video_tcp_streaming_port': 10101}
     TOKEN SIZE OF OFFLOADING ENGINE: 1
-    MODEL PATH <gabriel-repo>/server/style_app/style_<mode>_app/models/
+    MODEL PATH <gabriel-repo>/server/style_app/style_<app_type>_app/models/
 	FINISHED INITIALISATION
     ```
 3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
