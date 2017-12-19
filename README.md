@@ -8,7 +8,7 @@ application is running.
 
 Requirements
 -------------
-The style-transfer application uses [Gabriel](https://github.com/cmusatyalab/gabriel-private) ,[pytorch](http://pytorch.org/) and requires GPU to run.
+The style-transfer application uses [Gabriel](https://github.com/cmusatyalab/gabriel-private), [pytorch](http://pytorch.org/) and requires GPU to run.
 
 Recommended Directory Structure
 -------------
@@ -16,14 +16,14 @@ Recommended Directory Structure
 +gabriel
   +client
   +server
-  	+style_app
-  		+style_python_app
-  		+style_legacy_android_app
+    +style_app
+      +style_python_app
+      +style_legacy_android_app
 ``` 
 How to use
 --------------
 1. Setup Gabriel 
-    Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo] (https://github.com/cmusatyalab/gabriel-private) to run the `control server` and `ucomm server`.
+    Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel-private) to run the `control server` and `ucomm server`.
 	Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.
 
 2. Run the style app
@@ -53,5 +53,5 @@ How to use
 
 Acknowledgement
 -------------
-	* [Towards Wearable Cognitive Assistance](http://dl.acm.org/citation.cfm?id=2594383)
-	* [Pytorch Fast Neural Style] (https://github.com/pytorch/examples/tree/master/fast_neural_style)
+* [Towards Wearable Cognitive Assistance](http://dl.acm.org/citation.cfm?id=2594383)
+* [Pytorch Fast Neural Style](https://github.com/pytorch/examples/tree/master/fast_neural_style)
