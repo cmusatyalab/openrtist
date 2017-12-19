@@ -48,7 +48,7 @@ How to use
     MODEL PATH <gabriel-repo>/server/style_app/style_<mode>_app/models/
 	FINISHED INITIALISATION
     ```
-3.  Run a python or mobile client using source code at gabriel-client-style-<mode>. 
+3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
     Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client
 
 Acknowledgement
