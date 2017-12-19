@@ -37,11 +37,11 @@ class VideoStreamingThread(SocketClientThread):
         self.style_array = os.listdir('./style-image')
         #self.style_array = self.style_array[1:]
         self.length = len(self.style_array)
-        self.SEC = 60
+        self.SEC = 30
         self.FPS = 10
         self.INTERVAL = self.SEC*self.FPS
 
-        print(self.style_array)
+        #print(self.style_array)
 
     def run(self):
         while self.alive.isSet():
@@ -66,7 +66,6 @@ class VideoStreamingThread(SocketClientThread):
             # will be put into sleep if token is not available
             if id%self.INTERVAL==0:
                 style_string = self.style_array[style_num%self.length].split(".")[0]
-                #style_string='the-scream'
                 style_num+=1
             tokenm.getToken()
             ret, frame = video_capture.read()
@@ -185,14 +184,27 @@ def run(sig_frame_available=None):
                 (resp_header, resp_data) =resp.data
                 resp_header=json.loads(resp_header)
                 img=resp_data
-                #print 'header: {}'.format(resp_header)
+                data=img
+                np_data=np.fromstring(data, dtype=np.uint8)
+                frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
                 if sig_frame_available == None:
-                    print 'resp:{}'.format(img[:100])
+                    #print 'resp:{}'.format(img[:100])
+                    # when there is no qt window, just dump the image into stdout
+                    rgb_frame = frame
+                    style_image = cv2.imread(os.path.join('./style-image', resp_header['style'] + '.jpg'), -1)
+                    style_image = cv2.cvtColor(style_image, cv2.COLOR_BGR2RGB)
+                    im_h, im_w, _ = rgb_frame.shape
+                    style_im_h, style_im_w, _ = style_image.shape
+                    style_im_aspect_ratio = style_im_h / float(style_im_w)
+                    resize_to_h = im_h * 0.3
+                    resize_to_w = resize_to_h / style_im_aspect_ratio
+                    style_image_resized = cv2.resize(style_image, (int(resize_to_w), int(resize_to_h)))
+                    rgb_frame[0:resize_to_h, 0:resize_to_w, :] = style_image_resized
+                    cv2.rectangle(rgb_frame, (0,0), (int(resize_to_w), int(resize_to_h)), (255,0,0), 4)
+                    sys.stderr.write(rgb_frame)
+                    sys.stderr.flush()
                 else:
                     # display received image on the pyqt ui
-                    data=img
-                    np_data=np.fromstring(data, dtype=np.uint8)
-                    frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
                     #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)    
                     #print("HEADER STYLE {}".format(resp_header['style']))                
                     sig_frame_available.emit(frame,resp_header['style'])
