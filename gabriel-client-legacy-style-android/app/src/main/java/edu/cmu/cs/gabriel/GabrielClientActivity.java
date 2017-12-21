@@ -126,7 +126,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             "femmes_d_alger",
             "sunday_afternoon",
             "dido_carthage",
-            "the_scream"
+            "the_scream",
+	    "starry-night"
     };
 
     int[] imgid={
