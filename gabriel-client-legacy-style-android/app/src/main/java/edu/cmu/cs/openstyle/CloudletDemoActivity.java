@@ -243,13 +243,6 @@ public class CloudletDemoActivity extends AppCompatActivity implements
                 Intent i = new Intent(this, IPSettingActivity.class);
                 startActivity(i);
                 return true;
-            case R.id.setting_reset_openface_server:
-                //check wifi state
-                if (checkOnline(this)) {
-                    sendOpenFaceResetRequest(currentServerIp);
-                    return true;
-                }
-                return false;
             default:
                 return false;
         }
