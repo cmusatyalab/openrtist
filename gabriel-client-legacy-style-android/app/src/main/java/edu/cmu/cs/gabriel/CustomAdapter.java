@@ -31,7 +31,7 @@ public class CustomAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return imgid.length;
+        return style_name.length;
     }
 
     @Override
