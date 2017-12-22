@@ -7,7 +7,7 @@ while true; do
 	mkfifo /tmp/rgbpipe;
 	./client.py &
 	bgid=$!
-	cat /tmp/rgbpipe | ffmpeg -f rawvideo -pixel_format rgb24 -video_size 1280x720 -re -hwaccel vaapi -i - -f rawvideo -video_size 1280x720 -pix_fmt rgb24 - > $stream_pipe
+	cat /tmp/rgbpipe | ffmpeg -f rawvideo -pixel_format rgb24 -video_size 960x540 -re -hwaccel vaapi -i - -f rawvideo -video_size 960x540 -pix_fmt rgb24 - > $stream_pipe
 	kill -9 $bgid
 	rm -f  $stream_pipe
 	sleep 5

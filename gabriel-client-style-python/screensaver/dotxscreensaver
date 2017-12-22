@@ -1,5 +1,5 @@
 # XScreenSaver Preferences File
-# Written by xscreensaver-demo 5.34 for satyalab on Thu Dec 21 19:56:47 2017.
+# Written by xscreensaver-demo 5.34 for satyalab on Thu Dec 21 20:43:24 2017.
 # http://www.jwz.org/xscreensaver/
 
 timeout:	0:01:00
@@ -51,9 +51,10 @@ programs:								      \
 				  mpv --no-audio --no-cache		      \
 				  --no-cache-pause --untimed		      \
 				  --no-stop-xscreensaver --no-correct-pts     \
+				  --really-quiet			      \
 				  -wid $XSCREENSAVER_WINDOW -demuxer	      \
-				  rawvideo -demuxer-rawvideo-w 1280	      \
-				  --demuxer-rawvideo-h 720		      \
+				  rawvideo -demuxer-rawvideo-w 960	      \
+				  --demuxer-rawvideo-h 540		      \
 				  --demuxer-rawvideo-mp-format rgb24 -'	    \n\
 -				maze -root				    \n\
 - GL: 				superquadrics -root			    \n\

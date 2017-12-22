@@ -199,27 +199,13 @@ def run(sig_frame_available=None):
                 np_data=np.fromstring(data, dtype=np.uint8)
                 frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
                 if sig_frame_available == None:
-                    #print 'resp:{}'.format(img[:100])
-                    # when there is no qt window, just dump the image into stdout
-                    st = time.time()
                     rgb_frame = frame
-                    # style_image = cv2.imread(os.path.join('./style-image', resp_header['style'] + '.jpg'), -1)
-                    # style_image = cv2.cvtColor(style_image, cv2.COLOR_BGR2RGB)
-                    # im_h, im_w, _ = rgb_frame.shape
                     style_image = style_name_to_image[resp_header['style']]
                     style_im_h, style_im_w, _ = style_image.shape
-                    # style_im_aspect_ratio = style_im_h / float(style_im_w)
-                    # resize_to_h = im_h * 0.3
-                    # resize_to_w = resize_to_h / style_im_aspect_ratio
-                    # style_image_resized = cv2.resize(style_image, (int(resize_to_w), int(resize_to_h)))
                     rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
                     cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
-                    rgb_frame_enlarged = cv2.resize(rgb_frame, None, fx=2, fy=2)
-                    print('resize tooks: {}'.format(time.time()-st))
-                    st = time.time()
+                    rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
                     os.write(rgbpipe, rgb_frame_enlarged.tostring())
-                    print('write to pipe tooks: {}'.format(time.time()-st))
-                    # sys.stderr.write(rgb_frame_enlarged)
                 else:
                     # display received image on the pyqt ui
                     #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)    

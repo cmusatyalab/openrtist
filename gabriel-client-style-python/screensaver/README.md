@@ -48,8 +48,9 @@ Use mjpeg encoding with udp.
 ./client.py 2>&1 >/dev/null | ffmpeg -f rawvideo -pixel_format rgb24 -video_size 640x360 -re -i - -f mpjpeg rgb24 udp://172.17.0.1:8091
 ```
 * For screensaver receiving side:
+```
 mplayer -benchmark -demuxer mpjepg udp://172.17.0.1:8091
-
+```
 
 # Most Scalable Setup
 
