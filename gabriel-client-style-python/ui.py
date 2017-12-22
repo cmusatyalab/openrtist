@@ -20,6 +20,7 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
 
     def set_image(self, frame,str_name):
         img = QImage(frame, frame.shape[1], frame.shape[0], QtGui.QImage.Format_RGB888)
+
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
 
