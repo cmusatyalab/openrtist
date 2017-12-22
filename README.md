@@ -52,6 +52,11 @@ How to use
 3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
     Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client
 
+Running Docker Image
+--------------
+1. docker pull a4anna/openstyletransfer
+2. nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openstyletransfer bash
+
 Acknowledgement
 -------------
 * [Towards Wearable Cognitive Assistance](http://dl.acm.org/citation.cfm?id=2594383)
