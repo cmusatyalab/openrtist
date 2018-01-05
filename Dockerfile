@@ -136,8 +136,6 @@ RUN apt-get -y update && apt-get -y install python$PYTHON_VERSION-dev wget unzip
     && unzip -q opencv3.zip && mv /opencv-3.2.0 /opencv && rm opencv3.zip \
     && wget https://github.com/Itseez/opencv_contrib/archive/3.2.0.zip -O opencv_contrib3.zip \
     && unzip -q opencv_contrib3.zip && mv /opencv_contrib-3.2.0 /opencv_contrib && rm opencv_contrib3.zip \
-
-    # prepare build
     && mkdir /opencv/build && cd /opencv/build \
     && cmake -D CMAKE_BUILD_TYPE=RELEASE \
       -D BUILD_PYTHON_SUPPORT=ON \
@@ -147,11 +145,7 @@ RUN apt-get -y update && apt-get -y install python$PYTHON_VERSION-dev wget unzip
       -D WITH_IPP=OFF \
       -D WITH_FFMPEG=ON \
       -D WITH_V4L=ON .. \
-
-    # install
     && cd /opencv/build && make -j$(nproc) && make install && ldconfig \
-
-    #clean
     && apt-get -y remove build-essential cmake git pkg-config libatlas-base-dev gfortran \
     libjasper-dev libgtk2.0-dev libavcodec-dev libavformat-dev \
     libswscale-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libv4l-dev \

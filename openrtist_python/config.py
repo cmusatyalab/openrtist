@@ -43,7 +43,6 @@ PLAY_SOUND = False
 # Max image width and height
 IM_WIDTH = 320
 IM_HEIGHT = 240
-MODEL_PATH = "/home/shilpag/pyTorch/gabriel-apps/style_python2/models/"
 
 # Display
 DISPLAY_MAX_PIXEL = 400
