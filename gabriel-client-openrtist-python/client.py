@@ -55,8 +55,8 @@ class VideoStreamingThread(SocketClientThread):
         random.shuffle(self.style_array)
         #self.style_array = self.style_array[1:]
         self.length = len(self.style_array)
-        self.SEC = 30
-        self.FPS = 10
+        self.SEC = Config.TIME_SEC
+        self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
 
         #print(self.style_array)
@@ -90,7 +90,7 @@ class VideoStreamingThread(SocketClientThread):
             capture_time = time.time()
             # print("Capture Time: {} {}".format(capture_time,video_capture.get(cv2.CAP_PROP_FPS)))
             frame = cv2.flip(frame,1)
-            frame = cv2.resize(frame,(640,360))
+            frame = cv2.resize(frame,(Config.IMG_WIDTH,Config.IMG_HEIGHT))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             ret, jpeg_frame=cv2.imencode('.jpg', frame)
             header={protocol.Protocol_client.JSON_KEY_FRAME_ID : str(id),

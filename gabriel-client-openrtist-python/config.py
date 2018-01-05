@@ -20,3 +20,8 @@ class Config(object):
     VIDEO_STREAM_PORT = 9098
     RESULT_RECEIVING_PORT = 9111
     TOKEN=1
+    TIME_SEC = 30
+    CAM_FPS = 10
+    IMG_WIDTH = 320
+    IMG_HEIGHT = 240
+
