@@ -18,6 +18,7 @@ Recommended Directory Structure
   +client
   +server
     +style_app
+      -wtrMrk.png
       +style_python_app
       +style_legacy_android_app
 ``` 
