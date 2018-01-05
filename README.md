@@ -160,8 +160,8 @@ Once the camera is active, the application will be set to 'Clear Display' by def
 #### Enabling Stereoscopic Effect
 In the main activity, there is a switch where you can toggle whether or not to enable the stereoscopic effect. When enabled, the resultant stylized frames will be split into left- and right-eye channels. This effect is interesting to use with various HUDs, such as Google Cardboard.
 
-##Installation from source
-###Recommended Source Directory Structure
+## Installation from source
+### Recommended Source Directory Structure
 ```
 +gabriel
   +client
@@ -171,12 +171,12 @@ In the main activity, there is a switch where you can toggle whether or not to e
       +style_python_app
       +style_legacy_android_app
 ``` 
-###Methodology
-####1. Setup Gabriel 
+### Methodology
+#### 1. Setup Gabriel 
 Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel-private) to run the `control server` and `ucomm server`.
 Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.
 
-####2. Run the  app
+#### 2. Run the  app
 ```
 $ cd <gabriel-repo>/server/style_app/style_<app_type>_app/
 $ ./proxy.py -s x.x.x.x:8021
@@ -197,11 +197,11 @@ TOKEN SIZE OF OFFLOADING ENGINE: 1
 MODEL PATH <gabriel-repo>/server/style_app/style_<app_type>_app/models/
 FINISHED INITIALISATION
 ```
-####3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
+#### 3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
 Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client
 
 
-##Acknowledgements
+## Acknowledgements
 This project utilizes work from the following sources:
 
 __List of Featured Artworks__
