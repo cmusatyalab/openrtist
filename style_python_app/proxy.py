@@ -1,4 +1,24 @@
 #!/usr/bin/env python
+#
+# Cloudlet Infrastructure for Mobile Computing
+#   - Task Assistance
+#
+#   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
+#           Shilpa George <shilpag@andrew.cmu.edu>
+#
+#   Copyright (C) 2011-2013 Carnegie Mellon University
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
 import json
 import multiprocessing
 import numpy as np
@@ -24,7 +44,6 @@ from torchvision import transforms
 from PIL import Image
 import utils
 from transformer_net import TransformerNet
-from vgg import Vgg16
 import cv2
 
 if os.path.isdir("../.."):
@@ -65,17 +84,13 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
             transforms.ToTensor(),
             transforms.Lambda(lambda x: x.mul(255))
         ])
+        wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
+        self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
+        self.alpha = mrk_alpha.astype(float)/255
+        #self.mrk = cv2.merge((mrk_ch,mrk_ch,mrk_ch))
+        #self.alpha = cv2.merge((mrk_alpha,mrk_alpha,mrk_alpha))
  
         print('FINISHED INITIALISATION')
-        #sound_server_addr = ("128.2.209.111", 8021)
-        #try:
-        #    self.style_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #    self.style_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        #    self.style_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        #    self.style_sock.connect(sound_server_addr)
-        #    LOG.info(LOG_TAG + "connected to sound playing server")
-        #except socket.error as e:
-        #    LOG.warning(LOG_TAG + "Failed to connect to sound server at %s" % str(sound_server_addr))
 
     def add_to_byte_array(self, byte_array, extra_bytes):
         return struct.pack("!{}s{}s".format(len(byte_array),len(extra_bytes)), byte_array, extra_bytes)
@@ -94,47 +109,28 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
                     self.style_type = header['style']
 
         np_data=np.fromstring(data, dtype=np.uint8)
-        #img_in = Image.fromarray(np_data)
         img_in=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
-        #img_in = np.array(img_in).transpose(2, 0, 1)
-        #content_image = torch.from_numpy(img_in).float()
         content_image = self.content_transform(img_in)
         content_image = content_image.unsqueeze(0)
         content_image = content_image.cuda()
         content_image = Variable(content_image, volatile=True)
-        
-        #content_image = img_in.unsqueeze(0)
-        #content_image = content_image.cuda()
-        #
-        #content_image = Variable(content_image, volatile=True)
-
         output = self.style_model(content_image)
-        #img_out = output.data[0].cpu().numpy()
-        #img_out = output.data[0].clone().cpu().clamp(0, 255).numpy()
-        #print('Network time After frwd: {}'.format(time.time()-start_time))
         img_out = output.data[0].cpu().numpy()
-        #print('Network time gpu-cpu: {}'.format(time.time()-start_time))
-        #img_out = np.clip(img_out,0,255)
         np.clip(img_out, 0, 255, out=img_out)
-        img_out = img_out.transpose(1, 2, 0).astype('uint8')
-        #print('Network time clip transpose: {}'.format(time.time()-start_time))
+        img_out = img_out.transpose(1, 2, 0)
+
+        #Applying WaterMark
+        img_mrk = img_out[-30:,-120:] # The waterMark is of dimension 30x120
+        #img_mrk = (1-self.alpha)*img_mrk + self.alpha*self.mrk
+        img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
+        img_mrk[:,:,1] = (1-self.alpha)*img_mrk[:,:,1] + self.alpha*self.mrk
+        img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
+        img_out[-30:,-120:] = img_mrk
+        img_out = img_out.astype('uint8')
+
         _, jpeg_img=cv2.imencode('.jpg', img_out)
-        #print('Network time encoding: {}'.format(time.time()-start_time))
         img_data = jpeg_img.tostring()
         print('Compute Done time: {}'.format(time.time()-start_time))
-        #header['status']='success'
-        # numpy tostring is equal to tobytes
-        #rtn_data=img_data
-        # header has (offset, size) for each data type
-        #header={'data_size' : len(img_data)}
-        #header_json=json.dumps(header)
-        #packet = struct.pack("!I",len(header_json))
-        #self.style_sock.sendall(packet)
-        #packet = struct.pack("!I%ds" % len(header_json), len(header_json), header_json)
-        #self.style_sock.sendall(packet)
-        #packet_2 = struct.pack("!I%ds" % len(img_data), len(img_data), img_data)
-        ##packet = self.add_to_byte_array(packet,packet_2)
-        #self.style_sock.sendall(packet_2)
         return img_data
 
 if __name__ == "__main__":

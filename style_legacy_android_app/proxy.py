@@ -1,4 +1,24 @@
 #!/usr/bin/env python
+#
+# Cloudlet Infrastructure for Mobile Computing
+#   - Task Assistance
+#
+#   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
+#
+#   Copyright (C) 2011-2013 Carnegie Mellon University
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+
 from base64 import b64encode, b64decode
 import json
 import multiprocessing
@@ -27,7 +47,6 @@ from torchvision import transforms
 from PIL import Image
 import utils
 from transformer_net import TransformerNet
-from vgg import Vgg16
 import cv2
 
 if os.path.isdir("../.."):
@@ -65,7 +84,9 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             transforms.ToTensor(),
             transforms.Lambda(lambda x: x.mul(255))
         ])
- 
+        wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
+        self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
+        self.alpha = mrk_alpha.astype(float)/255
         print('FINISHED INITIALISATION')
 
 
@@ -83,18 +104,10 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
                 self.style_type = header['style']  
 
         # Preprocessing of input image
-        #img_array = np.asarray(bytearray(data), dtype=np.uint8)
-        #print(data.shape)
-        #print(data.shape)
-        img = Image.open(io.BytesIO(data)) 
-        #img = cv2.imdecode(img_array, -1)
-        #print("CAMEHERE")
-        #print img.shape
-        #img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-        #print("NOTHERE")
-        if self.is_first_image:
-            #print('DIMENSION {}'.format(img.shape))
-            self.is_first_image = False
+        #img = Image.open(io.BytesIO(data))
+        np_data=np.fromstring(data, dtype=np.uint8)
+        img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)  
+        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
         content_image = content_image.unsqueeze(0)
         content_image = content_image.cuda()
@@ -103,28 +116,26 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         output = self.style_model(content_image)
         header['status'] =  'success'
         img_out = output.data[0].clone().cpu().clamp(0, 255).numpy()
-        img_out = img_out.transpose(1, 2, 0).astype('uint8')
-        #img_out = cv2.cvtColor(img_out,cv2.COLOR_BGR2RGB)
-        #print img_out.shape
-        #img_out = cv2.resize(img_out, (320, 240))
-        pil_img = Image.fromarray(img_out)
-        #img_io = io.StringIO()
-        img_io = io.BytesIO()
-        pil_img.save(img_io, 'JPEG', quality=70)
-        img_io.seek(0)
-        result['image'] = b64encode(img_io.read())
-        #pil_img = Image.fromarray(img)
-        #buff = BytesIO()
-        #pil_img.save(buff, format="JPEG")
-        #new_image_string = base64.b64encode(buff.getvalue()).decode("utf-8")
-        # Send an image to the gabriel client in order to view camera better
-        # TODO: Create a better UI so this hack isn't necessary
-        #if self.first_frame:
-        #    image_path = '/home/ubuntu/gabriel-apps/aperture/test/Pictures/plant.jpg'
-        #    result['image'] = b64encode(zc.cv_image2raw(cv2.imread(image_path, 1)))
-        #    self.first_frame = False
-
-        # TODO: There is a lot more to do here for future iterations
+        #img_out = img_out.transpose(1, 2, 0).astype('uint8')
+        img_out = img_out.transpose(1, 2, 0)
+         
+        #Applying WaterMark
+        img_mrk = img_out[-30:,-120:] # The waterMark is of dimension 30x120
+        img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
+        img_mrk[:,:,1] = (1-self.alpha)*img_mrk[:,:,1] + self.alpha*self.mrk
+        img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
+        img_out[-30:,-120:] = img_mrk
+        img_out = img_out.astype('uint8')
+        
+        #pil_img = Image.fromarray(img_out)
+        #img_io = io.BytesIO()
+        #pil_img.save(img_io, 'JPEG', quality=70)
+        #img_io.seek(0)
+        img_out = cv2.cvtColor(img_out,cv2.COLOR_RGB2BGR)
+        _, jpeg_img=cv2.imencode('.jpg', img_out)
+        #print('Network time encoding: {}'.format(time.time()-start_time))
+        img_data = jpeg_img.tostring()
+        result['image'] = b64encode(img_data)
 
         header[gabriel.Protocol_measurement.JSON_KEY_APP_SYMBOLIC_TIME] = time.time()
         return json.dumps(result)
