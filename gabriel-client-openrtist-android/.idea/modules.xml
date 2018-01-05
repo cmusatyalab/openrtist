@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/gabriel-client-legacy-style-android.iml" filepath="$PROJECT_DIR$/gabriel-client-legacy-style-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gabriel-client-openrtist-android.iml" filepath="$PROJECT_DIR$/gabriel-client-openrtist-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/legacy-android-client.iml" filepath="$PROJECT_DIR$/legacy-android-client.iml" />
     </modules>
   </component>
