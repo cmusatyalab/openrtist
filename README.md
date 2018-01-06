@@ -130,17 +130,17 @@ sh get-docker.sh
 
 #### Step 2. Obtain OpenRTiST docker container.
 ```
-docker pull a4anna/openstyletransfer
+docker pull a4anna/openrtist
 ```
 
 #### Step 3. Set the xhost display and launch the container.
 ```
 xhost local:root
-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openstyletransfer bash
+docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openrtist bash
 ```
 #### Step 4. Configure the client to talk to the server.
 ```
-cd /workspace/gabriel/client/style-python-client
+cd /workspace/gabriel/client/gabriel-client-style-python
 vim.tiny config.py
 #Edit the IP address to point to your server.
 ```
@@ -166,19 +166,19 @@ In the main activity, there is a switch where you can toggle whether or not to e
 +gabriel
   +client
   +server
-    +style_app
+    +openrtist
       -wtrMrk.png
-      +style_python_app
-      +style_legacy_android_app
+      +openrtist_python
+      +openrtist_android
 ``` 
 ### Methodology
 #### 1. Setup Gabriel 
 Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel-private) to run the `control server` and `ucomm server`.
-Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.
+__Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.__
 
 #### 2. Run the  app
 ```
-$ cd <gabriel-repo>/server/style_app/style_<app_type>_app/
+$ cd <gabriel-repo>/server/oprtist/openrtist_<client_type>/
 $ ./proxy.py -s x.x.x.x:8021
 Discovery Control VM
 INFO     execute : java -jar /home/ubuntu/Workspace/gabriel/server/gabriel/lib/gabriel_upnp_client.jar
@@ -194,7 +194,7 @@ INFO     {u'acc_tcp_streaming_ip': u'x.x.x.x',
  u'video_tcp_streaming_ip': u'x.x.x.x',
  u'video_tcp_streaming_port': 10101}
 TOKEN SIZE OF OFFLOADING ENGINE: 1
-MODEL PATH <gabriel-repo>/server/style_app/style_<app_type>_app/models/
+MODEL PATH <gabriel-repo>/server/oprtist/openrtist_<client_type>/models/
 FINISHED INITIALISATION
 ```
 #### 3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
