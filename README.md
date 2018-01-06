@@ -54,12 +54,12 @@ pkill -SIGHUP dockerd
 
 ### Step 5. Obtain OpenRTiST docker container.
 ```
-docker pull a4anna/openstyletransfer
+docker pull a4anna/openrtist
 ```
 
 ### Step 6. Launch the container with nvidia-docker.
 ```
-nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openstyletransfer bash
+nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openrtist bash
 ```
 
 ### Step 7. Launch Gabriel control/user communication/proxy modules to start server.
@@ -94,13 +94,13 @@ In the next tmux window(CTRL-b 2), navigate to the OpenStyleTransfer application
 __If executing server for Python clients...__
 Execute the Python proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
-cd /workspace/gabriel/server/style_app/style_python_app
+cd /workspace/gabriel/server/openrtist/openrtist_python
 ./proxy.py -s 172.17.0.2:8021
 ```
 __If executing server for Android clients...__
 Execute the legacy Android proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
-cd /workspace/gabriel/server/style_app/style_legacy_android_app
+cd /workspace/gabriel/server/openrtist/openrtist_android
 ./proxy.py -s 172.17.0.2:8021
 ```
 
