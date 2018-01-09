@@ -90,7 +90,7 @@ In the next tmux window(CTRL-b 1), execute gabriel-ucomm, specifying the ip addr
 cd /workspace/gabriel/server/bin
 ./gabriel-ucomm -s 172.17.0.2:8021
 ```
-In the next tmux window(CTRL-b 2), navigate to the OpenStyleTransfer application directory.
+In the next tmux window(CTRL-b 2), navigate to the OpenRTiST application directory.
 __If executing server for Python clients...__
 Execute the Python proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
@@ -152,7 +152,8 @@ vim.tiny config.py
 
 
 ### Android Client
-#### Download from Google Playstore here
+<a href='https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
+Google Play and the Google Play logo are trademarks of Google LLC.
 #### Managing Servers
 You can add the IP address of the host where the OpenRTiST server is running by hitting the menu button and going to 'manage servers'.  From this screen you can add an IP address for a cloud/cloudlet and name the server.  Once you had added the server, you can then select it from the drop-down menu before hitting the button to 'Run Demo'.
 #### Switching Styles
@@ -201,27 +202,5 @@ FINISHED INITIALISATION
 Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client
 
 
-## Acknowledgements
-This project utilizes work from the following sources:
-
-__List of Featured Artworks__
-* Udnie (Francis Picabia)
-* Rain Princess (Leonid Afremov)
-* Les Femmes d'Alger (Pablo Picasso)
-* A Sunday Afternoon on the Island of La Grande Jatte (Georges Seurat)
-* The Rise of the Carthaginian Empire (J.M.W. Turner)
-* The Scream (Edvard Munch)
-* The Starry Night (Vincent Van Gogh)
-* candy painting (from https://github.com/pytorch/examples/tree/master/fast_neural_style)
-* mosaic painting (from https://github.com/pytorch/examples/tree/master/fast_neural_style)
-
-__Stanford University__ 
-* [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/pdf/1603.08155.pdf)
-* [Pytorch Fast Neural Style](https://github.com/pytorch/examples/tree/master/fast_neural_style)
-
-__University of T&uuml;bingen__
-* [A Neural Algorithm of Artistic Style](https://arxiv.org/abs/1508.06576)
-
-__Carnegie Mellon University__
-* [Towards Wearable Cognitive Assistance](http://dl.acm.org/citation.cfm?id=2594383)
-* [Gabriel](http://github.com/cmusatyalab/gabriel)
+## Credits
+Please see the [CREDITS](CREDITS.md) file for a list of acknowledgments.
