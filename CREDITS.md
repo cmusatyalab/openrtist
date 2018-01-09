@@ -1,8 +1,9 @@
-#CREDITS
+# CREDITS
 OpenRTiST is primarily the work of Shilpa George (shilpag@andrew.cmu.edu) at Carnegie Mellon University.
 It utilizes the Gabriel platform created by Zhuo Chen (zhuoc@andrew.cmu.edu) from Carnegie Mellon University.
 - [Towards Wearable Cognitive Assistance](http://dl.acm.org/citation.cfm?id=2594383)
 - [Gabriel](http://github.com/cmusatyalab/gabriel)
+
 With support from Thomas Eiszler (teiszler@andrew.cmu.edu) of Carnegie Mellon University.
 
 
