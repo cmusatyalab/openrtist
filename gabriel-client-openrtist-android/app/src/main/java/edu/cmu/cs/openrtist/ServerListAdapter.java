@@ -61,10 +61,10 @@ public class ServerListAdapter extends BaseAdapter {
                 public void onClick(View v) {
                     Server s = itemModelList.get(position);
                     Const.SERVER_IP = s.getEndpoint();
-                    Intent intent = new Intent(context, GabrielClientActivity.class);
+                    Intent intent = new Intent(v.getContext(), GabrielClientActivity.class);
                     //intent.putExtra("", faceTable);
-                    context.startActivity(intent);
-                    Toast.makeText(context, "initializing demo", Toast.LENGTH_SHORT).show();
+                    v.getContext().startActivity(intent);
+                    Toast.makeText(v.getContext(), "initializing demo", Toast.LENGTH_SHORT).show();
                 }
             });
             imgRemove.setOnClickListener(new View.OnClickListener() {
@@ -77,7 +77,7 @@ public class ServerListAdapter extends BaseAdapter {
                     editor.commit();
                     itemModelList.remove(position);
                     notifyDataSetChanged();
-                    Toast.makeText(context.getApplicationContext(), "Removed server: ".concat(s.getName()),
+                    Toast.makeText(v.getContext().getApplicationContext(), "Removed server: ".concat(s.getName()),
                             Toast.LENGTH_SHORT).show();
                 }
             });

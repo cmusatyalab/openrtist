@@ -15,6 +15,11 @@ import android.widget.ImageView;
 import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
 import android.util.Patterns;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -35,6 +40,7 @@ public class ServerListActivity extends AppCompatActivity  {
     Switch showReference = null;
     Switch iterateStyles = null;
     private SharedPreferences mSharedPreferences;
+    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
 
     //activity menu
     @Override
@@ -67,6 +73,8 @@ public class ServerListActivity extends AppCompatActivity  {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestPermission();
+        
         setContentView(R.layout.activity_serverlist);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
@@ -121,6 +129,18 @@ public class ServerListActivity extends AppCompatActivity  {
 
         initServerList();
     }
+
+    private void requestPermission() {
+        String permissions[] = {Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            ActivityCompat.requestPermissions(this,
+                    permissions,
+                    MY_PERMISSIONS_REQUEST_CAMERA);
+        }
+    }
+
 
     private void initServerList(){
         Map<String, ?> prefs = mSharedPreferences.getAll();
