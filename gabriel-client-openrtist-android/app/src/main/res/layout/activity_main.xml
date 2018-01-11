@@ -11,9 +11,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:dropDownWidth="match_parent" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/style_image"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:adjustViewBounds="true"
+            android:elevation="@dimen/activity_vertical_margin"
+            android:gravity="left"
+            android:scaleType="fitXY"
+            android:visibility="visible" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -32,13 +45,7 @@
                 android:scaleType="fitXY" />
 
         </FrameLayout>
-        <ImageView
-            android:id="@+id/style_image"
-            android:layout_width="128dp"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:gravity="left" />
+
     </RelativeLayout>
 
 

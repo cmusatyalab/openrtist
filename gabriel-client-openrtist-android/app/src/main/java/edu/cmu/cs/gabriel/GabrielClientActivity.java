@@ -31,6 +31,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
@@ -110,6 +111,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private ImageView stereoView1 = null;
     private ImageView stereoView2 = null;
     private ImageView camView2 = null;
+    private ImageView iconView = null;
+    private Handler styleIterator = null;
 
     //List of Styles
 
@@ -173,7 +176,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             R.drawable.femmes_d_alger,
             R.drawable.sunday_afternoon,
             R.drawable.dido_carthage,
-            R.drawable.the_scream
+            R.drawable.the_scream,
+            R.drawable.starry_night
     };
 
     @Override
@@ -183,8 +187,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         if(Const.STEREO_ENABLED) {
             setContentView(R.layout.activity_stereo);
+            if(Const.ITERATE_STYLES)
+                findViewById(R.id.spinner).setVisibility(View.GONE);
         } else {
             setContentView(R.layout.activity_main);
+            if(Const.ITERATE_STYLES)
+                findViewById(R.id.spinner).setVisibility(View.GONE);
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED+
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON+
@@ -200,11 +208,46 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         stereoView2 = (ImageView) findViewById(R.id.guidance_image2);
         camView2 = (ImageView) findViewById(R.id.camera_preview2);
         imgView = (ImageView) findViewById(R.id.guidance_image);
+        iconView = (ImageView) findViewById(R.id.style_image);
+
+        if(Const.ITERATE_STYLES) {
+            styleIterator = new Handler();
+            styleIterator.postDelayed(runnable, 10000);
+        }
+
 
 
         Intent intent = getIntent();
         //reset = intent.getExtras().getBoolean("reset");
     }
+
+    private Runnable runnable = new Runnable() {
+        private int position = 1;
+
+        @Override
+        public void run() {
+            Spinner spinner = (Spinner) findViewById(R.id.spinner);
+            if(++position == itemname.length)
+                position = 1;
+            style_type = itemname[position];
+
+            if(Const.STEREO_ENABLED) {
+                if (stereoView1.getVisibility() == View.INVISIBLE) {
+                    stereoView1.setVisibility(View.VISIBLE);
+                    stereoView2.setVisibility(View.VISIBLE);
+                }
+            } else {
+                if(Const.DISPLAY_REFERENCE) {
+                    iconView.setVisibility(View.VISIBLE);
+                    iconView.setImageResource(imgid[position]);
+                }
+                if (imgView.getVisibility() == View.INVISIBLE) {
+                    imgView.setVisibility(View.VISIBLE);
+                }
+            }
+            styleIterator.postDelayed(this, 10000);
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -337,6 +380,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         controlThread = new ControlThread(serverIP, Const.CONTROL_PORT, returnMsgHandler, tokenController);
+        controlThread.setPriority(Thread.MIN_PRIORITY);
         controlThread.start();
 
         if (Const.IS_EXPERIMENT) {
@@ -546,7 +590,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     imgView = (ImageView) findViewById(R.id.guidance_image);
                     imgView.setVisibility(View.VISIBLE);
                     imgView.setImageBitmap(feedbackImg);
+
                 }
+
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_DONE) {
                 notifyToken();
@@ -782,16 +828,23 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 stereoView2.setVisibility(View.INVISIBLE);
             } else {
                 imgView.setVisibility(View.INVISIBLE);
+                if(Const.DISPLAY_REFERENCE)
+                    iconView.setVisibility(View.INVISIBLE);
             }
         }
         else {
             style_type = itemname[position];
+
             if(Const.STEREO_ENABLED) {
                 if (stereoView1.getVisibility() == View.INVISIBLE) {
                     stereoView1.setVisibility(View.VISIBLE);
                     stereoView2.setVisibility(View.VISIBLE);
                 }
             } else {
+                if(Const.DISPLAY_REFERENCE) {
+                    iconView.setVisibility(View.VISIBLE);
+                    iconView.setImageResource(imgid[position]);
+                }
                 if (imgView.getVisibility() == View.INVISIBLE) {
                     imgView.setVisibility(View.VISIBLE);
                 }

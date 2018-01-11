@@ -47,6 +47,7 @@ public class ControlThread extends Thread {
 
     // TCP connection
     private InetAddress remoteIP;
+    private String serverAddress;
     private int remotePort;
     private Socket tcpSocket = null;
     private DataOutputStream networkWriter = null;
@@ -61,12 +62,7 @@ public class ControlThread extends Thread {
         isRunning = false;
         this.mainHandler = handler;
         this.tokenController = tokenController;
-
-        try {
-            remoteIP = InetAddress.getByName(serverIP);
-        } catch (UnknownHostException e) {
-            Log.e(LOG_TAG, "unknown host: " + e.getMessage());
-        }
+        serverAddress = serverIP;
         remotePort = port;
     }
 
@@ -91,7 +87,11 @@ public class ControlThread extends Thread {
     public void run() {
         this.isRunning = true;
         Log.i(LOG_TAG, "Streaming thread running");
-
+        try {
+            remoteIP = InetAddress.getByName(serverAddress);
+        } catch (UnknownHostException e) {
+            Log.e(LOG_TAG, "unknown host: " + e.getMessage());
+        }
         // initialization of the TCP connection
         try {
             tcpSocket = new Socket();
