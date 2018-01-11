@@ -45,6 +45,7 @@ public class ResultReceivingThread extends Thread {
 
     // TCP connection
     private InetAddress remoteIP;
+    private String serverAddress;
     private int remotePort;
     private Socket tcpSocket;
     private DataOutputStream networkWriter;
@@ -63,11 +64,7 @@ public class ResultReceivingThread extends Thread {
     public ResultReceivingThread(String serverIP, int port, Handler returnMsgHandler) {
         isRunning = false;
         this.returnMsgHandler = returnMsgHandler;
-        try {
-            remoteIP = InetAddress.getByName(serverIP);
-        } catch (UnknownHostException e) {
-            Log.e(LOG_TAG, "unknown host: " + e.getMessage());
-        }
+        serverAddress = serverIP;
         remotePort = port;
     }
 
@@ -75,7 +72,11 @@ public class ResultReceivingThread extends Thread {
     public void run() {
         this.isRunning = true;
         Log.i(LOG_TAG, "Result receiving thread running");
-
+        try {
+            remoteIP = InetAddress.getByName(serverAddress);
+        } catch (UnknownHostException e) {
+            Log.e(LOG_TAG, "unknown host: " + e.getMessage());
+        }
         try {
             tcpSocket = new Socket();
             tcpSocket.setTcpNoDelay(true);

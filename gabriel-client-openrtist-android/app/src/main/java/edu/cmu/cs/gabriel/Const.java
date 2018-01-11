@@ -38,6 +38,8 @@ public class Const {
     public static final boolean LOAD_AUDIO = false;
 
     public static boolean STEREO_ENABLED = false;
+    public static boolean DISPLAY_REFERENCE = false;
+    public static boolean ITERATE_STYLES = false;
 
     // high level sensor control (on/off)
     public static boolean SENSOR_VIDEO = true;
