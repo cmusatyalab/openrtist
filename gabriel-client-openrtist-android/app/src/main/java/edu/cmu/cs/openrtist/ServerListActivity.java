@@ -1,3 +1,17 @@
+// Copyright 2018 Carnegie Mellon University
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package edu.cmu.cs.openrtist;
 
 import android.app.AlertDialog;
@@ -6,12 +20,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.SeekBar;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ListView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.support.v7.widget.Toolbar;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -39,6 +55,8 @@ public class ServerListActivity extends AppCompatActivity  {
     Switch stereoEnabled = null;
     Switch showReference = null;
     Switch iterateStyles = null;
+    SeekBar seekBar = null;
+    TextView intervalLabel = null;
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
 
@@ -91,6 +109,35 @@ public class ServerListActivity extends AppCompatActivity  {
         stereoEnabled = (Switch) findViewById(R.id.toggleStereo);
         showReference = (Switch) findViewById(R.id.showReference);
         iterateStyles = (Switch) findViewById(R.id.iterateStyles);
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        intervalLabel = (TextView) findViewById(R.id.intervalLabel);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            boolean tracking = false;
+            public void onProgressChanged(SeekBar bar, int progress, boolean what) {
+                if(progress <= 0 )
+                    bar.setProgress(1);
+
+            }
+
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                tracking = true;
+
+            }
+
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                tracking = false;
+                Toast.makeText(getApplicationContext(), getString(R.string.interval_set_toast, seekBar.getProgress()*5),
+                        Toast.LENGTH_SHORT).show();
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putInt("option:interval", seekBar.getProgress());
+                editor.commit();
+                Const.ITERATE_INTERVAL = 5 * seekBar.getProgress();
+            }
+        });
+        seekBar.setProgress(mSharedPreferences.getInt("option:interval", 2));
+        Const.ITERATE_INTERVAL = 5 * seekBar.getProgress();
+
         stereoEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Const.STEREO_ENABLED = isChecked;
@@ -122,6 +169,14 @@ public class ServerListActivity extends AppCompatActivity  {
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putBoolean("option:iterate",Const.ITERATE_STYLES);
                 editor.commit();
+                if(isChecked) {
+                    seekBar.setVisibility(View.VISIBLE);
+                    intervalLabel.setVisibility(View.VISIBLE);
+                }
+                else {
+                    seekBar.setVisibility(View.GONE);
+                    intervalLabel.setVisibility(View.GONE);
+                }
             }
         });
         iterateStyles.setChecked(mSharedPreferences.getBoolean("option:iterate", false));
@@ -166,13 +221,13 @@ public class ServerListActivity extends AppCompatActivity  {
         String name = serverName.getText().toString();
         String endpoint = serverAddress.getText().toString();
         if (name.isEmpty() || endpoint.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Name and address are required.",
+            Toast.makeText(getApplicationContext(), R.string.error_empty ,
                     Toast.LENGTH_SHORT).show();
         } else if(!isValidUrl(endpoint)) {
-            Toast.makeText(getApplicationContext(), "Server address is an invalid URI.",
+            Toast.makeText(getApplicationContext(), R.string.error_invalidURI,
                     Toast.LENGTH_SHORT).show();
         }  else if(mSharedPreferences.contains("server:".concat(name))) {
-            Toast.makeText(getApplicationContext(), "A server by that name already exists.",
+            Toast.makeText(getApplicationContext(), R.string.error_exists,
                 Toast.LENGTH_SHORT).show();
         } else {
             Server s = new Server(name, endpoint);

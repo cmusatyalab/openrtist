@@ -50,6 +50,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.Spinner;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.widget.VideoView;
 
@@ -212,7 +213,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         if(Const.ITERATE_STYLES) {
             styleIterator = new Handler();
-            styleIterator.postDelayed(runnable, 10000);
+            styleIterator.postDelayed(runnable, 1000 * Const.ITERATE_INTERVAL);
         }
 
 
@@ -230,7 +231,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             if(++position == itemname.length)
                 position = 1;
             style_type = itemname[position];
-
+            Toast.makeText(getApplicationContext(), display_names[position],
+                    Toast.LENGTH_SHORT).show();
             if(Const.STEREO_ENABLED) {
                 if (stereoView1.getVisibility() == View.INVISIBLE) {
                     stereoView1.setVisibility(View.VISIBLE);
@@ -245,7 +247,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     imgView.setVisibility(View.VISIBLE);
                 }
             }
-            styleIterator.postDelayed(this, 10000);
+            styleIterator.postDelayed(this, 1000 * Const.ITERATE_INTERVAL);
         }
     };
 
@@ -272,6 +274,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         Log.v(LOG_TAG, "++onPause");
+        if(styleIterator != null)
+            styleIterator.removeCallbacks(runnable);
         this.terminate();
         super.onPause();
     }
@@ -279,6 +283,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     @Override
     protected void onDestroy() {
         Log.v(LOG_TAG, "++onDestroy");
+        if(styleIterator != null)
+            styleIterator.removeCallbacks(runnable);
         super.onDestroy();
     }
 
