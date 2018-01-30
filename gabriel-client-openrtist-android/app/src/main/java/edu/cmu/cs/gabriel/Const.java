@@ -40,6 +40,7 @@ public class Const {
     public static boolean STEREO_ENABLED = false;
     public static boolean DISPLAY_REFERENCE = false;
     public static boolean ITERATE_STYLES = false;
+    public static int ITERATE_INTERVAL = 2;
 
     // high level sensor control (on/off)
     public static boolean SENSOR_VIDEO = true;
