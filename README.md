@@ -30,12 +30,17 @@ apt-get upgrade
 ### Step 3. Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 Follow the steps in the above Docker documentation or use the following convenience script:
 
-```
+```sh
 curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 ```
 
-### Step 4. Install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
+### Step 4. Ensure nVidia drivers are installed
+```sh
+apt-get install nvidia-384
+```
+
+### Step 5. Install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
 ```sh
 # If you have nvidia-docker 1.0 installed: we need to remove it and all existing GPU containers
 docker volume ls -q -f driver=nvidia-docker | xargs -r -I{} -n1 docker ps -q -a -f volume={} | xargs -r docker rm -f
@@ -52,17 +57,17 @@ pkill -SIGHUP dockerd
 
 ```
 
-### Step 5. Obtain OpenRTiST docker container.
-```
+### Step 6. Obtain OpenRTiST docker container.
+```sh
 docker pull a4anna/openrtist
 ```
 
-### Step 6. Launch the container with nvidia-docker.
-```
+### Step 7. Launch the container with nvidia-docker.
+```sh
 nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openrtist bash
 ```
 
-### Step 7. Launch Gabriel control/user communication/proxy modules to start server.
+### Step 8. Launch Gabriel control/user communication/proxy modules to start server.
 Type ifconfig and note the interface name and ip address inside the docker container __(for the below examples, we assume eth0 and 172.17.0.2)__.
 ```
 ifconfig
@@ -75,12 +80,16 @@ In the first tmux window (CTRL-b 0), navigate to /gabriel/server/bin.
 ```
 cd /workspace/gabriel/server/bin
 ```
+---
 __If executing server for Python clients...__
+
 Execute gabriel-control, specifying the interface inside the docker container with the -n flag
 ```
 ./gabriel-control -n eth0
 ```
+---
 __If executing server for Android clients...__
+
 __NOTE: You must also add the -l flag to put gabriel into legacy mode!__
 ```
 ./gabriel-control -n eth0 -l
@@ -91,13 +100,17 @@ cd /workspace/gabriel/server/bin
 ./gabriel-ucomm -s 172.17.0.2:8021
 ```
 In the next tmux window(CTRL-b 2), navigate to the OpenRTiST application directory.
+---
 __If executing server for Python clients...__
+
 Execute the Python proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
 cd /workspace/gabriel/server/openrtist/openrtist_python
 ./proxy.py -s 172.17.0.2:8021
 ```
+---
 __If executing server for Android clients...__
+
 Execute the legacy Android proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
 cd /workspace/gabriel/server/openrtist/openrtist_android
@@ -109,6 +122,7 @@ cd /workspace/gabriel/server/openrtist/openrtist_android
 If you wish to compare between running the server on a cloudlet versus a cloud instance, you can launch the following instance type/image from your Amazon EC2 Dashboard:
 
 __Instance Type__ - p2.xlarge (can be found by filtering under GPU compute instance types)
+
 __Image__ - Deep Learning Base AMI (Ubuntu) - ami-041db87c
 
 __Ensure that ports 9000-10000 are open in your security group rules so that traffic to/from the mobile client will pass through to the server.__
@@ -155,9 +169,9 @@ vim.tiny config.py
 <a href='https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
 Google Play and the Google Play logo are trademarks of Google LLC.
 #### Managing Servers
-You can add the IP address of the host where the OpenRTiST server is running by hitting the menu button and going to 'manage servers'.  From this screen you can add an IP address for a cloud/cloudlet and name the server.  Once you had added the server, you can then select it from the drop-down menu before hitting the button to 'Run Demo'.
+Servers can be added by entering a server name and address and pressing the + sign button. Once a server has been added, pressing the 'Play' button will connect to the OpenRTiST server at that address. Pressing the trash can button will remove the server from the server list.
 #### Switching Styles
-Once the camera is active, the application will be set to 'Clear Display' by default. This will show the resultant frames of the camera without a particular style. You can use the drop-down menu at the top to select a style to apply. Once selected the frames from the camera will be sent to the server and the style transfer will be performed. The results will be shipped back to the client and displayed.
+Once the camera is active, the application will be set to 'Clear Display' by default. This will show the  frames of the camera without a particular style. You can use the drop-down menu at the top to select a style to apply. Once selected, the frames from the camera will be sent to the server and the style will be applied. The results will be shipped back to the client and displayed. If the 'Iterate Styles Periodically' option is enabled, the dropdown menu will not be shown, and styles will change automatically based upon the interval defined.
 #### Enabling Stereoscopic Effect
 In the main activity, there is a switch where you can toggle whether or not to enable the stereoscopic effect. When enabled, the resultant stylized frames will be split into left- and right-eye channels. This effect is interesting to use with various HUDs, such as Google Cardboard.
 
