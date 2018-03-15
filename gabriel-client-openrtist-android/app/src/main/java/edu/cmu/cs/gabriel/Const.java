@@ -38,6 +38,7 @@ public class Const {
     public static final boolean LOAD_AUDIO = false;
 
     public static boolean FRONT_CAMERA_ENABLED = false;
+    public static boolean FRONT_ROTATION = false;
     public static boolean STEREO_ENABLED = false;
     public static boolean DISPLAY_REFERENCE = false;
     public static boolean ITERATE_STYLES = false;

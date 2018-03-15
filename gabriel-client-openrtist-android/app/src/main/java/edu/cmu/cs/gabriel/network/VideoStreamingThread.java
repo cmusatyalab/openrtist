@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
@@ -250,7 +251,23 @@ public class VideoStreamingThread extends Thread {
                 ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
                 // chooses quality 67 and it roughly matches quality 5 in avconv
                 image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 67, tmpBuffer);
-                this.frameBuffer = tmpBuffer.toByteArray();
+                if(Const.FRONT_CAMERA_ENABLED) {
+                    byte[] newFrame = tmpBuffer.toByteArray();
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(newFrame, 0, newFrame.length);
+                    ByteArrayOutputStream rotatedStream = new ByteArrayOutputStream();
+                    Matrix matrix = new Matrix();
+                    if(Const.FRONT_ROTATION){
+                        matrix.postRotate(180);
+                    }
+                    matrix.postScale(-1,1);
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 67, rotatedStream);
+                    //this.frameBuffer = tmpBuffer.toByteArray();
+                    this.frameBuffer = rotatedStream.toByteArray();
+                }
+                else{
+                    this.frameBuffer = tmpBuffer.toByteArray();
+                }
                 this.frameID++;
                 frameLock.notify();
             }

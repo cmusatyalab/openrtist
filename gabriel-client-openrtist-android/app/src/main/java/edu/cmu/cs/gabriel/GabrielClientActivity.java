@@ -30,6 +30,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
@@ -42,6 +44,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
@@ -132,6 +135,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private ImageView iconView = null;
     private Handler iterationHandler = null;
     private int cameraId = 0;
+    private boolean imageRotate = false;
 
     //List of Styles
 
@@ -262,16 +266,18 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         if (Const.FRONT_CAMERA_ENABLED){
             Log.v(LOG_TAG, "Using front camera.");
             cameraId = findFrontFacingCamera();
-            this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+            //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
             ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
             rotateButton.setVisibility(View.VISIBLE);
             rotateButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    imageRotate = !imageRotate;
+                    Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
                     if(style_type.equals("none"))
                         preview.setRotation(180 - preview.getRotation());
-                    else
-                        imgView.setRotation(180 - imgView.getRotation());
+
+                        //imgView.setRotation(180 - imgView.getRotation());
                 }
             });
         }
@@ -678,25 +684,32 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         startTimer.schedule(autoStart, 1000, 5*60*1000);
     }
 
+
+
     private PreviewCallback previewCallback = new PreviewCallback() {
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
                 Camera.Parameters parameters = mCamera.getParameters();
+
                 if(!style_type.equals("none")) {
                     if (videoStreamingThread != null) {
                         videoStreamingThread.push(frame, parameters, style_type);
+
                     }
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
                         Size cameraImageSize = parameters.getPreviewSize();
+                        byte[] flip_frame = null;
                         YuvImage image = new YuvImage(frame, parameters.getPreviewFormat(), cameraImageSize.width,
                                 cameraImageSize.height, null);
+
                         ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
                         // chooses quality 67 and it roughly matches quality 5 in avconv
                         image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 67, tmpBuffer);
                         byte[] bytes = tmpBuffer.toByteArray();
+
                         final Bitmap camView = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                         stereoView1.setVisibility(View.INVISIBLE);
                         stereoView2.setVisibility(View.INVISIBLE);
@@ -748,6 +761,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         preview.setSurfaceTextureListener(this);
                         mCamera = checkCamera();
                         CameraStart();
+
                         mCamera.setPreviewCallbackWithBuffer(previewCallback);
                         reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
                         mCamera.addCallbackBuffer(reusedBuffer);
@@ -926,7 +940,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Log.e(LOG_TAG, "Error in setting camera holder: " + exception.getMessage());
                 CameraClose();
             }
+
             updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT);
+
         } else {
             waitingToStart = true;
         }
