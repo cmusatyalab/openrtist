@@ -38,11 +38,24 @@
         android:textStyle="bold" />
 
     <Switch
+        android:id="@+id/showRecorder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text="@string/enable_recording" />
+
+    <Switch
+        android:id="@+id/toggleCamera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text="@string/camera_option" />
+
+    <Switch
         android:id="@+id/toggleStereo"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
-        android:layout_weight="1"
         android:text="@string/stereo_option" />
 
     <Switch
@@ -118,44 +131,47 @@
             android:layout_weight="1"
             android:text="@string/address_subheading"
             android:textSize="12sp" />
+
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/addServerName"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="@string/name_hint"
-            android:inputType="textShortMessage" />
+            android:orientation="horizontal">
 
-        <EditText
-            android:id="@+id/addServerAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:hint="@string/address_hint"
-            android:inputType="text|textUri" />
 
-        <ImageView
-            android:id="@+id/imgViewAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:contentDescription="@string/server_add_hovertext"
-            android:onClick="addValue"
-            android:src="@android:drawable/ic_menu_add" />
-    </LinearLayout>
+            <EditText
+                android:id="@+id/addServerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/name_hint"
+                android:inputType="textShortMessage" />
+
+            <EditText
+                android:id="@+id/addServerAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="@string/address_hint"
+                android:inputType="text|textUri" />
+
+            <ImageView
+                android:id="@+id/imgViewAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                android:contentDescription="@string/server_add_hovertext"
+                android:onClick="addValue"
+                android:src="@android:drawable/ic_menu_add" />
+        </LinearLayout>
+
 
     <ListView
         android:id="@+id/listServers"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:dividerHeight="2dp"></ListView>
-
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:dividerHeight="2dp" />
 </LinearLayout>

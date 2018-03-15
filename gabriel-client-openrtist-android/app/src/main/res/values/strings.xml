@@ -9,6 +9,8 @@
     <string name="options_heading">Options</string>
     <string name="stereo_option">Stereoscopic Effect</string>
     <string name="reference_option">Show Style Reference Image</string>
+    <string name="enable_recording">Show Video Recording Button</string>
+    <string name="camera_option">Use Front-facing Camera</string>
     <string name="autoiterate_option">Iterate Styles Periodically</string>
     <string name="serverlist_heading">Server List</string>
     <string name="name_subheading">Name</string>
@@ -22,6 +24,8 @@
     <string name="server_add_hovertext">Add Server</string>
     <string name="interval_set_toast">Interval set to %d seconds.</string>
     <string name="interval_label">Interval</string>
+    <string name="recording_complete">Video snippet saved to %s!</string>
+    <string name="iteration_delayed">Iteration of styles will begin once recording is started.</string>
 
     <string name="connecting_toast">Connecting to Gabriel server&#8230;</string>
 

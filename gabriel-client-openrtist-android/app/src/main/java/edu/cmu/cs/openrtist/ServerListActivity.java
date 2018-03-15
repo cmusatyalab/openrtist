@@ -36,6 +36,8 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.content.Context;
+import android.hardware.camera2.CameraManager;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -52,13 +54,17 @@ public class ServerListActivity extends AppCompatActivity  {
     ImageView add;
     ArrayList<Server> ItemModelList;
     ServerListAdapter serverListAdapter;
+    Switch useFrontCamera = null;
     Switch stereoEnabled = null;
     Switch showReference = null;
     Switch iterateStyles = null;
     SeekBar seekBar = null;
     TextView intervalLabel = null;
+    Switch showRecorder = null;
+    CameraManager camMan = null;
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
+
 
     //activity menu
     @Override
@@ -106,9 +112,11 @@ public class ServerListActivity extends AppCompatActivity  {
         mSharedPreferences=getSharedPreferences(getString(R.string.shared_preference_file_key),
                 MODE_PRIVATE);
 
+        useFrontCamera = (Switch) findViewById(R.id.toggleCamera);
         stereoEnabled = (Switch) findViewById(R.id.toggleStereo);
         showReference = (Switch) findViewById(R.id.showReference);
         iterateStyles = (Switch) findViewById(R.id.iterateStyles);
+        showRecorder = (Switch) findViewById(R.id.showRecorder);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         intervalLabel = (TextView) findViewById(R.id.intervalLabel);
 
@@ -138,11 +146,25 @@ public class ServerListActivity extends AppCompatActivity  {
         seekBar.setProgress(mSharedPreferences.getInt("option:interval", 2));
         Const.ITERATE_INTERVAL = 5 * seekBar.getProgress();
 
+        useFrontCamera.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Const.FRONT_CAMERA_ENABLED = isChecked;
+                if(isChecked)
+                    stereoEnabled.setChecked(false);
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putBoolean("option:frontcam",Const.FRONT_CAMERA_ENABLED);
+                editor.commit();
+            }
+        });
+        useFrontCamera.setChecked(mSharedPreferences.getBoolean("option:frontcam", false));
+
         stereoEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Const.STEREO_ENABLED = isChecked;
-                if(isChecked)
+                if(isChecked) {
                     showReference.setChecked(false);
+                    useFrontCamera.setChecked(false);
+                }
 
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
                 editor.putBoolean("option:stereo",Const.STEREO_ENABLED);
@@ -163,6 +185,18 @@ public class ServerListActivity extends AppCompatActivity  {
         });
         showReference.setChecked(mSharedPreferences.getBoolean("option:showref", false));
 
+        showRecorder.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Const.SHOW_RECORDER = isChecked;
+                if(isChecked)
+                    stereoEnabled.setChecked(false);
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putBoolean("option:showrec",isChecked);
+                editor.commit();
+            }
+        });
+        showRecorder.setChecked(mSharedPreferences.getBoolean("option:showrec", false));
+
         iterateStyles.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Const.ITERATE_STYLES = isChecked;
@@ -180,7 +214,7 @@ public class ServerListActivity extends AppCompatActivity  {
             }
         });
         iterateStyles.setChecked(mSharedPreferences.getBoolean("option:iterate", false));
-
+        camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
         initServerList();
     }
