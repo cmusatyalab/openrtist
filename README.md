@@ -174,6 +174,13 @@ Servers can be added by entering a server name and address and pressing the + si
 Once the camera is active, the application will be set to 'Clear Display' by default. This will show the  frames of the camera without a particular style. You can use the drop-down menu at the top to select a style to apply. Once selected, the frames from the camera will be sent to the server and the style will be applied. The results will be shipped back to the client and displayed. If the 'Iterate Styles Periodically' option is enabled, the dropdown menu will not be shown, and styles will change automatically based upon the interval defined.
 #### Enabling Stereoscopic Effect
 In the main activity, there is a switch where you can toggle whether or not to enable the stereoscopic effect. When enabled, the resultant stylized frames will be split into left- and right-eye channels. This effect is interesting to use with various HUDs, such as Google Cardboard.
+#### Iterate Styles Periodically
+When this option is enabled, an interval can be set (5-60 seconds). The styles will automatically be iterated through at the occurrence of this interval.
+#### Recording Videos
+If the 'Show Video Recording Button' switch is enabled, a camera icon will be shown in the lower left corner of the display. Pressing this button will initiate a screen capture. You will be prompted to allow the capture and after closing this dialog, recording will begin. The screen contents will be recorded until the button is pressed a second time. The icon will turn red to indicate that recording is taking place. Video clips will be stored in Movies/OpenRTiST on the devices SD card. NOTE: If the 'Iterate Styles Periodically' option is enabled, styles will not iterate until the screen capture dialog has been accepted and recording has started.
+#### Front-facing Camera
+You can toggle whether or not to use the front-facing camera on the main screen. When this option is enabled, a small rotation icon will be present in the upper right hand corner of this display. This icon can be pressed to rotate the view on devices where the styled frames appear upside down.
+
 
 ## Installation from source
 ### Recommended Source Directory Structure
