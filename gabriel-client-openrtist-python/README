@@ -1,8 +1,8 @@
 INTRO:
-This is a python client for 'gabriel-proxy-mirror.py' proxy server (gabriel/server/bin/gabriel-proxy-dummy). 
-IMPORTANT: set flag ANDROID_CLIENT to False in 'gabriel-proxy-mirror.py'
+This is a python client for 'openrtist_python/proxy.py' proxy server. 
 
-Python client streams camera feed to the backend. gabriel-proxy-mirror transform the origin image into a mirrored one along y-axis, and then transmit the image (in json) back to the client.
+
+Python client streams camera feed to the backend. openrtist_python transforms the origin image into a stylized image, and then transmit the image (in json) back to the client.
 
 
 USAGE:
