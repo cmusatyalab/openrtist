@@ -61,6 +61,7 @@ pkill -SIGHUP dockerd
 ```sh
 docker pull a4anna/openrtist
 ```
+For older verion of openrtist pull a4anna/openrtist:v1
 
 ### Step 7. Launch the container with nvidia-docker.
 ```sh
@@ -146,6 +147,8 @@ sh get-docker.sh
 ```
 docker pull a4anna/openrtist
 ```
+
+For older verion of openrtist pull a4anna/openrtist:v1
 
 #### Step 3. Set the xhost display and launch the container.
 ```
