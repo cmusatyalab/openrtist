@@ -37,13 +37,7 @@ public class Const {
     // whether to use real-time captured audio or load audio data from files for testing
     public static final boolean LOAD_AUDIO = false;
 
-    public static boolean FRONT_CAMERA_ENABLED = false;
-    public static boolean FRONT_ROTATION = false;
     public static boolean STEREO_ENABLED = false;
-    public static boolean DISPLAY_REFERENCE = false;
-    public static boolean ITERATE_STYLES = false;
-    public static int ITERATE_INTERVAL = 2;
-    public static boolean SHOW_RECORDER = false;
 
     // high level sensor control (on/off)
     public static boolean SENSOR_VIDEO = true;

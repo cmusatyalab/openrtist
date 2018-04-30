@@ -71,8 +71,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.log_flag = log_flag
         self.is_first_image = True
         self.dir_path = os.getcwd()
-        self.model = self.dir_path+'/models/the_scream.model'
-        self.path = self.dir_path+'/models/'
+        self.model = self.dir_path+'/../models/the_scream.model'
+        self.path = self.dir_path+'/../models/'
         print('MODEL PATH {}'.format(self.path))  
 
         # initialize model
