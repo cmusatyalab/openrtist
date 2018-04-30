@@ -130,6 +130,14 @@ __Ensure that ports 9000-10000 are open in your security group rules so that tra
 
 Once the server is running in AWS, you can follow the steps above to setup the server.
 
+__Note__ : If using vanilla Ubuntu Server 16.04 Image, install the required Nvidia driver and reboot. 
+```
+wget http://us.download.nvidia.com/tesla/375.51/nvidia-driver-local-repo-ubuntu1604_375.51-1_amd64.deb
+sudo dpkg -i nvidia-driver-local-repo-ubuntu1604_375.51-1_amd64.deb
+sudo apt-get update
+sudo apt-get -y install cuda-drivers
+sudo reboot
+```
 
 ## Client Installation
 ### Python Client
@@ -190,9 +198,12 @@ You can toggle whether or not to use the front-facing camera on the main screen.
 ```
 +gabriel
   +client
+    +gabriel-client-openrtist-android
+    +gabriel-client-openrtist-python
   +server
     +openrtist
       -wtrMrk.png
+      +models
       +openrtist_python
       +openrtist_android
 ``` 
