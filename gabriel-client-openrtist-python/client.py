@@ -73,7 +73,7 @@ class VideoStreamingThread(SocketClientThread):
     def _handle_STREAM(self, cmd):
         tokenm = cmd.data
         self.is_streaming=True
-        video_capture = cv2.VideoCapture(0)
+        video_capture = cv2.VideoCapture()
         video_capture.set(cv2.CAP_PROP_FPS, self.FPS)
         b_time = time.time() 
         e_time = time.time()
