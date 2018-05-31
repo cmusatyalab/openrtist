@@ -14,6 +14,7 @@
 
 #! /usr/bin/env python
 
+import signal
 import socket
 import struct
 import threading
@@ -44,12 +45,39 @@ class GabrielSocketCommand(ClientCommand):
     
     def __init__(self, type, data=None):
         super(self.__class__.__name__, self).__init__()
-        
-        
+
+
+class Camera(object):
+    """Camera is a singleton class that gracefully release a OpenCV camera when the process is interrupted/killed."""
+    __instance = None
+
+    class __Camera(object):
+        @staticmethod
+        def _setup_exit_handler(cleanup_func):
+            def exit_signal_handler(signal, frame):
+                cleanup_func()
+                sys.exit(0)
+            signal.signal(signal.SIGINT, exit_signal_handler)
+            signal.signal(signal.SIGTERM, exit_signal_handler)
+
+        def __init__(self):
+            self.cam = cv2.VideoCapture(-1)
+            self._setup_exit_handler(lambda _: self.cam.release())
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+        if self.__class__.__instance is None:
+            self.__class__.__instance = self.__class__.__Camera()
+
+    def __getattr__(self, item):
+        return getattr(self.__instance.cam, item)
+
+
+video_capture = Camera()
+
 class VideoStreamingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
         super(self.__class__, self).__init__(cmd_q, reply_q)
-        self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
         self.is_streaming=False
         self.style_array = os.listdir('./style-image')
         random.shuffle(self.style_array)
@@ -58,6 +86,9 @@ class VideoStreamingThread(SocketClientThread):
         self.SEC = Config.TIME_SEC
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
+        self.video_capture = video_capture
+        self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+        self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
 
         #print(self.style_array)
 
@@ -68,14 +99,13 @@ class VideoStreamingThread(SocketClientThread):
                 self.handlers[cmd.type](cmd)
             except Queue.Empty as e:
                 continue
+        self.video_capture.release()
 
     # tokenm: token manager
     def _handle_STREAM(self, cmd):
         tokenm = cmd.data
         self.is_streaming=True
-        video_capture = cv2.VideoCapture()
-        video_capture.set(cv2.CAP_PROP_FPS, self.FPS)
-        b_time = time.time() 
+        b_time = time.time()
         e_time = time.time()
         id=0
         style_num = 0
@@ -86,7 +116,7 @@ class VideoStreamingThread(SocketClientThread):
                 style_string = self.style_array[style_num%self.length].split(".")[0]
                 style_num+=1
             tokenm.getToken()
-            ret, frame = video_capture.read()
+            ret, frame = self.video_capture.read()
             capture_time = time.time()
             # print("Capture Time: {} {}".format(capture_time,video_capture.get(cv2.CAP_PROP_FPS)))
             frame = cv2.flip(frame,1)
@@ -102,8 +132,6 @@ class VideoStreamingThread(SocketClientThread):
             self._handle_SEND(ClientCommand(ClientCommand.SEND, header_json))
             self._handle_SEND(ClientCommand(ClientCommand.SEND, jpeg_frame.tostring()))
             id+=1
-
-        video_capture.release()        
 
 class ResultReceivingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
