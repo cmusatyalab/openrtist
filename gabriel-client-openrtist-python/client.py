@@ -45,24 +45,6 @@ class GabrielSocketCommand(ClientCommand):
     def __init__(self, type, data=None):
         super(self.__class__.__name__, self).__init__()
 
-
-class Camera(object):
-    """Camera is a singleton class that gracefully release a OpenCV camera when the process is interrupted/killed."""
-    __instance = None
-
-    class __Camera(object):
-        def __init__(self):
-            self.cam = cv2.VideoCapture(-1)
-
-    def __init__(self):
-        super(self.__class__, self).__init__()
-        if self.__class__.__instance is None:
-            self.__class__.__instance = self.__class__.__Camera()
-
-    def __getattr__(self, item):
-        return getattr(self.__instance.cam, item)
-
-
 class VideoStreamingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
         super(self.__class__, self).__init__(cmd_q, reply_q)
@@ -74,7 +56,7 @@ class VideoStreamingThread(SocketClientThread):
         self.SEC = Config.TIME_SEC
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
-        self.video_capture = Camera()
+        self.video_capture = cv2.VideoCapture(-1)
         self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
         self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
 
@@ -87,7 +69,6 @@ class VideoStreamingThread(SocketClientThread):
                 self.handlers[cmd.type](cmd)
             except Queue.Empty as e:
                 continue
-        self.video_capture.release()
 
     def join(self):
         super(self.__class__, self).join()
