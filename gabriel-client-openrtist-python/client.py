@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # Copyright 2018 Carnegie Mellon University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-#! /usr/bin/env python
 
 import signal
 import socket
@@ -52,17 +51,8 @@ class Camera(object):
     __instance = None
 
     class __Camera(object):
-        @staticmethod
-        def _setup_exit_handler(cleanup_func):
-            def exit_signal_handler(signal, frame):
-                cleanup_func()
-                sys.exit(0)
-            signal.signal(signal.SIGINT, exit_signal_handler)
-            signal.signal(signal.SIGTERM, exit_signal_handler)
-
         def __init__(self):
             self.cam = cv2.VideoCapture(-1)
-            self._setup_exit_handler(lambda _: self.cam.release())
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -72,8 +62,6 @@ class Camera(object):
     def __getattr__(self, item):
         return getattr(self.__instance.cam, item)
 
-
-video_capture = Camera()
 
 class VideoStreamingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
@@ -86,7 +74,7 @@ class VideoStreamingThread(SocketClientThread):
         self.SEC = Config.TIME_SEC
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
-        self.video_capture = video_capture
+        self.video_capture = Camera()
         self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
         self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
 
@@ -99,6 +87,10 @@ class VideoStreamingThread(SocketClientThread):
                 self.handlers[cmd.type](cmd)
             except Queue.Empty as e:
                 continue
+        self.video_capture.release()
+
+    def join(self):
+        super(self.__class__, self).join()
         self.video_capture.release()
 
     # tokenm: token manager
@@ -118,7 +110,7 @@ class VideoStreamingThread(SocketClientThread):
             tokenm.getToken()
             ret, frame = self.video_capture.read()
             capture_time = time.time()
-            # print("Capture Time: {} {}".format(capture_time,video_capture.get(cv2.CAP_PROP_FPS)))
+            # print("Capture Time: {} {}".format(capture_time, self.video_capture.get(cv2.CAP_PROP_FPS)))
             frame = cv2.flip(frame,1)
             frame = cv2.resize(frame,(Config.IMG_WIDTH,Config.IMG_HEIGHT))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -205,60 +197,81 @@ class tokenManager(object):
             if self.token_val >= 0:
                 self.has_token_cv.notifyAll()
 
+
+def _setup_exit_handler(cleanup_func):
+    def exit_signal_handler(signal, frame):
+        sys.stdout.write("cleanup resources...\n")
+        sys.stdout.flush()
+        cleanup_func()
+        sys.exit(0)
+    signal.signal(signal.SIGINT, exit_signal_handler)
+    signal.signal(signal.SIGTERM, exit_signal_handler)
+
+
+tokenm = tokenManager(Config.TOKEN)
+stream_cmd_q = Queue.Queue()
+result_cmd_q = Queue.Queue()
+result_reply_q = Queue.Queue()
+video_streaming_thread=VideoStreamingThread(cmd_q=stream_cmd_q)
+stream_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.VIDEO_STREAM_PORT)) )
+stream_cmd_q.put(ClientCommand(GabrielSocketCommand.STREAM, tokenm))
+result_receiving_thread = ResultReceivingThread(cmd_q=result_cmd_q, reply_q=result_reply_q)
+result_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.RESULT_RECEIVING_PORT)) )
+result_cmd_q.put(ClientCommand(GabrielSocketCommand.LISTEN, tokenm))
+rgbpipe_path = '/tmp/rgbpipe'
+rgbpipe = None
+
+
+def cleanup():
+    try:
+        os.close(rgbpipe)
+    except TypeError:
+        pass
+    video_streaming_thread.join()
+    result_receiving_thread.join()
+    with tokenm.has_token_cv:
+        tokenm.has_token_cv.notifyAll()
+
+
+_setup_exit_handler(cleanup)
+
+
 def run(sig_frame_available=None):
-    tokenm = tokenManager(Config.TOKEN)
-    stream_cmd_q = Queue.Queue()
-    result_cmd_q = Queue.Queue()    
-    result_reply_q = Queue.Queue()
-    video_streaming_thread=VideoStreamingThread(cmd_q=stream_cmd_q)
-    stream_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.VIDEO_STREAM_PORT)) )
-    stream_cmd_q.put(ClientCommand(GabrielSocketCommand.STREAM, tokenm))    
-    result_receiving_thread = ResultReceivingThread(cmd_q=result_cmd_q, reply_q=result_reply_q)    
-    result_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.RESULT_RECEIVING_PORT)) )
-    result_cmd_q.put(ClientCommand(GabrielSocketCommand.LISTEN, tokenm))
     result_receiving_thread.start()
     sleep(0.1)
     video_streaming_thread.start()
 
     if sig_frame_available is None:
-        rgbpipe_path = '/tmp/rgbpipe'
         if not os.path.exists(rgbpipe_path):
             os.mkfifo(rgbpipe_path)
         rgbpipe = os.open(rgbpipe_path, os.O_WRONLY)
     
-    try:
-        while True:
-            sys.stdout.flush()
-            resp=result_reply_q.get()
-            # connect and send also send reply to reply queue without any data attached
-            if resp.type == ClientReply.SUCCESS and resp.data is not None:
-                tkn_time = time.time()
-                # print("Tocken Time: {}".format(tkn_time))
-                (resp_header, resp_data) =resp.data
-                resp_header=json.loads(resp_header)
-                img=resp_data
-                data=img
-                np_data=np.fromstring(data, dtype=np.uint8)
-                frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
-                if sig_frame_available == None:
-                    rgb_frame = frame
-                    style_image = style_name_to_image[resp_header['style']]
-                    style_im_h, style_im_w, _ = style_image.shape
-                    rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
-                    cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
-                    rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
-                    os.write(rgbpipe, rgb_frame_enlarged.tostring())
-                else:
-                    # display received image on the pyqt ui
-                    #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)    
-                    #print("HEADER STYLE {}".format(resp_header['style']))                
-                    sig_frame_available.emit(frame,resp_header['style'])
-    except KeyboardInterrupt:
-        os.close(rgbpipe)
-        video_streaming_thread.join()
-        result_receiving_thread.join()
-        with tokenm.has_token_cv:
-            tokenm.has_token_cv.notifyAll()
+    while True:
+        sys.stdout.flush()
+        resp=result_reply_q.get()
+        # connect and send also send reply to reply queue without any data attached
+        if resp.type == ClientReply.SUCCESS and resp.data is not None:
+            tkn_time = time.time()
+            # print("Tocken Time: {}".format(tkn_time))
+            (resp_header, resp_data) =resp.data
+            resp_header=json.loads(resp_header)
+            img=resp_data
+            data=img
+            np_data=np.fromstring(data, dtype=np.uint8)
+            frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
+            if sig_frame_available == None:
+                rgb_frame = frame
+                style_image = style_name_to_image[resp_header['style']]
+                style_im_h, style_im_w, _ = style_image.shape
+                rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
+                cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
+                rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
+                os.write(rgbpipe, rgb_frame_enlarged.tostring())
+            else:
+                # display received image on the pyqt ui
+                #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                #print("HEADER STYLE {}".format(resp_header['style']))
+                sig_frame_available.emit(frame,resp_header['style'])
 
 def _load_style_images(style_dir_path='style-image'):
     style_name_to_image = {}
