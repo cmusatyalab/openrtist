@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import print_function
 import signal
 import socket
 import struct
@@ -211,21 +211,18 @@ class GabrielClient(object):
         self._video_streaming_thread.start()
 
         if sig_frame_available is None:
-            import pdb; pdb.set_trace()
             if not os.path.exists(self._rgbpipe_path):
                 os.mkfifo(self._rgbpipe_path)
-            self._rgbpipe = os.open(self._rgbpipe_path, os.O_WRONLY)
+            print("Opening fifo {} for writing... Block waiting for reader...".format(self._rgbpipe_path))
+            self._rgbpipe = open(self._rgbpipe_path, 'w')
+            print("Fifo opened.")
 
-        import pdb; pdb.set_trace()
         while True:
             resp = self._result_reply_q.get()
-            sys.stdout.write("test\n")
-            sys.stdout.flush()
             # connect and send also send reply to reply queue without any data attached
             if resp.type == ClientReply.SUCCESS and resp.data is not None:
                 tkn_time = time.time()
-                sys.stdout.write("Tocken Time: {}".format(tkn_time))
-                sys.stdout.flush()
+                #print(tkn_time)
                 (resp_header, resp_data) =resp.data
                 resp_header=json.loads(resp_header)
                 img=resp_data
@@ -239,10 +236,7 @@ class GabrielClient(object):
                     rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
                     cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
                     rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
-                    import pdb; pdb.set_trace()
-                    cv2.imshow('image', rgb_frame_enlarged)
-                    cv2.waitKey(100)
-                    os.write(self._rgbpipe, rgb_frame_enlarged.tostring())
+                    self._rgbpipe.write(rgb_frame_enlarged.tostring())
                 else:
                     # display received image on the pyqt ui
                     #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
@@ -250,10 +244,8 @@ class GabrielClient(object):
                     sig_frame_available.emit(frame,resp_header['style'])
 
     def cleanup(self):
-        try:
-            os.close(self._rgbpipe)
-        except TypeError:
-            pass
+        if self._rgbpipe is not None:
+            self._rgbpipe.close()
         with self._tokenm.has_token_cv:
             self._tokenm.has_token_cv.notifyAll()
         self._result_receiving_thread.join()
@@ -270,6 +262,10 @@ def _load_style_images(style_dir_path='style-image'):
 
 
 if __name__ == '__main__':
+    """Setup for GHC 9th project room screen saver.
+
+    When launched directly, this script sends style-transferred video stream to xscreensaver through a named FIFO.
+    """
     style_name_to_image = _load_style_images('style-image')
     gabriel_client = GabrielClient()
     gabriel_client.start()
