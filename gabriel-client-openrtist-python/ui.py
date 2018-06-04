@@ -59,15 +59,16 @@ class ClientThread(QThread):
     
     def __init__(self):
         super(self.__class__, self).__init__()
-        self._stop = threading.Event()        
+        self._stop = threading.Event()
+        self._gabriel_client = client.GabrielClient()
 
     def run(self):
-        client.run(self.sig_frame_available)
+        self._gabriel_client.start(self.sig_frame_available)
 
     def stop(self):
-        client.alive=False
         self._stop.set()
-        
+        self._gabriel_client.cleanup()
+
 def main():
     app = QtGui.QApplication(sys.argv)
     ui = UI()        
