@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # Copyright 2018 Carnegie Mellon University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,9 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-#! /usr/bin/env python
-
+from __future__ import print_function
+import signal
 import socket
 import struct
 import threading
@@ -44,12 +44,10 @@ class GabrielSocketCommand(ClientCommand):
     
     def __init__(self, type, data=None):
         super(self.__class__.__name__, self).__init__()
-        
-        
+
 class VideoStreamingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
         super(self.__class__, self).__init__(cmd_q, reply_q)
-        self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
         self.is_streaming=False
         self.style_array = os.listdir('./style-image')
         random.shuffle(self.style_array)
@@ -58,6 +56,9 @@ class VideoStreamingThread(SocketClientThread):
         self.SEC = Config.TIME_SEC
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
+        self.video_capture = cv2.VideoCapture(-1)
+        self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+        self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
 
         #print(self.style_array)
 
@@ -69,13 +70,15 @@ class VideoStreamingThread(SocketClientThread):
             except Queue.Empty as e:
                 continue
 
+    def join(self):
+        super(self.__class__, self).join()
+        self.video_capture.release()
+
     # tokenm: token manager
     def _handle_STREAM(self, cmd):
         tokenm = cmd.data
         self.is_streaming=True
-        video_capture = cv2.VideoCapture(-1)
-        video_capture.set(cv2.CAP_PROP_FPS, self.FPS)
-        b_time = time.time() 
+        b_time = time.time()
         e_time = time.time()
         id=0
         style_num = 0
@@ -86,9 +89,9 @@ class VideoStreamingThread(SocketClientThread):
                 style_string = self.style_array[style_num%self.length].split(".")[0]
                 style_num+=1
             tokenm.getToken()
-            ret, frame = video_capture.read()
+            ret, frame = self.video_capture.read()
             capture_time = time.time()
-            # print("Capture Time: {} {}".format(capture_time,video_capture.get(cv2.CAP_PROP_FPS)))
+            # print("Capture Time: {} {}".format(capture_time, self.video_capture.get(cv2.CAP_PROP_FPS)))
             frame = cv2.flip(frame,1)
             frame = cv2.resize(frame,(Config.IMG_WIDTH,Config.IMG_HEIGHT))
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -102,8 +105,6 @@ class VideoStreamingThread(SocketClientThread):
             self._handle_SEND(ClientCommand(ClientCommand.SEND, header_json))
             self._handle_SEND(ClientCommand(ClientCommand.SEND, jpeg_frame.tostring()))
             id+=1
-
-        video_capture.release()        
 
 class ResultReceivingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
@@ -177,60 +178,79 @@ class tokenManager(object):
             if self.token_val >= 0:
                 self.has_token_cv.notifyAll()
 
-def run(sig_frame_available=None):
-    tokenm = tokenManager(Config.TOKEN)
-    stream_cmd_q = Queue.Queue()
-    result_cmd_q = Queue.Queue()    
-    result_reply_q = Queue.Queue()
-    video_streaming_thread=VideoStreamingThread(cmd_q=stream_cmd_q)
-    stream_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.VIDEO_STREAM_PORT)) )
-    stream_cmd_q.put(ClientCommand(GabrielSocketCommand.STREAM, tokenm))    
-    result_receiving_thread = ResultReceivingThread(cmd_q=result_cmd_q, reply_q=result_reply_q)    
-    result_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.RESULT_RECEIVING_PORT)) )
-    result_cmd_q.put(ClientCommand(GabrielSocketCommand.LISTEN, tokenm))
-    result_receiving_thread.start()
-    sleep(0.1)
-    video_streaming_thread.start()
 
-    if sig_frame_available is None:
-        rgbpipe_path = '/tmp/rgbpipe'
-        if not os.path.exists(rgbpipe_path):
-            os.mkfifo(rgbpipe_path)
-        rgbpipe = os.open(rgbpipe_path, os.O_WRONLY)
-    
-    try:
+def _setup_exit_handler(cleanup_func):
+    def exit_signal_handler(signal, frame):
+        sys.stdout.write("cleanup resources...\n")
+        sys.stdout.flush()
+        cleanup_func()
+        sys.exit(0)
+    signal.signal(signal.SIGINT, exit_signal_handler)
+    signal.signal(signal.SIGTERM, exit_signal_handler)
+
+
+class GabrielClient(object):
+    def __init__(self):
+        self._tokenm = tokenManager(Config.TOKEN)
+        stream_cmd_q = Queue.Queue()
+        result_cmd_q = Queue.Queue()
+        self._result_reply_q = Queue.Queue()
+        self._video_streaming_thread = VideoStreamingThread(cmd_q=stream_cmd_q)
+        stream_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.VIDEO_STREAM_PORT)) )
+        stream_cmd_q.put(ClientCommand(GabrielSocketCommand.STREAM, self._tokenm))
+        self._result_receiving_thread = ResultReceivingThread(cmd_q=result_cmd_q, reply_q=self._result_reply_q)
+        result_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.RESULT_RECEIVING_PORT)) )
+        result_cmd_q.put(ClientCommand(GabrielSocketCommand.LISTEN, self._tokenm))
+        self._rgbpipe_path = '/tmp/rgbpipe'
+        self._rgbpipe = None
+        _setup_exit_handler(self.cleanup)
+
+    def start(self, sig_frame_available=None):
+        self._result_receiving_thread.start()
+        sleep(0.1)
+        self._video_streaming_thread.start()
+
+        if sig_frame_available is None:
+            if not os.path.exists(self._rgbpipe_path):
+                os.mkfifo(self._rgbpipe_path)
+            print("Opening fifo {} for writing... Block waiting for reader...".format(self._rgbpipe_path))
+            self._rgbpipe = open(self._rgbpipe_path, 'w')
+            print("Fifo opened.")
+
         while True:
-            sys.stdout.flush()
-            resp=result_reply_q.get()
+            resp = self._result_reply_q.get()
             # connect and send also send reply to reply queue without any data attached
             if resp.type == ClientReply.SUCCESS and resp.data is not None:
                 tkn_time = time.time()
-                # print("Tocken Time: {}".format(tkn_time))
+                #print(tkn_time)
                 (resp_header, resp_data) =resp.data
                 resp_header=json.loads(resp_header)
                 img=resp_data
                 data=img
                 np_data=np.fromstring(data, dtype=np.uint8)
                 frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
-                if sig_frame_available == None:
+                if sig_frame_available is None:
                     rgb_frame = frame
                     style_image = style_name_to_image[resp_header['style']]
                     style_im_h, style_im_w, _ = style_image.shape
                     rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
                     cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
                     rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
-                    os.write(rgbpipe, rgb_frame_enlarged.tostring())
+                    self._rgbpipe.write(rgb_frame_enlarged.tostring())
                 else:
                     # display received image on the pyqt ui
-                    #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)    
-                    #print("HEADER STYLE {}".format(resp_header['style']))                
+                    #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                    #print("HEADER STYLE {}".format(resp_header['style']))
                     sig_frame_available.emit(frame,resp_header['style'])
-    except KeyboardInterrupt:
-        os.close(rgbpipe)
-        video_streaming_thread.join()
-        result_receiving_thread.join()
-        with tokenm.has_token_cv:
-            tokenm.has_token_cv.notifyAll()
+
+    def cleanup(self):
+        if self._rgbpipe is not None:
+            self._rgbpipe.close()
+        with self._tokenm.has_token_cv:
+            self._tokenm.has_token_cv.notifyAll()
+        self._result_receiving_thread.join()
+        self._video_streaming_thread.join()
+
 
 def _load_style_images(style_dir_path='style-image'):
     style_name_to_image = {}
@@ -242,5 +262,10 @@ def _load_style_images(style_dir_path='style-image'):
 
 
 if __name__ == '__main__':
+    """Setup for GHC 9th project room screen saver.
+
+    When launched directly, this script sends style-transferred video stream to xscreensaver through a named FIFO.
+    """
     style_name_to_image = _load_style_images('style-image')
-    run()
+    gabriel_client = GabrielClient()
+    gabriel_client.start()
