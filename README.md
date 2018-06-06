@@ -59,16 +59,18 @@ pkill -SIGHUP dockerd
 
 ### Step 6. Obtain OpenRTiST docker container.
 ```sh
-docker pull a4anna/openrtist
+docker pull cmusatyalab/openrtist
 ```
-For older verion of openrtist pull a4anna/openrtist:v1
 
-### Step 7. Launch the container with nvidia-docker.
+### Step 7A. Launch the container with the default Docker command (which supports Android clients)
 ```sh
-nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openrtist bash
+nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist 
 ```
 
-### Step 8. Launch Gabriel control/user communication/proxy modules to start server.
+### Step 7B. Launch the container and manually start the server (if you wish support Python clients or configure things)
+```sh
+nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
+```
 Type ifconfig and note the interface name and ip address inside the docker container __(for the below examples, we assume eth0 and 172.17.0.2)__.
 ```
 ifconfig
@@ -79,7 +81,7 @@ tmux
 ```
 In the first tmux window (CTRL-b 0), navigate to /gabriel/server/bin.
 ```
-cd /workspace/gabriel/server/bin
+cd /gabriel/server/bin
 ```
 ---
 __If executing server for Python clients...__
@@ -97,7 +99,7 @@ __NOTE: You must also add the -l flag to put gabriel into legacy mode!__
 ```
 In the next tmux window(CTRL-b 1), execute gabriel-ucomm, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
-cd /workspace/gabriel/server/bin
+cd /gabriel/server/bin
 ./gabriel-ucomm -s 172.17.0.2:8021
 ```
 In the next tmux window(CTRL-b 2), navigate to the OpenRTiST application directory.
@@ -106,7 +108,7 @@ __If executing server for Python clients...__
 
 Execute the Python proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
-cd /workspace/gabriel/server/openrtist/openrtist_python
+cd /openrtist/openrtist_python
 ./proxy.py -s 172.17.0.2:8021
 ```
 ---
@@ -114,7 +116,7 @@ __If executing server for Android clients...__
 
 Execute the legacy Android proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
-cd /workspace/gabriel/server/openrtist/openrtist_android
+cd /openrtist/openrtist_android
 ./proxy.py -s 172.17.0.2:8021
 ```
 
@@ -153,31 +155,29 @@ sh get-docker.sh
 
 #### Step 2. Obtain OpenRTiST docker container.
 ```
-docker pull a4anna/openrtist
+docker pull cmusatyalab/openrtist
 ```
-
-For older verion of openrtist pull a4anna/openrtist:v1
 
 #### Step 3. Set the xhost display and launch the container.
 ```
 xhost local:root
-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 a4anna/openrtist bash
+docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
 ```
 #### Step 4. Configure the client to talk to the server.
 ```
-cd /workspace/gabriel/client/gabriel-client-style-python
+cd /openrtist/gabriel-client-style-python
 vim.tiny config.py
-#Edit the IP address to point to your server.
+#Edit GABRIEL_IP address to point to your server.
 ```
 
-#### Step 5. Launch the python client.
+#### Step 5. Launch the Python client UI.
 ```
 ./ui.py
 ```
 
 
 ### Android Client
-<a href='https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
+<a href='https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist'><img height='125px' width='323px' alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
 Google Play and the Google Play logo are trademarks of Google LLC.
 #### Managing Servers
 Servers can be added by entering a server name and address and pressing the + sign button. Once a server has been added, pressing the 'Play' button will connect to the OpenRTiST server at that address. Pressing the trash can button will remove the server from the server list.

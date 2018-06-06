@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     gcc \
+    vim \
+    emacs \
     python \
     python-dev \
     pkg-config \
