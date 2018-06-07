@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import argparse
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtCore import Qt, QThread, SIGNAL, pyqtSignal, QSize
 from PyQt4.QtGui import *
@@ -57,10 +57,10 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
 class ClientThread(QThread):
     sig_frame_available = pyqtSignal(object,str)
     
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__()
         self._stop = threading.Event()
-        self._gabriel_client = client.GabrielClient()
+        self._gabriel_client = client.GabrielClient(*args, **kwargs)
 
     def run(self):
         self._gabriel_client.start(self.sig_frame_available)
@@ -69,11 +69,11 @@ class ClientThread(QThread):
         self._stop.set()
         self._gabriel_client.cleanup()
 
-def main():
+def main(inputs):
     app = QtGui.QApplication(sys.argv)
     ui = UI()        
     ui.show()
-    clientThread = ClientThread()
+    clientThread = ClientThread(inputs.server_ip)
     clientThread.sig_frame_available.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
@@ -82,4 +82,7 @@ def main():
 
     
 if __name__ == '__main__':  # if we're running file directly and not importing it
-    main() 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
+    inputs = parser.parse_args()
+    main(inputs)
