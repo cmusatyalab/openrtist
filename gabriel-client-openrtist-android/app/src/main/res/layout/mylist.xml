@@ -10,20 +10,21 @@
         <!--android:layout_height="60dp"-->
         <!--android:padding="5dp" />-->
 
-    <LinearLayout android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/item"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Medium Text"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:fontFamily="sans-serif-medium"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
+            android:fontFamily="sans-serif-medium"
             android:padding="2dp"
+            android:text="Medium Text"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#000080" />
 
     </LinearLayout>

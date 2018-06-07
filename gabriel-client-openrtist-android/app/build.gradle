@@ -5,8 +5,8 @@ android {
     buildToolsVersion '25.0.0'
 
     defaultConfig {
-        applicationId "edu.cmu.cs.gabriel"
-        minSdkVersion 16
+        applicationId "edu.cmu.cs.openrtist"
+        minSdkVersion 21
         targetSdkVersion 23
     }
 
