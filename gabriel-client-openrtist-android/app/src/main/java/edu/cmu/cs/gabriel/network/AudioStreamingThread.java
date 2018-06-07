@@ -41,6 +41,7 @@ public class AudioStreamingThread extends Thread {
 
     // TCP connection
     private InetAddress remoteIP;
+    private String serverAddress;
     private int remotePort;
     private Socket tcpSocket = null;
     private DataOutputStream networkWriter = null;
@@ -65,11 +66,7 @@ public class AudioStreamingThread extends Thread {
         this.logicalTime = logicalTime;
         this.frameID = 0;
 
-        try {
-            remoteIP = InetAddress.getByName(serverIP);
-        } catch (UnknownHostException e) {
-            Log.e(LOG_TAG, "unknown host: " + e.getMessage());
-        }
+        serverAddress = serverIP;
         remotePort = port;
 
         audioStream = new ByteArrayOutputStream();
@@ -91,7 +88,11 @@ public class AudioStreamingThread extends Thread {
     public void run() {
         this.isRunning = true;
         Log.i(LOG_TAG, "Audio streaming thread running");
-
+        try {
+            remoteIP = InetAddress.getByName(serverAddress);
+        } catch (UnknownHostException e) {
+            Log.e(LOG_TAG, "unknown host: " + e.getMessage());
+        }
         // initialization of the TCP connection
         try {
             tcpSocket = new Socket();

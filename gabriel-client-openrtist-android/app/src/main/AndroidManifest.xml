@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.cmu.cs.openrtist"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="5"
+    android:versionName="1.2" >
 
     <uses-sdk
-        android:minSdkVersion="15"
+        android:minSdkVersion="21"
         android:targetSdkVersion="23" />
     
     <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -24,9 +25,9 @@
         android:theme="@style/MyGabrielMaterialTheme"
         android:largeHeap="true">
         <activity
-            android:name="edu.cmu.cs.openrtist.CloudletDemoActivity"
+            android:name="edu.cmu.cs.openrtist.ServerListActivity"
             android:label="@string/title_activity_main"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensor"
             android:theme="@style/MyGabrielMaterialTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -57,11 +58,6 @@
             <meta-data
                 android:name="com.google.android.glass.VoiceTrigger"
                 android:resource="@xml/gabriel_start" />
-        </activity>
-        <activity android:name=".SettingActivity"></activity>
-        <activity android:name=".IPSettingActivity"
-            android:theme="@style/MyGabrielMaterialTheme"
-            android:parentActivityName="edu.cmu.cs.openrtist.CloudletDemoActivity">
         </activity>
     </application>
 

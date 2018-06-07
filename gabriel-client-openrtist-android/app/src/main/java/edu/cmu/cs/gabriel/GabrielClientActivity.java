@@ -18,16 +18,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
@@ -35,13 +39,12 @@ import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
@@ -49,8 +52,14 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.Spinner;
-import android.widget.ToggleButton;
-import android.widget.VideoView;
+import android.widget.Toast;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
+import android.util.DisplayMetrics;
+import android.content.Context;
+import android.os.Environment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,6 +78,12 @@ import edu.cmu.cs.openrtist.R;
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
 
     private static final String LOG_TAG = "Main";
+    private static final int REQUEST_CODE = 1000;
+    private static int DISPLAY_WIDTH = 640;
+    private static int DISPLAY_HEIGHT = 480;
+    private static int BITRATE = 1*1024*1024;
+    private static final int MEDIA_TYPE_IMAGE = 1;
+    private static final int MEDIA_TYPE_VIDEO = 2;
 
     // major components for streaming sensor data and receiving information
     private String serverIP = null;
@@ -96,6 +111,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private SurfaceTexture mSurfaceTexture;
 
     private MediaController mediaController = null;
+    private int mScreenDensity;
+    private MediaProjectionManager mProjectionManager;
+    private MediaProjection mMediaProjection;
+    private VirtualDisplay mVirtualDisplay;
+    private MediaRecorder mMediaRecorder;
+    private boolean capturingScreen = false;
+    private String mOutputPath = null;
 
     private ReceivedPacketInfo receivedPacketInfo = null;
 
@@ -110,6 +132,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private ImageView stereoView1 = null;
     private ImageView stereoView2 = null;
     private ImageView camView2 = null;
+    private ImageView iconView = null;
+    private Handler iterationHandler = null;
+    private int cameraId = 0;
+    private boolean imageRotate = false;
 
     //List of Styles
 
@@ -173,7 +199,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             R.drawable.femmes_d_alger,
             R.drawable.sunday_afternoon,
             R.drawable.dido_carthage,
-            R.drawable.the_scream
+            R.drawable.the_scream,
+            R.drawable.starry_night
     };
 
     @Override
@@ -186,6 +213,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         } else {
             setContentView(R.layout.activity_main);
         }
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED+
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON+
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -200,11 +228,117 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         stereoView2 = (ImageView) findViewById(R.id.guidance_image2);
         camView2 = (ImageView) findViewById(R.id.camera_preview2);
         imgView = (ImageView) findViewById(R.id.guidance_image);
+        iconView = (ImageView) findViewById(R.id.style_image);
 
+        if(Const.SHOW_RECORDER) {
+            ImageView recButton = (ImageView) findViewById(R.id.imgRecord);
+            recButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(capturingScreen) {
+                        findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.colorPrimary));
+                        stopRecording();
+                    } else {
+                        findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.color_recording));
+                        initRecorder();
+                        shareScreen();
+                    }
+                }
+            });
+        } else if(!Const.STEREO_ENABLED){
+            //this view doesn't exist when stereo is enabled (activity_stereo.xml)
+            findViewById(R.id.imgRecord).setVisibility(View.GONE);
+        }
+
+        if(Const.ITERATE_STYLES) {
+            findViewById(R.id.spinner).setVisibility(View.GONE);
+            iterationHandler = new Handler();
+            //start iterating immediately if recording is not enabled,
+            //otherwise we should hold off on iterating until onActivityResult is called
+            //and let the user know this is the case
+            if(!Const.SHOW_RECORDER) {
+                iterationHandler.postDelayed(styleIterator, 1000 * Const.ITERATE_INTERVAL);
+            } else {
+                Toast.makeText(this, R.string.iteration_delayed, Toast.LENGTH_LONG).show();
+            }
+        }
+
+        if (Const.FRONT_CAMERA_ENABLED){
+            Log.v(LOG_TAG, "Using front camera.");
+            cameraId = findFrontFacingCamera();
+            //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+            ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
+            rotateButton.setVisibility(View.VISIBLE);
+            rotateButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    imageRotate = !imageRotate;
+                    Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
+                    if(style_type.equals("none"))
+                        preview.setRotation(180 - preview.getRotation());
+
+                        //imgView.setRotation(180 - imgView.getRotation());
+                }
+            });
+        }
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mScreenDensity = metrics.densityDpi;
+
+        mMediaRecorder = new MediaRecorder();
+
+        mProjectionManager = (MediaProjectionManager) getSystemService
+                (Context.MEDIA_PROJECTION_SERVICE);
 
         Intent intent = getIntent();
         //reset = intent.getExtras().getBoolean("reset");
     }
+
+    private int findFrontFacingCamera() {
+        int cameraId = -1;
+        // Search for the front facing camera
+        int numberOfCameras = Camera.getNumberOfCameras();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                    Log.d(LOG_TAG, "Front facing camera found");
+                    cameraId = i;
+                    break;
+                }
+        }
+        return cameraId;
+    }
+
+    private Runnable styleIterator = new Runnable() {
+        private int position = 1;
+
+        @Override
+        public void run() {
+            Spinner spinner = (Spinner) findViewById(R.id.spinner);
+            if(++position == itemname.length)
+                position = 1;
+            style_type = itemname[position];
+            Toast.makeText(getApplicationContext(), display_names[position],
+                    Toast.LENGTH_SHORT).show();
+            if(Const.STEREO_ENABLED) {
+                if (stereoView1.getVisibility() == View.INVISIBLE) {
+                    stereoView1.setVisibility(View.VISIBLE);
+                    stereoView2.setVisibility(View.VISIBLE);
+                }
+            } else {
+                if(Const.DISPLAY_REFERENCE) {
+                    iconView.setVisibility(View.VISIBLE);
+                    iconView.setImageResource(imgid[position]);
+                }
+                if (imgView.getVisibility() == View.INVISIBLE) {
+                    imgView.setVisibility(View.VISIBLE);
+                }
+            }
+            iterationHandler.postDelayed(this, 1000 * Const.ITERATE_INTERVAL);
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -229,6 +363,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     @Override
     protected void onPause() {
         Log.v(LOG_TAG, "++onPause");
+        if(iterationHandler != null)
+            iterationHandler.removeCallbacks(styleIterator);
+        if(capturingScreen)
+            stopRecording();
         this.terminate();
         super.onPause();
     }
@@ -236,7 +374,144 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     @Override
     protected void onDestroy() {
         Log.v(LOG_TAG, "++onDestroy");
+        if(iterationHandler != null)
+            iterationHandler.removeCallbacks(styleIterator);
+        if(capturingScreen)
+            stopRecording();
         super.onDestroy();
+    }
+
+    /**
+     * Creates a media file in the {@code Environment.DIRECTORY_PICTURES} directory. The directory
+     * is persistent and available to other applications like gallery.
+     *
+     * @param type Media type. Can be video or image.
+     * @return A file object pointing to the newly created file.
+     */
+    public  static File getOutputMediaFile(int type){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+        if (!Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED)) {
+            return  null;
+        }
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_MOVIES), "OpenRTiST");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()) {
+                Log.d("CameraSample", "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE){
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "IMG_"+ timeStamp + ".jpg");
+        } else if(type == MEDIA_TYPE_VIDEO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "VID_"+ timeStamp + ".mp4");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_CODE) {
+            Log.e(LOG_TAG, "Unknown request code: " + requestCode);
+            return;
+        }
+        if (resultCode != RESULT_OK) {
+            Toast.makeText(this,
+                    "Screen Cast Permission Denied", Toast.LENGTH_SHORT).show();
+
+            return;
+        }
+
+        mMediaProjection = mProjectionManager.getMediaProjection(resultCode, data);
+
+        mVirtualDisplay = createVirtualDisplay();
+        mMediaRecorder.start();
+        capturingScreen = true;
+        if(Const.ITERATE_STYLES)
+            iterationHandler.postDelayed(styleIterator, 1000 * Const.ITERATE_INTERVAL);
+    }
+
+    private void shareScreen() {
+        if (mMediaProjection == null) {
+            startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
+            return;
+        }
+        mVirtualDisplay = createVirtualDisplay();
+        mMediaRecorder.start();
+
+    }
+
+    private VirtualDisplay createVirtualDisplay() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mScreenDensity = metrics.densityDpi;
+        return mMediaProjection.createVirtualDisplay("MainActivity",
+                DISPLAY_WIDTH, DISPLAY_HEIGHT, mScreenDensity,
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                mMediaRecorder.getSurface(), null /*Callbacks*/, null
+                /*Handler*/);
+    }
+
+    private void initRecorder() {
+        try {
+            mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mOutputPath = getOutputMediaFile(MEDIA_TYPE_VIDEO).getPath();
+            mMediaRecorder.setOutputFile(mOutputPath);
+            mMediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+            mMediaRecorder.setVideoEncodingBitRate(BITRATE);
+            mMediaRecorder.setVideoFrameRate(24);
+            mMediaRecorder.prepare();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopRecording() {
+        mMediaRecorder.stop();
+        mMediaRecorder.reset();
+        Log.v(LOG_TAG, "Recording Stopped");
+        Toast.makeText(this,
+                getString(R.string.recording_complete, mOutputPath), Toast.LENGTH_LONG).show();
+        mMediaProjection = null;
+        stopScreenSharing();
+    }
+
+    private void stopScreenSharing() {
+        if (mVirtualDisplay == null) {
+            return;
+        }
+        mVirtualDisplay.release();
+        //mMediaRecorder.release(); //If used: mMediaRecorder object cannot
+        // be reused again
+        destroyMediaProjection();
+        capturingScreen = false;
+    }
+
+    private void destroyMediaProjection() {
+        if (mMediaProjection != null) {
+
+            mMediaProjection.stop();
+            mMediaProjection = null;
+        }
+        Log.i(LOG_TAG, "MediaProjection Stopped");
     }
 
     /**
@@ -251,6 +526,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 preview = (TextureView) findViewById(R.id.camera_preview1);
             else
                 preview = (TextureView) findViewById(R.id.camera_preview);
+
             mSurfaceTexture = preview.getSurfaceTexture();
             preview.setSurfaceTextureListener(this);
             mCamera = checkCamera();
@@ -337,6 +613,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         controlThread = new ControlThread(serverIP, Const.CONTROL_PORT, returnMsgHandler, tokenController);
+        controlThread.setPriority(Thread.MIN_PRIORITY);
         controlThread.start();
 
         if (Const.IS_EXPERIMENT) {
@@ -407,30 +684,37 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         startTimer.schedule(autoStart, 1000, 5*60*1000);
     }
 
+
+
     private PreviewCallback previewCallback = new PreviewCallback() {
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
                 Camera.Parameters parameters = mCamera.getParameters();
+
                 if(!style_type.equals("none")) {
                     if (videoStreamingThread != null) {
                         videoStreamingThread.push(frame, parameters, style_type);
+
                     }
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
                         Size cameraImageSize = parameters.getPreviewSize();
+                        byte[] flip_frame = null;
                         YuvImage image = new YuvImage(frame, parameters.getPreviewFormat(), cameraImageSize.width,
                                 cameraImageSize.height, null);
+
                         ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
                         // chooses quality 67 and it roughly matches quality 5 in avconv
                         image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 67, tmpBuffer);
                         byte[] bytes = tmpBuffer.toByteArray();
+
                         final Bitmap camView = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                         stereoView1.setVisibility(View.INVISIBLE);
                         stereoView2.setVisibility(View.INVISIBLE);
                         camView2.setImageBitmap(camView);
-                    } else {
+                     } else {
                         imgView.setVisibility(View.INVISIBLE);
                     }
 
@@ -477,6 +761,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         preview.setSurfaceTextureListener(this);
                         mCamera = checkCamera();
                         CameraStart();
+
                         mCamera.setPreviewCallbackWithBuffer(previewCallback);
                         reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
                         mCamera.addCallbackBuffer(reusedBuffer);
@@ -546,7 +831,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     imgView = (ImageView) findViewById(R.id.guidance_image);
                     imgView.setVisibility(View.VISIBLE);
                     imgView.setImageBitmap(feedbackImg);
+
                 }
+
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_DONE) {
                 notifyToken();
@@ -636,7 +923,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG , "++checkCamera");
         if (mCamera == null) {
             Log.v(LOG_TAG , "!!!!!CAMERA START!!!!");
-            mCamera = Camera.open();
+            mCamera = Camera.open(cameraId);
         }
         return mCamera;
     }
@@ -644,7 +931,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     public void CameraStart() {
         Log.v(LOG_TAG , "++start");
         if (mCamera == null) {
-            mCamera = Camera.open();
+            mCamera = Camera.open(cameraId);
         }
         if (isSurfaceReady) {
             try {
@@ -653,7 +940,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Log.e(LOG_TAG, "Error in setting camera holder: " + exception.getMessage());
                 CameraClose();
             }
+
             updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT);
+
         } else {
             waitingToStart = true;
         }
@@ -689,7 +978,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.d(LOG_TAG, "++surfaceCreated");
         isSurfaceReady = true;
         if (mCamera == null) {
-            mCamera = Camera.open();
+            mCamera = Camera.open(cameraId);
         }
         if (mCamera != null) {
             // get fps to capture
@@ -774,6 +1063,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     //Performing action onItemSelected and onNothing selected
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position,long id) {
+
         //Toast.makeText(getApplicationContext(), itemname[position], Toast.LENGTH_LONG).show();
         if(itemname[position] == "Clear Display"){
             style_type = "none";
@@ -782,16 +1072,23 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 stereoView2.setVisibility(View.INVISIBLE);
             } else {
                 imgView.setVisibility(View.INVISIBLE);
+                if(Const.DISPLAY_REFERENCE)
+                    iconView.setVisibility(View.INVISIBLE);
             }
         }
         else {
             style_type = itemname[position];
+
             if(Const.STEREO_ENABLED) {
                 if (stereoView1.getVisibility() == View.INVISIBLE) {
                     stereoView1.setVisibility(View.VISIBLE);
                     stereoView2.setVisibility(View.VISIBLE);
                 }
             } else {
+                if(Const.DISPLAY_REFERENCE) {
+                    iconView.setVisibility(View.VISIBLE);
+                    iconView.setImageResource(imgid[position]);
+                }
                 if (imgView.getVisibility() == View.INVISIBLE) {
                     imgView.setVisibility(View.VISIBLE);
                 }
@@ -832,7 +1129,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
 
         /*
-        mCamera = Camera.open();
+        mCamera = Camera.open(cameraId);
 
         Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
         mTextureView.setLayoutParams(new FrameLayout.LayoutParams(
@@ -847,7 +1144,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         */
         isSurfaceReady = true;
         if (mCamera == null) {
-            mCamera = Camera.open();
+            mCamera = Camera.open(cameraId);
         }
         if (mCamera != null) {
             // get fps to capture
