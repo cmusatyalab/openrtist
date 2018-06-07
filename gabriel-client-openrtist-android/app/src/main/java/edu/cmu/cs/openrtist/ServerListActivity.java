@@ -164,6 +164,7 @@ public class ServerListActivity extends AppCompatActivity  {
                 if(isChecked) {
                     showReference.setChecked(false);
                     useFrontCamera.setChecked(false);
+                    showRecorder.setChecked(false);
                 }
 
                 SharedPreferences.Editor editor = mSharedPreferences.edit();
