@@ -2,7 +2,7 @@
 
 The lowest latency is achieved using named pipes and rawvideo codecs.
 
-* Use run_pipe_stream_for_screensaver.sh to launch style transfer python client and pipe data stream
+* Use [stream_for_screensaver.sh](stream_for_screensaver.sh) to launch style transfer python client and pipe data stream
 ```
 #! /bin/bash
 stream_pipe="/tmp/stylepipe"
@@ -37,6 +37,20 @@ done
 	  rawvideo -demuxer-rawvideo-w 1280	      \
 	  --demuxer-rawvideo-h 720		      \
 	  --demuxer-rawvideo-mp-format rgb24 -'	    \n\
+```
+
+* Launch the openrtist client container
+```
+docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" \
+-v /dev/video0:/dev/video0 \
+-v /tmp:/tmp \
+-p 9098:9098 \
+-p 9111:9111 \
+-p 22222:22222 \
+-p 8021:8021 \
+--name styletransfer \
+cmusatyalab/openrtist \
+/bin/bash
 ```
 
 # Short Latency Setup
