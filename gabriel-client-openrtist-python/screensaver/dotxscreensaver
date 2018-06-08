@@ -44,15 +44,7 @@ textProgram:	fortune
 textURL:	http://fridge.ubuntu.com/node/feed
 
 programs:								      \
-		   "openrtist" 	mpv --no-audio --no-cache		      \
-				  --no-cache-pause --untimed		      \
-				  --no-stop-xscreensaver --no-correct-pts     \
-				  --really-quiet -wid			      \
-				  $XSCREENSAVER_WINDOW -demuxer rawvideo      \
-				  -demuxer-rawvideo-w 960		      \
-				  --demuxer-rawvideo-h 540		      \
-				  --demuxer-rawvideo-mp-format rgb24	      \
-				  /tmp/rgbpipe				    \n\
+		   "openrtist" /usr/local/bin/openrtist_screensaver.sh \n\
 -				maze -root				    \n\
 - GL: 				superquadrics -root			    \n\
 -				attraction -root			    \n\
