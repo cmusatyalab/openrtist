@@ -10,9 +10,9 @@ stream_pipe="/tmp/rgbpipe"
 while true; do
 	  echo "killing client.py if there is any"
 	  pkill -f -9 client.py
-	  echo "removing rgbpipe"
+	  echo "removing rgbpipe to make sure no image is half written/read"
 	  rm /tmp/rgbpipe;
-	  echo "make rgbpipe fifo"
+	  echo "create rgbpipe fifo"
 	  mkfifo /tmp/rgbpipe;
 	  echo "launching client in the bg"
 	  trap 'kill -KILL ${bg_pid}; wait ${bg_pid}; exit' TERM INT
