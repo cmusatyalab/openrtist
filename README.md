@@ -163,16 +163,16 @@ docker pull cmusatyalab/openrtist
 xhost local:root
 docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
 ```
-#### Step 4. Configure the client to talk to the server.
+#### Step 4. Edit the client configuration (optional).
 ```
 cd /openrtist/gabriel-client-style-python
 vim.tiny config.py
-#Edit GABRIEL_IP address to point to your server.
+#Here you can edit the image resolution captured by the camera and the frames per second.
 ```
 
-#### Step 5. Launch the Python client UI.
+#### Step 5. Launch the Python client UI specifying the server's IP address.
 ```
-./ui.py
+./ui.py <server ip address>
 ```
 
 
