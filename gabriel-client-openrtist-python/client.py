@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import print_function
+import argparse
 import signal
 import socket
 import struct
@@ -131,7 +132,13 @@ class ResultReceivingThread(SocketClientThread):
                     if s == self.socket: 
                         # handle the server socket
                         header, data = self._recv_gabriel_data()
-                        self.reply_q.put(self._success_reply( (header, data) ))
+                        if self.reply_q.full():
+                            _ = self.reply_q.get_nowait()
+                        try:
+                            self.reply_q.put_nowait(self._success_reply((header, data)))
+                        except Queue.Full:
+                            print("Something went wrong. The reply_q becomes full although ResultReceivingThread "
+                                  "should be the only thread writing to it.")
                         recv_time = time.time()
                         # print("Recv Time: {}".format(recv_time))
                         tokenm.putToken()
@@ -190,18 +197,18 @@ def _setup_exit_handler(cleanup_func):
 
 
 class GabrielClient(object):
-    def __init__(self):
+    def __init__(self, server_ip, recv_pipe_path=None):
         self._tokenm = tokenManager(Config.TOKEN)
         stream_cmd_q = Queue.Queue()
         result_cmd_q = Queue.Queue()
-        self._result_reply_q = Queue.Queue()
+        self._result_reply_q = Queue.Queue(1)
         self._video_streaming_thread = VideoStreamingThread(cmd_q=stream_cmd_q)
-        stream_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.VIDEO_STREAM_PORT)) )
+        stream_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (server_ip, Config.VIDEO_STREAM_PORT)) )
         stream_cmd_q.put(ClientCommand(GabrielSocketCommand.STREAM, self._tokenm))
         self._result_receiving_thread = ResultReceivingThread(cmd_q=result_cmd_q, reply_q=self._result_reply_q)
-        result_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (Config.GABRIEL_IP, Config.RESULT_RECEIVING_PORT)) )
+        result_cmd_q.put(ClientCommand(ClientCommand.CONNECT, (server_ip, Config.RESULT_RECEIVING_PORT)) )
         result_cmd_q.put(ClientCommand(GabrielSocketCommand.LISTEN, self._tokenm))
-        self._rgbpipe_path = '/tmp/rgbpipe'
+        self._rgbpipe_path = recv_pipe_path
         self._rgbpipe = None
         _setup_exit_handler(self.cleanup)
 
@@ -266,6 +273,10 @@ if __name__ == '__main__':
 
     When launched directly, this script sends style-transferred video stream to xscreensaver through a named FIFO.
     """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
+    parser.add_argument("output_pipe_path", action="store", help="The linux pipe the style-transferred images will be streamed to")
+    inputs = parser.parse_args()
     style_name_to_image = _load_style_images('style-image')
-    gabriel_client = GabrielClient()
+    gabriel_client = GabrielClient(inputs.server_ip, recv_pipe_path=inputs.output_pipe_path)
     gabriel_client.start()
