@@ -60,6 +60,8 @@ import android.media.projection.MediaProjectionManager;
 import android.util.DisplayMetrics;
 import android.content.Context;
 import android.os.Environment;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -813,6 +815,22 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         public void handleMessage(Message msg) {
             if (msg.what == NetworkProtocol.NETWORK_RET_FAILED) {
                 //terminate();
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(GabrielClientActivity.this, AlertDialog.THEME_HOLO_DARK);
+                builder.setMessage(msg.getData().getString("message"))
+                        .setTitle(R.string.connection_error)
+                        .setNegativeButton(R.string.back_button, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        GabrielClientActivity.this.finish();
+                                    }
+                                }
+                            )
+                        .setCancelable(false);
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_MESSAGE) {
                 receivedPacketInfo = (ReceivedPacketInfo) msg.obj;
