@@ -28,6 +28,10 @@
     <string name="iteration_delayed">Iteration of styles will begin once recording is started.</string>
 
     <string name="connecting_toast">Connecting to Gabriel server&#8230;</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="back_button">Go Back</string>
+    <string name="demo_server">cmu-demo-server</string>
+    <string name="demo_dns">openrtist-demo.cmusatyalab.org</string>
 
     <string name="about_menu">About&#8230;</string>
     <string name="about_title" translatable="false">OpenRTiST: Real-Time Style Transfer</string>

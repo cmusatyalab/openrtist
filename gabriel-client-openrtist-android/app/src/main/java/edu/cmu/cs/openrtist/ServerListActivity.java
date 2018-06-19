@@ -240,6 +240,17 @@ public class ServerListActivity extends AppCompatActivity  {
                 ItemModelList.add(s);
                 serverListAdapter.notifyDataSetChanged();
             }
+
+        if (prefs.isEmpty()) {
+            // Add demo server if there are no other servers present
+            Server s = new Server(getString(R.string.demo_server), getString(R.string.demo_dns));
+            ItemModelList.add(s);
+            serverListAdapter.notifyDataSetChanged();
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putString("server:".concat(getString(R.string.demo_server)),getString(R.string.demo_dns));
+            editor.commit();
+        }
+
     }
     /**
      * This is used to check the given URL is valid or not.
