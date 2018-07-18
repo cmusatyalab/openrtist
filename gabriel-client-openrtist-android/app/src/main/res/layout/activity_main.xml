@@ -66,6 +66,19 @@
                 android:src="@android:drawable/ic_menu_rotate"
                 android:visibility="gone" />
 
+            <TextView
+                android:id="@+id/fpsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|right"
+                android:background="@color/navigationBarColor"
+                android:text="FPS: 0"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
         </FrameLayout>
 
     </RelativeLayout>

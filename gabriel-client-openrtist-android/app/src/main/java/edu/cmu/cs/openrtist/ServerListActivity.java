@@ -61,6 +61,7 @@ public class ServerListActivity extends AppCompatActivity  {
     SeekBar seekBar = null;
     TextView intervalLabel = null;
     Switch showRecorder = null;
+    Switch showFPS = null;
     CameraManager camMan = null;
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
@@ -117,6 +118,7 @@ public class ServerListActivity extends AppCompatActivity  {
         showReference = (Switch) findViewById(R.id.showReference);
         iterateStyles = (Switch) findViewById(R.id.iterateStyles);
         showRecorder = (Switch) findViewById(R.id.showRecorder);
+        showFPS = (Switch) findViewById(R.id.showFPS);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         intervalLabel = (TextView) findViewById(R.id.intervalLabel);
 
@@ -197,6 +199,16 @@ public class ServerListActivity extends AppCompatActivity  {
             }
         });
         showRecorder.setChecked(mSharedPreferences.getBoolean("option:showrec", false));
+
+        showFPS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Const.SHOW_FPS = isChecked;
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putBoolean("option:showfps",isChecked);
+                editor.commit();
+            }
+        });
+        showFPS.setChecked(mSharedPreferences.getBoolean("option:showfps", false));
 
         iterateStyles.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

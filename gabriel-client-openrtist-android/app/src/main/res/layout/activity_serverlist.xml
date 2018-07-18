@@ -45,6 +45,13 @@
         android:text="@string/enable_recording" />
 
     <Switch
+        android:id="@+id/showFPS"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text="@string/show_fps" />
+
+    <Switch
         android:id="@+id/toggleCamera"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -10,6 +10,7 @@
     <string name="stereo_option">Stereoscopic Effect</string>
     <string name="reference_option">Show Style Reference Image</string>
     <string name="enable_recording">Show Video Recording Button</string>
+    <string name="show_fps">Show Frames Per Second</string>
     <string name="camera_option">Use Front-facing Camera</string>
     <string name="autoiterate_option">Iterate Styles Periodically</string>
     <string name="serverlist_heading">Server List</string>
