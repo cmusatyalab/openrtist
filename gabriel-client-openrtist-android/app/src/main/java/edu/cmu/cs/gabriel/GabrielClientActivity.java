@@ -50,6 +50,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.MediaController;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -119,6 +120,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private VirtualDisplay mVirtualDisplay;
     private MediaRecorder mMediaRecorder;
     private boolean capturingScreen = false;
+    private boolean recordingInitiated = false;
     private String mOutputPath = null;
 
     private ReceivedPacketInfo receivedPacketInfo = null;
@@ -136,8 +138,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private ImageView camView2 = null;
     private ImageView iconView = null;
     private Handler iterationHandler = null;
+    private Handler fpsHandler = null;
     private int cameraId = 0;
     private boolean imageRotate = false;
+    private TextView fpsLabel = null;
+
+    private int framesProcessed = 0;
 
     //List of Styles
 
@@ -231,6 +237,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         camView2 = (ImageView) findViewById(R.id.camera_preview2);
         imgView = (ImageView) findViewById(R.id.guidance_image);
         iconView = (ImageView) findViewById(R.id.style_image);
+        fpsLabel = (TextView) findViewById(R.id.fpsLabel);
+
+
 
         if(Const.SHOW_RECORDER) {
             ImageView recButton = (ImageView) findViewById(R.id.imgRecord);
@@ -241,6 +250,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.colorPrimary));
                         stopRecording();
                     } else {
+                        recordingInitiated = true;
                         findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.color_recording));
                         initRecorder();
                         shareScreen();
@@ -282,6 +292,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         //imgView.setRotation(180 - imgView.getRotation());
                 }
             });
+        }
+
+        if(Const.SHOW_FPS) {
+            findViewById(R.id.fpsLabel).setVisibility(View.VISIBLE);
+            fpsHandler = new Handler();
+            fpsHandler.postDelayed(fpsCalculator, 1000);
         }
 
         DisplayMetrics metrics = new DisplayMetrics();
@@ -808,6 +824,21 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
     }
 
+    private Runnable fpsCalculator = new Runnable() {
+
+        @Override
+        public void run() {
+            if(true){ //if(Const.SHOW_FPS) {
+                if (fpsLabel.getVisibility() == View.INVISIBLE) {
+                    fpsLabel.setVisibility(View.VISIBLE);
+
+                }
+                fpsLabel.setText("FPS: " + framesProcessed);
+            }
+            framesProcessed=0;
+            fpsHandler.postDelayed(this, 1000);
+        }
+    };
     /**
      * Handles messages passed from streaming threads and result receiving threads.
      */
@@ -815,21 +846,22 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         public void handleMessage(Message msg) {
             if (msg.what == NetworkProtocol.NETWORK_RET_FAILED) {
                 //terminate();
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(GabrielClientActivity.this, AlertDialog.THEME_HOLO_DARK);
-                builder.setMessage(msg.getData().getString("message"))
-                        .setTitle(R.string.connection_error)
-                        .setNegativeButton(R.string.back_button, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        GabrielClientActivity.this.finish();
+                if(!recordingInitiated) {  //suppress this error when screen recording as we have to temporarily leave this activity causing a network disruption
+                    AlertDialog.Builder builder = new AlertDialog.Builder(GabrielClientActivity.this, AlertDialog.THEME_HOLO_DARK);
+                    builder.setMessage(msg.getData().getString("message"))
+                            .setTitle(R.string.connection_error)
+                            .setNegativeButton(R.string.back_button, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            GabrielClientActivity.this.finish();
+                                        }
                                     }
-                                }
                             )
-                        .setCancelable(false);
+                            .setCancelable(false);
 
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
 
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_MESSAGE) {
@@ -851,6 +883,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     imgView.setImageBitmap(feedbackImg);
 
                 }
+                framesProcessed++;
 
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_DONE) {

@@ -44,6 +44,7 @@ public class Const {
     public static boolean ITERATE_STYLES = false;
     public static int ITERATE_INTERVAL = 2;
     public static boolean SHOW_RECORDER = false;
+    public static boolean SHOW_FPS = false;
 
     // high level sensor control (on/off)
     public static boolean SENSOR_VIDEO = true;
