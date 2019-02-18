@@ -165,7 +165,7 @@ docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=
 ```
 #### Step 4. Edit the client configuration (optional).
 ```
-cd /openrtist/gabriel-client-style-python
+cd /openrtist/gabriel-client-openrtist-python
 vim.tiny config.py
 #Here you can edit the image resolution captured by the camera and the frames per second.
 ```
