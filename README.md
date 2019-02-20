@@ -209,7 +209,7 @@ You can toggle whether or not to use the front-facing camera on the main screen.
 ``` 
 ### Methodology
 #### 1. Setup Gabriel 
-Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel-private) to run the `control server` and `ucomm server`.
+Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to run the `control server` and `ucomm server`.
 __Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.__
 
 #### 2. Run the  app
