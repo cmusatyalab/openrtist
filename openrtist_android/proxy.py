@@ -19,6 +19,11 @@
 #   limitations under the License.
 #
 
+
+# Set the following to True to use CUDA.  Set to False to use CPU.
+USE_GPU=True
+#USE_GPU=False
+
 from base64 import b64encode, b64decode
 import json
 import multiprocessing
@@ -78,7 +83,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         # initialize model
         self.style_model = TransformerNet()
         self.style_model.load_state_dict(torch.load(self.model))
-        self.style_model.cuda()
+        if (USE_GPU):
+            self.style_model.cuda()
         self.style_type = "the_scream"
         self.content_transform = transforms.Compose([
             transforms.ToTensor(),
@@ -100,7 +106,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
                 self.model = self.path + header['style'] + ".model"
                 print('NEW STYLE {}'.format(self.model))
                 self.style_model.load_state_dict(torch.load(self.model))
-                self.style_model.cuda()
+                if (USE_GPU):
+                    self.style_model.cuda()
                 self.style_type = header['style']  
 
         # Preprocessing of input image
@@ -110,7 +117,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
         content_image = content_image.unsqueeze(0)
-        content_image = content_image.cuda()
+        if (USE_GPU):
+            content_image = content_image.cuda()
         content_image = Variable(content_image, volatile=True)
 
         output = self.style_model(content_image)
