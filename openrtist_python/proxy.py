@@ -19,6 +19,13 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+
+
+# Set the following to True to use CUDA.  Set to False to use CPU.
+USE_GPU=True
+#USE_GPU=False
+
+
 import json
 import multiprocessing
 import numpy as np
@@ -78,7 +85,8 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         # initialize model
         self.style_model = TransformerNet()
         self.style_model.load_state_dict(torch.load(self.model))
-        self.style_model.cuda()
+        if (USE_GPU):
+            self.style_model.cuda()
         self.style_type = "the-scream"
         self.content_transform = transforms.Compose([
             transforms.ToTensor(),
@@ -105,14 +113,16 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
                     self.model = self.path + header['style'] + ".model"
                     print('NEW STYLE {}'.format(self.model))
                     self.style_model.load_state_dict(torch.load(self.model))
-                    self.style_model.cuda()
+                    if (USE_GPU):
+                        self.style_model.cuda()
                     self.style_type = header['style']
 
         np_data=np.fromstring(data, dtype=np.uint8)
         img_in=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
         content_image = self.content_transform(img_in)
         content_image = content_image.unsqueeze(0)
-        content_image = content_image.cuda()
+        if (USE_GPU):
+            content_image = content_image.cuda()
         content_image = Variable(content_image, volatile=True)
         output = self.style_model(content_image)
         img_out = output.data[0].cpu().numpy()
