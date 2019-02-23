@@ -1,7 +1,7 @@
 # OpenRTiST: Real-Time Style Transfer
 OpenRTiST utilizes Gabriel, a platform for wearable cognitive assistance applications, to transform the live video from a mobile client into the styles of various artworks. The frames are streamed to a server where the chosen style is applied and the transformed images are returned to the client.
 
-Copyright &copy; 2017-2018
+Copyright &copy; 2017-2019
 Carnegie Mellon University 
 
 This is a developing project.
@@ -12,7 +12,13 @@ A copy of this license is reproduced in the [LICENSE](LICENSE) file.
 
 
 ## Prerequisites
-__The OpenRTiST server application requires a GPU for image processing.__ We have tested OpenRTiST on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). OpenRTiST supports Android and standalone Python clients.  We have tested the Android client on __Nexus 6__ and __Samsung Galaxy S7__.
+__The pre-built OpenRTiST server Docker image requires a GPU for image processing.__ We have tested OpenRTiST on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). 
+
+The OpenRTiST server application can also use processor graphics on many Intel processors using Intel OpenVino.  To install the Intel OpenVino version, please checkout / switch to the [openvino](https://github.com/cmusatyalab/openrtist/tree/openvino/) branch of this repository and follow the installation directions there.
+
+The OpenRTiST server can run on CPU alone.  See below on installing from source for details.
+
+OpenRTiST supports Android and standalone Python clients.  We have tested the Android client on __Nexus 6__ and __Samsung Galaxy S7__.
 
 
 ##  Server Installation using Docker
@@ -194,25 +200,33 @@ You can toggle whether or not to use the front-facing camera on the main screen.
 
 
 ## Installation from source
-### Recommended Source Directory Structure
-```
-+gabriel
-  +client
-    +gabriel-client-openrtist-android
-    +gabriel-client-openrtist-python
-  +server
-    +openrtist
-      -wtrMrk.png
-      +models
-      +openrtist_python
-      +openrtist_android
-``` 
 ### Methodology
 #### 1. Setup Gabriel 
-Assuming the user has installed pytorch and Gabriel. Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to run the `control server` and `ucomm server`.
+Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to install and run the `control server` and `ucomm server`.
 __Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.__
 
-#### 2. Run the  app
+Note: Gabriel may require Python 2.7.  Add the path to gabriel/server to your ```PYTHONPATH``` environment variable.
+
+#### 2. Install torchvision and pytorch
+This version of OpenRTiST uses pytorch.  It has been tested with pytorch versions 0.2.0 and 0.3.1 with CUDA support.  As the APIs and layer names have been changed in newer releases, please select an appropriate version from [here](https://pytorch.org/get-started/previous-versions/). __NOTE: Even if you do not have a CUDA-capable GPU, you can install pytorch with CUDA support and run OpenRTiST on CPU only.__
+
+First install torchvision:
+```
+pip install torchvision
+```
+This will usually install a new version of pytorch.  Uninstall and replace this with the older pytorch version (e.g.):
+```
+pip uninstall torch
+pip install https://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp27-cp27m-manylinux1_x86_64.whl
+```
+
+
+#### 3. Run the server
+There are two different server sources, corresponding to the Android and python clients.  You need to run the matching server, as the protocol is currently a bit different.  Remember to include the gabriel/server path in your ```PYTHONPATH```.  
+
+If you have CUDA issues, or need to run on CPU-only, edit the config.py file and set ```USE_GPU=False```.  This will result in a functional server, but will run much more slowly than the CUDA or [OpenVino version](https://github.com/cmusatyalab/openrtist/tree/openvino).  
+
+Start the server like this:
 ```
 $ cd <gabriel-repo>/server/oprtist/openrtist_<client_type>/
 $ ./proxy.py -s x.x.x.x:8021
@@ -233,8 +247,10 @@ TOKEN SIZE OF OFFLOADING ENGINE: 1
 MODEL PATH <gabriel-repo>/server/oprtist/openrtist_<client_type>/models/
 FINISHED INITIALISATION
 ```
-#### 3.  Run a python or mobile client using source code at gabriel-client-style-(client_type). 
-Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client
+#### 4.  Run a python or mobile client using source code at gabriel-client-style-(client_type), or the Android client from the Google Play Store. 
+Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client.  
+
+The prebuilt Android client from the Play Store provides an interface to add a server with a custom IP address.
 
 
 ## Credits
