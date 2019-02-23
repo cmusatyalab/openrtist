@@ -89,11 +89,15 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
         self.alpha = mrk_alpha.astype(float)/255
+        self.stats = { "wait" : 0.0, "pre" : 0.0, "infer" : 0.0, "post" : 0.0, "count" : 0 }
+        self.lasttime = time.time()
+        self.lastprint = self.lasttime
         print('FINISHED INITIALISATION')
 
 
     def handle(self, header, data):
         # Receive data from control VM
+        t0 = time.time()
         LOG.info("received new image")
         header['status'] = "nothing"
         result = {}
@@ -117,7 +121,9 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             content_image = content_image.cuda()
         content_image = Variable(content_image, volatile=True)
 
+        t1 = time.time()
         output = self.style_model(content_image)
+        t2 = time.time()
         header['status'] =  'success'
         img_out = output.data[0].clone().cpu().clamp(0, 255).numpy()
         #img_out = img_out.transpose(1, 2, 0).astype('uint8')
@@ -142,7 +148,19 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         result['image'] = b64encode(img_data)
 
         header[gabriel.Protocol_measurement.JSON_KEY_APP_SYMBOLIC_TIME] = time.time()
-        return json.dumps(result)
+        rv = json.dumps(result)
+        t3 = time.time();
+        if (t3 - self.lastprint > 5):
+            print (" current:  pre {0:.1f} ms, infer {1:.1f} ms, post {2:.1f} ms, wait {3:.1f} ms, fps {4:.2f} "
+                      .format( (t1-t0)*1000, (t2-t1)*1000, (t3-t2)*1000, (t0-self.lasttime)*1000, 1.0/(t3-self.lasttime) ) )
+            self.lastprint = t3
+        self.stats["wait"] += t0 - self.lasttime
+        self.stats["pre"] += t1 - t0
+        self.stats["infer"] += t2 - t1
+        self.stats["post"] += t3 - t2
+        self.stats["count"] += 1
+        self.lasttime = t3
+        return rv
 
 
 if __name__ == "__main__":
@@ -189,5 +207,6 @@ if __name__ == "__main__":
         if video_streaming is not None:
             video_streaming.terminate()
         if app is not None:
+            print ( app.stats )
             app.terminate()
         result_pub.terminate()
