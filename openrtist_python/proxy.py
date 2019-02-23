@@ -89,9 +89,9 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
         self.alpha = mrk_alpha.astype(float)/255
-        #self.mrk = cv2.merge((mrk_ch,mrk_ch,mrk_ch))
-        #self.alpha = cv2.merge((mrk_alpha,mrk_alpha,mrk_alpha))
- 
+        self.stats = { "wait" : 0.0, "pre" : 0.0, "infer" : 0.0, "post" : 0.0, "count" : 0 }
+        self.lasttime = time.time()
+        self.lastprint = self.lasttime
         print('FINISHED INITIALISATION')
 
     def add_to_byte_array(self, byte_array, extra_bytes):
@@ -99,6 +99,7 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
 
     def handle(self, header, data):
         # PERFORM Cognitive Assistance Processing
+        t0 = time.time()
         LOG.info("processing: ")
         LOG.info("%s\n" % header)
         start_time = time.time()
@@ -118,7 +119,9 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         if (config.USE_GPU):
             content_image = content_image.cuda()
         content_image = Variable(content_image, volatile=True)
+        t1 = time.time()
         output = self.style_model(content_image)
+        t2 = time.time()
         img_out = output.data[0].cpu().numpy()
         np.clip(img_out, 0, 255, out=img_out)
         img_out = img_out.transpose(1, 2, 0)
@@ -135,6 +138,17 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         _, jpeg_img=cv2.imencode('.jpg', img_out)
         img_data = jpeg_img.tostring()
         print('Compute Done time: {}'.format(time.time()-start_time))
+        t3 = time.time();
+        if (t3 - self.lastprint > 5):
+            print (" current:  pre {0:.1f} ms, infer {1:.1f} ms, post {2:.1f} ms, wait {3:.1f} ms, fps {4:.2f} "
+                      .format( (t1-t0)*1000, (t2-t1)*1000, (t3-t2)*1000, (t0-self.lasttime)*1000, 1.0/(t3-self.lasttime) ) )
+            self.lastprint = t3
+        self.stats["wait"] += t0 - self.lasttime
+        self.stats["pre"] += t1 - t0
+        self.stats["infer"] += t2 - t1
+        self.stats["post"] += t3 - t2
+        self.stats["count"] += 1
+        self.lasttime = t3
         return img_data
 
 if __name__ == "__main__":
@@ -179,6 +193,7 @@ if __name__ == "__main__":
         if video_receive_client is not None:
             video_receive_client.terminate()
         if dummy_video_app is not None:
+            print ( dummy_video_app.stats )
             dummy_video_app.terminate()
         #if acc_client is not None:
         #    acc_client.terminate()
