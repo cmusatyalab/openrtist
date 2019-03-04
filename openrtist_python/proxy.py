@@ -138,7 +138,7 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
 
         _, jpeg_img=cv2.imencode('.jpg', img_out)
         img_data = jpeg_img.tostring()
-        print('Compute Done time: {}'.format(time.time()-start_time))
+        #print('Compute Done time: {}'.format(time.time()-start_time))
         t3 = time.time();
         self.stats["wait"] += t0 - self.lasttime
         self.stats["pre"] += t1 - t0
