@@ -148,7 +148,7 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         if (t3 - self.lastprint > 5):
             print (" current:  pre {0:.1f} ms, infer {1:.1f} ms, post {2:.1f} ms, wait {3:.1f} ms, fps {4:.2f} "
                       .format( (t1-t0)*1000, (t2-t1)*1000, (t3-t2)*1000, (t0-self.lasttime)*1000, 1.0/(t3-self.lasttime) ) )
-            print (" avg fps: {4:.2f}".format( (self.stats["count"]-self.lastcount)/(t3-self.lastprint)) )
+            print (" avg fps: {0:.2f}".format( (self.stats["count"]-self.lastcount)/(t3-self.lastprint)) )
             self.lastcount = self.stats["count"]
             self.lastprint = t3
         self.lasttime = t3
