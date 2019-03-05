@@ -83,8 +83,7 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
             self.style_model.cuda()
         self.style_type = "the-scream"
         self.content_transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Lambda(lambda x: x.mul(255))
+            transforms.ToTensor()
         ])
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
@@ -122,8 +121,7 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         t1 = time.time()
         output = self.style_model(content_image)
         t2 = time.time()
-        img_out = output.data[0].cpu().numpy()
-        np.clip(img_out, 0, 255, out=img_out)
+        img_out = output.data[0].clamp(0,255).cpu().numpy()
         img_out = img_out.transpose(1, 2, 0)
 
         #Applying WaterMark
