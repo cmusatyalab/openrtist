@@ -83,8 +83,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             self.style_model.cuda()
         self.style_type = "the_scream"
         self.content_transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Lambda(lambda x: x.mul(255))
+            transforms.ToTensor()
         ])
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
@@ -102,8 +101,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         LOG.info("received new image")
         header['status'] = "nothing"
         result = {}
-	if header.get('style',None) is not None:
-	    if header['style'] != self.style_type:
+        if header.get('style',None) is not None:
+            if header['style'] != self.style_type:
                 self.model = self.path + header['style'] + ".model"
                 print('NEW STYLE {}'.format(self.model))
                 self.style_model.load_state_dict(torch.load(self.model))
@@ -117,16 +116,16 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)  
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
-        content_image = content_image.unsqueeze(0)
         if (config.USE_GPU):
             content_image = content_image.cuda()
+        content_image = content_image.unsqueeze(0)
         content_image = Variable(content_image, volatile=True)
 
         t1 = time.time()
         output = self.style_model(content_image)
         t2 = time.time()
         header['status'] =  'success'
-        img_out = output.data[0].clone().cpu().clamp(0, 255).numpy()
+        img_out = output.data[0].clamp(0, 255).cpu().numpy()
         #img_out = img_out.transpose(1, 2, 0).astype('uint8')
         img_out = img_out.transpose(1, 2, 0)
          
@@ -150,7 +149,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
 
         header[gabriel.Protocol_measurement.JSON_KEY_APP_SYMBOLIC_TIME] = time.time()
         rv = json.dumps(result)
-        t3 = time.time();
+        t3 = time.time()
         self.stats["wait"] += t0 - self.lasttime
         self.stats["pre"] += t1 - t0
         self.stats["infer"] += t2 - t1

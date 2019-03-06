@@ -62,7 +62,7 @@ public class Const {
     public static int CAPTURE_FPS = 10;
     // options: 320x180, 640x360, 1280x720, 1920x1080
     //public static int IMAGE_WIDTH = 640;
-    //public static int IMAGE_HEIGHT = 360;
+    //public static int IMAGE_HEIGHT = 480;
     public static int IMAGE_WIDTH = 320;
     public static int IMAGE_HEIGHT = 240;
 
@@ -106,7 +106,7 @@ public class Const {
     public static String SERVER_IP = "128.2.208.111";  // Cloudlet
 
     // token size
-    public static final int TOKEN_SIZE = 1;
+    public static final int TOKEN_SIZE = 2;
 
     /************************ Experiment mode only *******************************/
     // server IP list
