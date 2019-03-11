@@ -24,6 +24,10 @@ __List of Featured Artworks in OpenRTiST__
 - The Rise of the Carthaginian Empire (J.M.W. Turner)
 - The Scream (Edvard Munch)
 - The Starry Night (Vincent Van Gogh)
+- Cafe Terrace at Night (Vincent Van Gogh)
+- Landscape with the Fall of Icarus (Pieter Bruegel the Elder)
+- Bain à la Grenouillère (Claude Monet)
+- Weeping Woman (Pablo Picasso)
 - candy painting (from https://github.com/pytorch/examples/tree/master/fast_neural_style)
 - mosaic painting (from https://github.com/pytorch/examples/tree/master/fast_neural_style)
 
