@@ -16,8 +16,11 @@ package edu.cmu.cs.gabriel;
 
 import java.io.File;
 
+import android.content.SharedPreferences;
 import android.media.AudioFormat;
 import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.content.Context;
 
 public class Const {
     public enum DeviceModel {
@@ -59,7 +62,7 @@ public class Const {
             File.separator + "Gabriel" + File.separator);
 
     // image size and frame rate
-    public static int CAPTURE_FPS = 10;
+    public static int CAPTURE_FPS = 30;
     // options: 320x180, 640x360, 1280x720, 1920x1080
     //public static int IMAGE_WIDTH = 640;
     //public static int IMAGE_HEIGHT = 480;
@@ -67,9 +70,9 @@ public class Const {
     public static int IMAGE_HEIGHT = 240;
 
 
-    public static final String GABRIEL_CONFIGURATION_SYNC_STATE="syncState";
+    public static final String GABRIEL_CONFIGURATION_SYNC_STATE = "syncState";
 
-    public static final String GABRIEL_CONFIGURATION_RESET_STATE="reset";
+    public static final String GABRIEL_CONFIGURATION_RESET_STATE = "reset";
     public static String CONNECTIVITY_NOT_AVAILABLE = "Not Connected to the Internet. Please enable " +
             "network connections first.";
 
@@ -85,11 +88,11 @@ public class Const {
     public static final String APP_NAME = "style_transfer";
 
     // load images (JPEG) from files and pretend they are just captured by the camera
-    public static final File TEST_IMAGE_DIR = new File (ROOT_DIR.getAbsolutePath() +
+    public static final File TEST_IMAGE_DIR = new File(ROOT_DIR.getAbsolutePath() +
             File.separator + "images-" + APP_NAME + File.separator);
 
     // load audio data from file
-    public static final File TEST_AUDIO_FILE = new File (ROOT_DIR.getAbsolutePath() +
+    public static final File TEST_AUDIO_FILE = new File(ROOT_DIR.getAbsolutePath() +
             File.separator + "audio-" + APP_NAME + ".raw");
 
     // may include background pinging to keep network active
@@ -106,13 +109,13 @@ public class Const {
     public static String SERVER_IP = "128.2.208.111";  // Cloudlet
 
     // token size
-    public static final int TOKEN_SIZE = 2;
+    public static int TOKEN_SIZE = 2;
 
     /************************ Experiment mode only *******************************/
     // server IP list
     public static final String[] SERVER_IP_LIST = {
             "128.2.211.75",
-            };
+    };
 
     // token size list
     public static final int[] TOKEN_SIZE_LIST = {1};
@@ -122,14 +125,107 @@ public class Const {
 
     // a small number of images used for compression (bmp files), usually a subset of test images
     // these files are loaded into memory first so cannot have too many of them!
-    public static final File COMPRESS_IMAGE_DIR = new File (ROOT_DIR.getAbsolutePath() +
+    public static final File COMPRESS_IMAGE_DIR = new File(ROOT_DIR.getAbsolutePath() +
             File.separator + "images-" + APP_NAME + "-compress" + File.separator);
     // the maximum allowed compress images to load
     public static final int MAX_COMPRESS_IMAGE = 3;
-    
+
     // result file
     public static final File EXP_DIR = new File(ROOT_DIR.getAbsolutePath() + File.separator + "exp");
 
     // control log file
     public static final File CONTROL_LOG_FILE = new File(ROOT_DIR.getAbsolutePath() + File.separator + "exp" + File.separator + "control_log.txt");
+
+    public static void loadPref(Context c, String key, Object value) {
+        String stringValue = value.toString();
+        Boolean b = null;
+        Integer i = null;
+        //update Const values so that new settings take effect
+        switch(key) {
+
+            case "general_recording":
+                Const.SHOW_RECORDER = new Boolean(value.toString());
+                break;
+            case "general_show_fps":
+                b = new Boolean(value.toString());
+                Const.SHOW_FPS = b;
+                if(b) {
+                    SharedPreferences.Editor editor = PreferenceManager
+                            .getDefaultSharedPreferences(c)
+                            .edit();
+                    editor.putBoolean("general_stereoscopic", false);
+                    editor.commit();
+                }
+                break;
+            case "experimental_resolution":
+                i = new Integer(stringValue);
+                if(i == 1) {
+                    Const.IMAGE_HEIGHT = 240;
+                    Const.IMAGE_WIDTH = 320;
+                } else if(i == 2) {
+                    Const.IMAGE_HEIGHT = 480;
+                    Const.IMAGE_WIDTH = 640;
+                } else if (i == 3) {
+                    Const.IMAGE_HEIGHT = 720;
+                    Const.IMAGE_WIDTH = 1280;
+                } else {
+                    Const.IMAGE_HEIGHT = 240;
+                    Const.IMAGE_WIDTH = 320;
+                }
+                break;
+            case "experimental_token_size":
+                Const.TOKEN_SIZE = new Integer(stringValue);
+                break;
+            case "experimental_framerate":
+                Const.CAPTURE_FPS = new Integer(stringValue);
+                break;
+            case "general_stereoscopic":
+                b = new Boolean(value.toString());
+                Const.STEREO_ENABLED = b;
+                if(b) {
+
+                    SharedPreferences.Editor editor = PreferenceManager
+                            .getDefaultSharedPreferences(c)
+                            .edit();
+                    editor.putBoolean("general_show_reference", false);
+                    editor.putBoolean("general_front_camera", false);
+                    editor.putBoolean("general_recording", false);
+                    editor.putBoolean("general_show_fps", false);
+                    editor.commit();
+                }
+                break;
+            case "general_show_reference":
+                b = new Boolean(value.toString());
+                Const.DISPLAY_REFERENCE = b;
+                if(b) {
+                    SharedPreferences.Editor editor = PreferenceManager
+                            .getDefaultSharedPreferences(c)
+                            .edit();
+                    editor.putBoolean("general_stereoscopic", false);
+                    editor.commit();
+                }
+                break;
+
+            case "general_front_camera":
+                b = new Boolean(value.toString());
+                Const.FRONT_CAMERA_ENABLED = b;
+                if(b) {
+                    SharedPreferences.Editor editor = PreferenceManager
+                            .getDefaultSharedPreferences(c)
+                            .edit();
+                    editor.putBoolean("general_stereoscopic", false);
+                    editor.commit();
+                }
+                break;
+
+            case "general_iterate_delay":
+                i = new Integer(stringValue);
+                Const.ITERATE_STYLES = (i != 0);
+                Const.ITERATE_INTERVAL = i * 5;
+                break;
+
+        }
+
+    }
+
 }
