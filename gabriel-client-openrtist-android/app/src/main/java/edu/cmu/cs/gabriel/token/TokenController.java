@@ -38,6 +38,10 @@ public class TokenController {
 
     private FileWriter fileWriter = null;
 
+    private long  totalRTT = 0;
+    private long framesSent = 1;
+
+
     // timestamp when the last ACK was received
     private long prevRecvFrameID = 0;
 
@@ -64,6 +68,10 @@ public class TokenController {
             Log.d(LOG_TAG, "writeString received string:" + str);
             fileWriter.write(str);
         } catch (IOException e) {}
+    }
+
+    public long getAvgRTT() {
+        return (totalRTT /framesSent);
     }
 
     public Handler tokenHandler = new Handler() {
@@ -104,6 +112,9 @@ public class TokenController {
                 // deal with the current response
                 SentPacketInfo sentPacket = sentPackets.get(recvFrameID);
                 if (sentPacket != null) {
+                    Log.d("Latency", "Frame ID: " + recvFrameID + " RTT: " + (receivedPacket.msgRecvTime - sentPacket.generatedTime));
+                    totalRTT += (receivedPacket.msgRecvTime - sentPacket.generatedTime);
+                    framesSent++;
                     // do not increase token if have already received duplicated ack
                     if (recvFrameID > prevRecvFrameID) {
                         increaseTokens(1);

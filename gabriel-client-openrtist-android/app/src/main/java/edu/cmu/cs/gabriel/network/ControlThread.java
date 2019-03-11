@@ -42,7 +42,7 @@ public class ControlThread extends Thread {
     private static final String LOG_TAG = "Control";
 
     private boolean isRunning = false;
-    
+
     Queue<String> cmdQueue = new LinkedList<String>();
 
     // TCP connection
@@ -97,7 +97,7 @@ public class ControlThread extends Thread {
             tcpSocket = new Socket();
             tcpSocket.setTcpNoDelay(true);
             tcpSocket.setSoTimeout(500);
-            tcpSocket.connect(new InetSocketAddress(remoteIP, remotePort), 5 * 1000);
+            tcpSocket.connect(new InetSocketAddress(remoteIP, remotePort), 2 * 1000);
             networkWriter = new DataOutputStream(tcpSocket.getOutputStream());
             networkReader = new DataInputStream(tcpSocket.getInputStream());
         } catch (IOException e) {

@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,8 +43,7 @@ public class ServerListAdapter extends BaseAdapter {
     public ServerListAdapter(Context context, ArrayList<Server> modelList) {
         this.context = context;
         this.itemModelList = modelList;
-        mSharedPreferences=context.getSharedPreferences(context.getString(R.string.shared_preference_file_key),
-                context.MODE_PRIVATE);
+        mSharedPreferences= PreferenceManager.getDefaultSharedPreferences(this.context);
     }
     @Override
     public int getCount() {

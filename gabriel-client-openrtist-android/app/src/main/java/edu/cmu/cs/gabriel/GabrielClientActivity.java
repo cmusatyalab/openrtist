@@ -16,8 +16,11 @@ package edu.cmu.cs.gabriel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
@@ -44,6 +47,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.os.SystemClock;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -63,6 +67,8 @@ import android.content.Context;
 import android.os.Environment;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.net.Uri;
+import android.media.MediaActionSound;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -76,6 +82,7 @@ import edu.cmu.cs.gabriel.network.VideoStreamingThread;
 import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
 import edu.cmu.cs.gabriel.token.TokenController;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
+import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.openrtist.R;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
@@ -181,7 +188,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             "sunday_afternoon",
             "dido_carthage",
             "the_scream",
-	        "starry-night"
+	        "starry-night",
+            "cafe_gogh",
+            "fall_icarus",
+            "monet",
+            "weeping_woman"
     };
 
 
@@ -195,7 +206,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             "A Sunday Afternoon on the Island of La Grande Jatte (Georges Seurat)",
             "The Rise of the Carthaginian Empire (J.M.W. Turner)",
             "The Scream (Edvard Munch)",
-            "The Starry Night (Vincent Van Gogh)"
+            "The Starry Night (Vincent Van Gogh)",
+            "Cafe Terrace at Night (Vincent Van Gogh)",
+            "Landscape with the Fall of Icarus (Pieter Bruegel the Elder)",
+            "Bain à la Grenouillère (Claude Monet)",
+            "Weeping Woman (Pablo Picasso)"
     };
 
     int[] imgid={
@@ -208,7 +223,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             R.drawable.sunday_afternoon,
             R.drawable.dido_carthage,
             R.drawable.the_scream,
-            R.drawable.starry_night
+            R.drawable.starry_night,
+            R.drawable.cafe_gogh,
+            R.drawable.fall_icarus,
+            R.drawable.monet,
+            R.drawable.weeping_woman
     };
 
     @Override
@@ -249,17 +268,32 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     if(capturingScreen) {
                         findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.colorPrimary));
                         stopRecording();
+                        MediaActionSound m = new MediaActionSound();
+                        m.play(MediaActionSound.STOP_VIDEO_RECORDING);
                     } else {
                         recordingInitiated = true;
+                        MediaActionSound m = new MediaActionSound();
+                        m.play(MediaActionSound.START_VIDEO_RECORDING);
                         findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.color_recording));
                         initRecorder();
                         shareScreen();
                     }
                 }
             });
+            ImageView screenshotButton = (ImageView) findViewById(R.id.imgScreenshot);
+            screenshotButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Bitmap b = Screenshot.takescreenshotOfRootView(imgView);
+                    storeScreenshot(b,getOutputMediaFile(MEDIA_TYPE_IMAGE).getPath());
+
+                    }
+
+            });
         } else if(!Const.STEREO_ENABLED){
             //this view doesn't exist when stereo is enabled (activity_stereo.xml)
             findViewById(R.id.imgRecord).setVisibility(View.GONE);
+            findViewById(R.id.imgScreenshot).setVisibility(View.GONE);
         }
 
         if(Const.ITERATE_STYLES) {
@@ -311,6 +345,24 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         Intent intent = getIntent();
         //reset = intent.getExtras().getBoolean("reset");
+    }
+
+    private void storeScreenshot(Bitmap bitmap, String path) {
+        OutputStream out = null;
+        File imageFile = new File(path);
+
+        try {
+            MediaActionSound m = new MediaActionSound();
+            m.play(MediaActionSound.SHUTTER_CLICK);
+            out = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,Uri.fromFile(imageFile)));
+            Toast.makeText(this, getString(R.string.screenshot_taken, path), Toast.LENGTH_LONG).show();
+            out.close();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "IOException when attempting to store screenshot: " + e.getMessage());
+        }
     }
 
     private int findFrontFacingCamera() {
@@ -469,9 +521,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
             return;
         }
-        mVirtualDisplay = createVirtualDisplay();
-        mMediaRecorder.start();
-
     }
 
     private VirtualDisplay createVirtualDisplay() {
@@ -508,6 +557,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "Recording Stopped");
         Toast.makeText(this,
                 getString(R.string.recording_complete, mOutputPath), Toast.LENGTH_LONG).show();
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,Uri.fromFile(new File(mOutputPath))));
         mMediaProjection = null;
         stopScreenSharing();
     }
@@ -649,7 +699,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             videoStreamingThread = new VideoStreamingThread(serverIP, Const.VIDEO_STREAM_PORT, returnMsgHandler, tokenController, mCamera, logicalTime);
             videoStreamingThread.start();
         }
-
     }
 
     /**
@@ -713,7 +762,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 if(!style_type.equals("none")) {
                     if (videoStreamingThread != null) {
                         videoStreamingThread.push(frame, parameters, style_type);
-
                     }
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
@@ -833,7 +881,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     fpsLabel.setVisibility(View.VISIBLE);
 
                 }
-                fpsLabel.setText("FPS: " + framesProcessed);
+                String msg= "FPS: " + framesProcessed;
+                if(tokenController != null)
+                    msg += " Avg RTT: " + tokenController.getAvgRTT();
+                fpsLabel.setText( msg );
             }
             framesProcessed=0;
             fpsHandler.postDelayed(this, 1000);

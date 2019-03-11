@@ -1,60 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.cmu.cs.openrtist"
-    android:versionCode="7"
-    android:versionName="1.4" >
+    android:versionCode="8"
+    android:versionName="1.5">
 
-    <uses-sdk
-        android:minSdkVersion="21"
-        android:targetSdkVersion="23" />
-    
     <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="com.google.android.glass.permission.DEVELOPMENT" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/MyGabrielMaterialTheme"
-        android:largeHeap="true">
+        android:largeHeap="true"
+        android:theme="@style/MyGabrielMaterialTheme">
         <activity
-            android:name="edu.cmu.cs.openrtist.ServerListActivity"
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".ServerListActivity"
+            android:theme="@style/MyGabrielMaterialTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.cmu.cs.openrtist.ServerListActivity" />
+        </activity>
+        <activity
+            android:name=".ServerListActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="sensor"
             android:theme="@style/MyGabrielMaterialTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name="edu.cmu.cs.gabriel.GabrielClientActivity"  
+            android:name="edu.cmu.cs.gabriel.GabrielClientActivity"
+            android:label="@string/title_activity_main"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-            android:label="@string/title_activity_main" >
-            
-            <!-- Enable this intent-filter for regular Android Application
-            -->  
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
-            
-            
-            <!-- Enable below for Google Glass     
-            -->
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+            <!-- Enable this intent-filter for regular Android Application -->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+
+
+            <!-- Enable below for Google Glass -->
             <intent-filter>
                 <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
             </intent-filter>
-            
-            
+
             <meta-data
                 android:name="com.google.android.glass.VoiceTrigger"
                 android:resource="@xml/gabriel_start" />

@@ -98,7 +98,10 @@ public class ResultReceivingThread extends Thread {
                 Log.w(LOG_TAG, "Error in receiving result, maybe because the app has paused");
                 this.notifyError(e.getMessage());
                 break;
+            } catch (NegativeArraySizeException n) {
+                Log.e(LOG_TAG, "Negative array size from ResultReceivingThread");
             }
+
         }
     }
 
