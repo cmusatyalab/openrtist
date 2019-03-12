@@ -133,8 +133,8 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
         img_out[-30:,-120:] = img_mrk
         img_out = img_out.astype('uint8')
-
-        _, jpeg_img=cv2.imencode('.jpg', img_out)
+        compression_params = [cv2.IMWRITE_JPEG_QUALITY, 67]
+        _, jpeg_img=cv2.imencode('.jpg', img_out, compression_params)
         img_data = jpeg_img.tostring()
         #print('Compute Done time: {}'.format(time.time()-start_time))
         t3 = time.time();
