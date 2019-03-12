@@ -190,7 +190,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("general_stereoscopic"));
             bindPreferenceSummaryToValue(findPreference("general_show_fps"));
             bindPreferenceSummaryToValue(findPreference("general_show_reference"));
-            bindPreferenceSummaryToValue(findPreference("general_front_camera"));
             bindPreferenceSummaryToValue(findPreference("general_iterate_delay"));
         }
 

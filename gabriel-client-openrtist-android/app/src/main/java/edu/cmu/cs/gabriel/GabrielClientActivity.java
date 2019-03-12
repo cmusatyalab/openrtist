@@ -266,7 +266,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 @Override
                 public void onClick(View v) {
                     if(capturingScreen) {
-                        findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.colorPrimary));
+                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_videocam_24px));
                         stopRecording();
                         MediaActionSound m = new MediaActionSound();
                         m.play(MediaActionSound.STOP_VIDEO_RECORDING);
@@ -274,7 +274,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         recordingInitiated = true;
                         MediaActionSound m = new MediaActionSound();
                         m.play(MediaActionSound.START_VIDEO_RECORDING);
-                        findViewById(R.id.imgRecord).setBackground(getResources().getDrawable(R.color.color_recording));
+                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_videocam_off_24px));
                         initRecorder();
                         shareScreen();
                     }
@@ -309,24 +309,40 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             }
         }
 
-        if (Const.FRONT_CAMERA_ENABLED){
-            Log.v(LOG_TAG, "Using front camera.");
-            cameraId = findFrontFacingCamera();
-            //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-            ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
-            rotateButton.setVisibility(View.VISIBLE);
-            rotateButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    imageRotate = !imageRotate;
-                    Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
-                    if(style_type.equals("none"))
-                        preview.setRotation(180 - preview.getRotation());
+        //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+        final ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
+        rotateButton.setVisibility(View.VISIBLE);
+        rotateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /*
+                imageRotate = !imageRotate;
+                Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
+                if(style_type.equals("none"))
+                    preview.setRotation(180 - preview.getRotation());
 
-                        //imgView.setRotation(180 - imgView.getRotation());
+                    //imgView.setRotation(180 - imgView.getRotation());
+                */
+                mCamera.setPreviewCallback(null);
+                CameraClose();
+                if (cameraId > 0) {
+                    rotateButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_front_24px));
+                    Const.USING_FRONT_CAMERA = false;
+                    cameraId = 0;
+                } else {
+                    rotateButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_rear_24px));
+                    cameraId = findFrontFacingCamera();
+                    Const.USING_FRONT_CAMERA = true;
                 }
-            });
-        }
+                mSurfaceTexture = preview.getSurfaceTexture();
+                mCamera = checkCamera();
+                CameraStart();
+                mCamera.setPreviewCallbackWithBuffer(previewCallback);
+                reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
+                mCamera.addCallbackBuffer(reusedBuffer);
+            }
+        });
+
 
         if(Const.SHOW_FPS) {
             findViewById(R.id.fpsLabel).setVisibility(View.VISIBLE);
@@ -1024,7 +1040,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     public Camera checkCamera() {
         Log.v(LOG_TAG , "++checkCamera");
         if (mCamera == null) {
-            Log.v(LOG_TAG , "!!!!!CAMERA START!!!!");
+            Log.v(LOG_TAG , "!!!!!CAMERA "+cameraId+ " START!!!!");
             mCamera = Camera.open(cameraId);
         }
         return mCamera;

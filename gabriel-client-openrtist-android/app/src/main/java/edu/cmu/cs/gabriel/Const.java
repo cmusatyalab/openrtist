@@ -40,7 +40,7 @@ public class Const {
     // whether to use real-time captured audio or load audio data from files for testing
     public static final boolean LOAD_AUDIO = false;
 
-    public static boolean FRONT_CAMERA_ENABLED = false;
+    public static boolean USING_FRONT_CAMERA = false;
     public static boolean FRONT_ROTATION = false;
     public static boolean STEREO_ENABLED = false;
     public static boolean DISPLAY_REFERENCE = false;
@@ -197,18 +197,6 @@ public class Const {
             case "general_show_reference":
                 b = new Boolean(value.toString());
                 Const.DISPLAY_REFERENCE = b;
-                if(b) {
-                    SharedPreferences.Editor editor = PreferenceManager
-                            .getDefaultSharedPreferences(c)
-                            .edit();
-                    editor.putBoolean("general_stereoscopic", false);
-                    editor.commit();
-                }
-                break;
-
-            case "general_front_camera":
-                b = new Boolean(value.toString());
-                Const.FRONT_CAMERA_ENABLED = b;
                 if(b) {
                     SharedPreferences.Editor editor = PreferenceManager
                             .getDefaultSharedPreferences(c)
