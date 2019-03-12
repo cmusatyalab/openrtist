@@ -10,8 +10,8 @@
     <string name="stereo_option">Stereoscopic Effect (requires HUD)</string>
     <string name="reference_option">Show Style Reference Image</string>
     <string name="pref_title_recording">Show Screenshot/Recording Buttons</string>
-    <string name="show_fps">Display Metrics (Observed FPS and Average RTT)</string>
-    <string name="camera_option">Use Front-facing Camera</string>
+    <string name="show_fps">Display Metrics (FPS and Average RTT)</string>
+    <string name="camera_option">Show Camera Toggling Button</string>
     <string name="autoiterate_option">Iterate Styles Periodically</string>
     <string name="serverlist_heading">Server List</string>
     <string name="name_subheading">Name</string>

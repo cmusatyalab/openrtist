@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#547fff</color>
+    <color name="colorPrimary">#547FFF</color>
     <color name="colorPrimaryDark">#547fff</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
@@ -8,7 +8,7 @@
     <color name="colorAccent">#54ffd4</color>
     <color name="color_recording">#cc0000</color>
 
-    <color name="transparent">#00ae0a0a</color>
+    <color name="transparent">#00AE0A0A</color>
     <!-- card colors -->
     <color name="card_background">#ffffff</color>
     <color name="card_shadow_1">#d4d4d4</color>

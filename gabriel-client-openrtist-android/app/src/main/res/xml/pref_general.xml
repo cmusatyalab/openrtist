@@ -11,11 +11,6 @@
         android:title="@string/show_fps" />
 
     <SwitchPreference
-        android:key="general_front_camera"
-        android:defaultValue="false"
-        android:title="@string/camera_option" />
-
-    <SwitchPreference
         android:defaultValue="false"
         android:key="general_stereoscopic"
         android:title="@string/stereo_option" />
