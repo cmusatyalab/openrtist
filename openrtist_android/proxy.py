@@ -142,7 +142,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         #pil_img.save(img_io, 'JPEG', quality=70)
         #img_io.seek(0)
         img_out = cv2.cvtColor(img_out,cv2.COLOR_RGB2BGR)
-        _, jpeg_img=cv2.imencode('.jpg', img_out)
+        compression_params = [cv2.IMWRITE_JPEG_QUALITY, 67]
+        _, jpeg_img=cv2.imencode('.jpg', img_out, compression_params)
         #print('Network time encoding: {}'.format(time.time()-start_time))
         img_data = jpeg_img.tostring()
         result['image'] = b64encode(img_data)
