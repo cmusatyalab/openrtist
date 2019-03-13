@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.util.Log;
+
 import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
 
 public class ResultReceivingThread extends Thread {
@@ -104,16 +105,22 @@ public class ResultReceivingThread extends Thread {
 
         }
     }
-
     /**
      * @return a String representing the received message from @reader
      */
     private String receiveMsg(DataInputStream reader) throws IOException {
         int retLength = reader.readInt();
-        byte[] recvByte = new byte[retLength];
+        return receiveMsg(reader, retLength);
+    }
+
+    /**
+     * @return a String representing the received message from @reader
+     */
+    private String receiveMsg(DataInputStream reader, int size) throws IOException {
+        byte[] recvByte = new byte[size];
         int readSize = 0;
-        while(readSize < retLength){
-            int ret = reader.read(recvByte, readSize, retLength-readSize);
+        while(readSize < size){
+            int ret = reader.read(recvByte, readSize, size-readSize);
             if(ret <= 0){
                 break;
             }
@@ -123,28 +130,62 @@ public class ResultReceivingThread extends Thread {
         return receivedString;
     }
 
-
     private void notifyReceivedData(String recvData) {
         // convert the message to JSON
         String status = null;
         String result = null;
         String sensorType = null;
         long frameID = -1;
+        int dataSize = 0;
+        byte[] imgData = null;
         String engineID = "";
         int injectedToken = 0;
+        boolean legacyProtocol = false;
+        Log.d(LOG_TAG, "Received message size: "+ recvData.length());
 
         try {
             JSONObject recvJSON = new JSONObject(recvData);
-            status = recvJSON.getString("status");
-            result = recvJSON.getString(NetworkProtocol.HEADER_MESSAGE_RESULT);
-            sensorType = recvJSON.getString(NetworkProtocol.SENSOR_TYPE_KEY);
-            frameID = recvJSON.getLong(NetworkProtocol.HEADER_MESSAGE_FRAME_ID);
-            engineID = recvJSON.getString(NetworkProtocol.HEADER_MESSAGE_ENGINE_ID);
+            legacyProtocol = recvJSON.has("result");
+            Log.d(LOG_TAG, "Server using legacy Gabriel protocol: " + legacyProtocol );
+            if(!legacyProtocol) {//use new Gabriel protocol
+                sensorType = recvJSON.getString(NetworkProtocol.SENSOR_TYPE_KEY);
+                frameID = recvJSON.getLong(NetworkProtocol.HEADER_MESSAGE_FRAME_ID);
+                engineID = recvJSON.getString(NetworkProtocol.HEADER_MESSAGE_ENGINE_ID);
+                dataSize = recvJSON.getInt(NetworkProtocol.HEADER_DATA_SIZE);
+                imgData = new byte[dataSize];
+                int readSize = 0;
+                while(readSize < dataSize){
+                    int ret = networkReader.read(imgData, readSize, dataSize-readSize);
+                    if(ret <= 0){
+                        break;
+                    }
+                    readSize += ret;
+                }
+
+                status = "success";
+
+            } else { //legacy Gabriel protocol
+                status = recvJSON.getString("status");
+                result = recvJSON.getString(NetworkProtocol.HEADER_MESSAGE_RESULT);
+                sensorType = recvJSON.getString(NetworkProtocol.SENSOR_TYPE_KEY);
+                frameID = recvJSON.getLong(NetworkProtocol.HEADER_MESSAGE_FRAME_ID);
+                engineID = recvJSON.getString(NetworkProtocol.HEADER_MESSAGE_ENGINE_ID);
+                if (!status.equals("success")) {
+                    if (sensorType.equals(NetworkProtocol.SENSOR_JPEG)) {
+                        Message msg = Message.obtain();
+                        msg.what = NetworkProtocol.NETWORK_RET_DONE;
+                        this.returnMsgHandler.sendMessage(msg);
+                    }
+                    return;
+                }
+            }
             //injectedToken = recvJSON.getInt(NetworkProtocol.HEADER_MESSAGE_INJECT_TOKEN);
         } catch (JSONException e) {
             Log.e(LOG_TAG, recvData);
             Log.e(LOG_TAG, "the return message has no status field");
             return;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "IOException when retrieving image data: " + e.getMessage());
         }
 
 
@@ -156,21 +197,14 @@ public class ResultReceivingThread extends Thread {
             this.returnMsgHandler.sendMessage(msg);
         }
 
-        if (!status.equals("success")) {
-            if (sensorType.equals(NetworkProtocol.SENSOR_JPEG)) {
-                Message msg = Message.obtain();
-                msg.what = NetworkProtocol.NETWORK_RET_DONE;
-                this.returnMsgHandler.sendMessage(msg);
-            }
-            return;
-        }
+
 
         // TODO: refilling tokens
 //        if (injectedToken > 0){
 //            this.tokenController.increaseTokens(injectedToken);
 //        }
 
-        if (result != null){
+        if (legacyProtocol && result != null){ //legacy protocol handling - BASE64 encoded JSON data
             /* parsing result */
             JSONObject resultJSON = null;
             try {
@@ -187,7 +221,7 @@ public class ResultReceivingThread extends Thread {
             try {
                 String imageFeedbackString = resultJSON.getString("image");
                 byte[] data = Base64.decode(imageFeedbackString.getBytes(), Base64.DEFAULT);
-                imageFeedback = BitmapFactory.decodeByteArray(data,0,data.length);
+                imageFeedback = BitmapFactory.decodeByteArray(data,0,data.length-1);
 
                 Message msg = Message.obtain();
                 msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
@@ -239,13 +273,23 @@ public class ResultReceivingThread extends Thread {
                 Log.v(LOG_TAG, "no speech guidance found");
             }
 
-            // done processing return message
-            if (sensorType.equals(NetworkProtocol.SENSOR_JPEG)) {
-                Message msg = Message.obtain();
-                msg.what = NetworkProtocol.NETWORK_RET_DONE;
-                this.returnMsgHandler.sendMessage(msg);
-            }
+
+        } else { //new protocol - binary image data
+            // image guidance
+            Bitmap imageFeedback = BitmapFactory.decodeByteArray(imgData,0,dataSize);
+            Message msg = Message.obtain();
+            msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+            msg.obj = imageFeedback;
+            this.returnMsgHandler.sendMessage(msg);
         }
+
+        // done processing return message
+        if (sensorType.equals(NetworkProtocol.SENSOR_JPEG)) {
+            Message msg = Message.obtain();
+            msg.what = NetworkProtocol.NETWORK_RET_DONE;
+            this.returnMsgHandler.sendMessage(msg);
+        }
+
     }
 
     private class animationTask extends TimerTask {
