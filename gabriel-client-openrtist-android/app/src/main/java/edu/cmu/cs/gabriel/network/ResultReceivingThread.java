@@ -221,7 +221,7 @@ public class ResultReceivingThread extends Thread {
             try {
                 String imageFeedbackString = resultJSON.getString("image");
                 byte[] data = Base64.decode(imageFeedbackString.getBytes(), Base64.DEFAULT);
-                imageFeedback = BitmapFactory.decodeByteArray(data,0,data.length-1);
+                imageFeedback = BitmapFactory.decodeByteArray(data,0,data.length);
 
                 Message msg = Message.obtain();
                 msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
