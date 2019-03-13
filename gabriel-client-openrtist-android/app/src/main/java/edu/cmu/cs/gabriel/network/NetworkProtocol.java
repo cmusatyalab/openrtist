@@ -34,6 +34,7 @@ public class NetworkProtocol {
     public static final String HEADER_MESSAGE_FRAME_ID = "frame_id";
     public static final String HEADER_MESSAGE_STYLE = "style";
     public static final String HEADER_MESSAGE_ENGINE_ID = "engine_id";
+    public static final String HEADER_DATA_SIZE = "data_size"; //size of payload in new protocol
 
     public static final String SENSOR_TYPE_KEY = "sensor_type";
     public static final String SENSOR_JPEG = "mjpeg";
