@@ -123,9 +123,9 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
 
         t1 = time.time()
         output = self.style_model(content_image)
-        t2 = time.time()
         header['status'] =  'success'
         img_out = output.data[0].clamp(0, 255).cpu().numpy()
+        t2 = time.time()
         #img_out = img_out.transpose(1, 2, 0).astype('uint8')
         img_out = img_out.transpose(1, 2, 0)
          
