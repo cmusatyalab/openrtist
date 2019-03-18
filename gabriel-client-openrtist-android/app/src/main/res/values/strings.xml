@@ -96,17 +96,4 @@
         <item>4</item>
     </string-array>
 
-    <string name="pref_title_catpure_framerate">Camera Capture Framerate</string>
-    <string-array name="pref_capture_framerate">
-        <item>10 FPS</item>
-        <item>20 FPS</item>
-        <item>30 FPS</item>
-    </string-array>
-    <string-array name="pref_capture_values">
-        <item>10</item>
-        <item>20</item>
-        <item>30</item>
-    </string-array>
-
-
 </resources>

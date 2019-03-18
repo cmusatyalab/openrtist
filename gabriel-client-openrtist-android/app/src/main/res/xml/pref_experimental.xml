@@ -4,15 +4,6 @@
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
     <ListPreference
-        android:defaultValue="20"
-        android:entries="@array/pref_capture_framerate"
-        android:entryValues="@array/pref_capture_values"
-        android:key="experimental_framerate"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:title="@string/pref_title_catpure_framerate" />
-
-    <ListPreference
         android:defaultValue="1"
         android:entries="@array/pref_resolution_titles"
         android:entryValues="@array/pref_resolution_values"
@@ -23,7 +14,7 @@
 
 
     <ListPreference
-        android:defaultValue="1"
+        android:defaultValue="2"
         android:entries="@array/pref_token_list_titles"
         android:entryValues="@array/pref_token_list_values"
         android:key="experimental_token_size"
