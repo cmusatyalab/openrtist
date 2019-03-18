@@ -16,7 +16,6 @@ package edu.cmu.cs.gabriel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,11 +29,8 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
@@ -47,8 +43,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.os.SystemClock;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
@@ -310,29 +304,24 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+        final ImageView camButton = (ImageView) findViewById(R.id.imgSwitchCam);
         final ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
-        rotateButton.setVisibility(View.VISIBLE);
-        rotateButton.setOnClickListener(new View.OnClickListener() {
+        camButton.setVisibility(View.VISIBLE);
+        camButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                imageRotate = !imageRotate;
-                Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
-                if(style_type.equals("none"))
-                    preview.setRotation(180 - preview.getRotation());
-
-                    //imgView.setRotation(180 - imgView.getRotation());
-                */
                 mCamera.setPreviewCallback(null);
                 CameraClose();
                 if (cameraId > 0) {
-                    rotateButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_front_24px));
+                    camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_front_24px));
                     Const.USING_FRONT_CAMERA = false;
                     cameraId = 0;
+                    rotateButton.setVisibility(View.GONE);
                 } else {
-                    rotateButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_rear_24px));
+                    camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_rear_24px));
                     cameraId = findFrontFacingCamera();
                     Const.USING_FRONT_CAMERA = true;
+                    rotateButton.setVisibility(View.VISIBLE);
                 }
                 mSurfaceTexture = preview.getSurfaceTexture();
                 mCamera = checkCamera();
@@ -340,6 +329,17 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 mCamera.setPreviewCallbackWithBuffer(previewCallback);
                 reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
                 mCamera.addCallbackBuffer(reusedBuffer);
+            }
+        });
+
+        rotateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                imageRotate = !imageRotate;
+                Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
+                if(style_type.equals("none"))
+                    preview.setRotation(180 - preview.getRotation());
             }
         });
 
