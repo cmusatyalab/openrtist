@@ -223,7 +223,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("experimental_token_size"));
             bindPreferenceSummaryToValue(findPreference("experimental_resolution"));
-            bindPreferenceSummaryToValue(findPreference("experimental_framerate"));
         }
 
         @Override

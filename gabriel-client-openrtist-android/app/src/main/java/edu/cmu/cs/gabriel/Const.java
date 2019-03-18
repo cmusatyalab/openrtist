@@ -176,9 +176,6 @@ public class Const {
             case "experimental_token_size":
                 Const.TOKEN_SIZE = new Integer(stringValue);
                 break;
-            case "experimental_framerate":
-                Const.CAPTURE_FPS = new Integer(stringValue);
-                break;
             case "general_stereoscopic":
                 b = new Boolean(value.toString());
                 Const.STEREO_ENABLED = b;
