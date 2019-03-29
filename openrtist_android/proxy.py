@@ -4,6 +4,7 @@
 #   - Task Assistance
 #
 #   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
+#           Shilpa George <shilpag@andrew.cmu.edu>
 #
 #   Copyright (C) 2011-2013 Carnegie Mellon University
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-
 
 from base64 import b64encode, b64decode
 import json
@@ -35,9 +35,6 @@ import sys
 import time
 import threading
 import config
-from PIL import Image
-import io
-
 
 import torch
 from torch.autograd import Variable
@@ -56,15 +53,8 @@ if os.path.isdir("../.."):
 import gabriel
 import gabriel.proxy
 LOG = gabriel.logging.getLogger(__name__)
-
-#sys.path.insert(0, "..")
-#import zhuocv as zc
-
 config.setup(is_streaming = True)
-
 LOG_TAG = "Style Transfer Proxy: "
-
-display_list = config.DISPLAY_LIST
 
 class StyleServer(gabriel.proxy.CognitiveProcessThread):
     def __init__(self, image_queue, output_queue, engine_id, log_flag = True):
@@ -94,11 +84,11 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.lastprint = self.lasttime
         print('FINISHED INITIALISATION')
 
-
     def handle(self, header, data):
         # Receive data from control VM
         t0 = time.time()
-        LOG.info("received new image")
+        LOG.info("processing: ")
+        LOG.info("%s\n" % header)
         header['status'] = "nothing"
         result = {}
         if header.get('style',None) is not None:
@@ -108,12 +98,11 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
                 self.style_model.load_state_dict(torch.load(self.model))
                 if (config.USE_GPU):
                     self.style_model.cuda()
-                self.style_type = header['style']  
+                self.style_type = header['style']
 
         # Preprocessing of input image
-        #img = Image.open(io.BytesIO(data))
         np_data=np.fromstring(data, dtype=np.uint8)
-        img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)  
+        img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
         if (config.USE_GPU):
@@ -126,9 +115,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         header['status'] =  'success'
         img_out = output.data[0].clamp(0, 255).cpu().numpy()
         t2 = time.time()
-        #img_out = img_out.transpose(1, 2, 0).astype('uint8')
         img_out = img_out.transpose(1, 2, 0)
-         
+
         #Applying WaterMark
         img_mrk = img_out[-30:,-120:] # The waterMark is of dimension 30x120
         img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
@@ -136,21 +124,16 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
         img_out[-30:,-120:] = img_mrk
         img_out = img_out.astype('uint8')
-        
-        #pil_img = Image.fromarray(img_out)
-        #img_io = io.BytesIO()
-        #pil_img.save(img_io, 'JPEG', quality=70)
-        #img_io.seek(0)
         img_out = cv2.cvtColor(img_out,cv2.COLOR_RGB2BGR)
+
         compression_params = [cv2.IMWRITE_JPEG_QUALITY, 67]
         _, jpeg_img=cv2.imencode('.jpg', img_out, compression_params)
-        #print('Network time encoding: {}'.format(time.time()-start_time))
         img_data = jpeg_img.tostring()
         result['image'] = b64encode(img_data)
-
-        header[gabriel.Protocol_measurement.JSON_KEY_APP_SYMBOLIC_TIME] = time.time()
         rv = json.dumps(result)
+
         t3 = time.time()
+        header[gabriel.Protocol_measurement.JSON_KEY_APP_SYMBOLIC_TIME] = t3
         self.stats["wait"] += t0 - self.lasttime
         self.stats["pre"] += t1 - t0
         self.stats["infer"] += t2 - t1
@@ -165,10 +148,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.lasttime = t3
         return rv
 
-
 if __name__ == "__main__":
-    # shared between two proxies
-    
     settings = gabriel.util.process_command_line(sys.argv[1:])
 
     ip_addr, port = gabriel.network.get_registry_server_address(settings.address)
@@ -213,3 +193,4 @@ if __name__ == "__main__":
             print ( app.stats )
             app.terminate()
         result_pub.terminate()
+

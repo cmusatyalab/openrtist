@@ -42,8 +42,8 @@ SAVE_IMAGE = False
 PLAY_SOUND = False
 
 # Max image width and height
-IM_WIDTH = 320
-IM_HEIGHT = 240
+#IM_WIDTH = 320
+#IM_HEIGHT = 240
 
 # Display
 DISPLAY_MAX_PIXEL = 400

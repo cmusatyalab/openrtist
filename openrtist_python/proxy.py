@@ -30,7 +30,6 @@ import random
 import string
 import struct
 import socket
-import select
 import sys
 import time
 import threading
@@ -53,35 +52,25 @@ if os.path.isdir("../.."):
 import gabriel
 import gabriel.proxy
 LOG = gabriel.logging.getLogger(__name__)
-
-#sys.path.insert(0, "..")
-#import zhuocv as zc
-
 config.setup(is_streaming = True)
-
 LOG_TAG = "Style Transfer Proxy: "
 
-#display_list = config.DISPLAY_LIST
-ANDROID_CLIENT=False
-
-
-class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
-
+class StyleServer(gabriel.proxy.CognitiveProcessThread):
     def __init__(self, image_queue, output_queue, engine_id, log_flag = True):
-        super(StyleVideoApp, self).__init__(image_queue, output_queue, engine_id)
+        super(StyleServer, self).__init__(image_queue, output_queue, engine_id)
         self.log_flag = log_flag
         self.is_first_image = True
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
         self.path = self.dir_path+'/../models/'
         print('MODEL PATH {}'.format(self.path))  
-    
+
         # initialize model
         self.style_model = TransformerNet()
         self.style_model.load_state_dict(torch.load(self.model))
         if (config.USE_GPU):
             self.style_model.cuda()
-        self.style_type = "the-scream"
+        self.style_type = "the_scream"
         self.content_transform = transforms.Compose([
             transforms.ToTensor()
         ])
@@ -94,50 +83,52 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         self.lastprint = self.lasttime
         print('FINISHED INITIALISATION')
 
-    def add_to_byte_array(self, byte_array, extra_bytes):
-        return struct.pack("!{}s{}s".format(len(byte_array),len(extra_bytes)), byte_array, extra_bytes)
-
     def handle(self, header, data):
-        # PERFORM Cognitive Assistance Processing
+        # Receive data from control VM
         t0 = time.time()
         LOG.info("processing: ")
         LOG.info("%s\n" % header)
-        start_time = time.time()
+        header['status'] = "nothing"
+        result = {}
         if header.get('style',None) is not None:
             if header['style'] != self.style_type:
-                    self.model = self.path + header['style'] + ".model"
-                    print('NEW STYLE {}'.format(self.model))
-                    self.style_model.load_state_dict(torch.load(self.model))
-                    if (config.USE_GPU):
-                        self.style_model.cuda()
-                    self.style_type = header['style']
+                self.model = self.path + header['style'] + ".model"
+                print('NEW STYLE {}'.format(self.model))
+                self.style_model.load_state_dict(torch.load(self.model))
+                if (config.USE_GPU):
+                    self.style_model.cuda()
+                self.style_type = header['style']
 
+        # Preprocessing of input image
         np_data=np.fromstring(data, dtype=np.uint8)
-        img_in=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
-        content_image = self.content_transform(img_in)
-        content_image = content_image.unsqueeze(0)
+        img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
+        content_image = self.content_transform(img)
         if (config.USE_GPU):
             content_image = content_image.cuda()
+        content_image = content_image.unsqueeze(0)
         content_image = Variable(content_image, volatile=True)
+
         t1 = time.time()
         output = self.style_model(content_image)
-        img_out = output.data[0].clamp(0,255).cpu().numpy()
+        header['status'] =  'success'
+        img_out = output.data[0].clamp(0, 255).cpu().numpy()
         t2 = time.time()
         img_out = img_out.transpose(1, 2, 0)
 
         #Applying WaterMark
         img_mrk = img_out[-30:,-120:] # The waterMark is of dimension 30x120
-        #img_mrk = (1-self.alpha)*img_mrk + self.alpha*self.mrk
         img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
         img_mrk[:,:,1] = (1-self.alpha)*img_mrk[:,:,1] + self.alpha*self.mrk
         img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
         img_out[-30:,-120:] = img_mrk
         img_out = img_out.astype('uint8')
+
         compression_params = [cv2.IMWRITE_JPEG_QUALITY, 67]
         _, jpeg_img=cv2.imencode('.jpg', img_out, compression_params)
         img_data = jpeg_img.tostring()
-        #print('Compute Done time: {}'.format(time.time()-start_time))
-        t3 = time.time();
+
+        t3 = time.time()
+        header[gabriel.Protocol_measurement.JSON_KEY_APP_SYMBOLIC_TIME] = t3
         self.stats["wait"] += t0 - self.lasttime
         self.stats["pre"] += t1 - t0
         self.stats["infer"] += t2 - t1
@@ -153,9 +144,6 @@ class StyleVideoApp(gabriel.proxy.CognitiveProcessThread):
         return img_data
 
 if __name__ == "__main__":
-    result_queue = multiprocessing.Queue()
-    print result_queue._reader
-
     settings = gabriel.util.process_command_line(sys.argv[1:])
 
     ip_addr, port = gabriel.network.get_registry_server_address(settings.address)
@@ -168,17 +156,20 @@ if __name__ == "__main__":
     ucomm_ip = service_list.get(gabriel.ServiceMeta.UCOMM_SERVER_IP)
     ucomm_port = service_list.get(gabriel.ServiceMeta.UCOMM_SERVER_PORT)
 
-    # image receiving and processing threads
+    # Image receiving thread
     image_queue = Queue.Queue(gabriel.Const.APP_LEVEL_TOKEN_SIZE)
-    print "TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel.Const.APP_LEVEL_TOKEN_SIZE # TODO
-    video_receive_client = gabriel.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
-    video_receive_client.start()
-    video_receive_client.isDaemon = True
-    dummy_video_app = StyleVideoApp(image_queue, result_queue, engine_id = 'style_python') # dummy app for image processing
-    dummy_video_app.start()
-    dummy_video_app.isDaemon = True
+    print "TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel.Const.APP_LEVEL_TOKEN_SIZE
+    video_streaming = gabriel.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
+    video_streaming.start()
+    video_streaming.isDaemon = True
 
-    # result publish
+    # App proxy
+    result_queue = multiprocessing.Queue()
+    app = StyleServer(image_queue, result_queue, engine_id = "Style")
+    app.start()
+    app.isDaemon = True
+
+    # Publish result
     result_pub = gabriel.proxy.ResultPublishClient((ucomm_ip, ucomm_port), result_queue)
     result_pub.start()
     result_pub.isDaemon = True
@@ -189,16 +180,12 @@ if __name__ == "__main__":
     except Exception as e:
         pass
     except KeyboardInterrupt as e:
-        sys.stdout.write("user exits\n")
+        sys.stdout.write("User exits\n")
     finally:
-        if video_receive_client is not None:
-            video_receive_client.terminate()
-        if dummy_video_app is not None:
-            print ( dummy_video_app.stats )
-            dummy_video_app.terminate()
-        #if acc_client is not None:
-        #    acc_client.terminate()
-        #if acc_app is not None:
-        #    acc_app.terminate()
+        if video_streaming is not None:
+            video_streaming.terminate()
+        if app is not None:
+            print ( app.stats )
+            app.terminate()
         result_pub.terminate()
 
