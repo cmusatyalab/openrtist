@@ -95,7 +95,6 @@ class VideoStreamingThread(SocketClientThread):
             # print("Capture Time: {} {}".format(capture_time, self.video_capture.get(cv2.CAP_PROP_FPS)))
             frame = cv2.flip(frame,1)
             frame = cv2.resize(frame,(Config.IMG_WIDTH,Config.IMG_HEIGHT))
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             ret, jpeg_frame=cv2.imencode('.jpg', frame)
             header={protocol.Protocol_client.JSON_KEY_FRAME_ID : str(id),
                     protocol.Protocol_client.JSON_KEY_STYLE : style_string }
@@ -236,8 +235,8 @@ class GabrielClient(object):
                 data=img
                 np_data=np.fromstring(data, dtype=np.uint8)
                 frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
+                rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 if sig_frame_available is None:
-                    rgb_frame = frame
                     style_image = style_name_to_image[resp_header['style']]
                     style_im_h, style_im_w, _ = style_image.shape
                     rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
@@ -248,7 +247,7 @@ class GabrielClient(object):
                     # display received image on the pyqt ui
                     #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                     #print("HEADER STYLE {}".format(resp_header['style']))
-                    sig_frame_available.emit(frame,resp_header['style'])
+                    sig_frame_available.emit(rgb_frame,resp_header['style'])
 
     def cleanup(self):
         if self._rgbpipe is not None:

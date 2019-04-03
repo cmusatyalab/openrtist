@@ -102,6 +102,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         # Preprocessing of input image
         np_data=np.fromstring(data, dtype=np.uint8)
         img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
+        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
         if (config.USE_GPU):
             content_image = content_image.cuda()
@@ -122,6 +123,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
         img_out[-30:,-120:] = img_mrk
         img_out = img_out.astype('uint8')
+        img_out = cv2.cvtColor(img_out,cv2.COLOR_RGB2BGR)
 
         compression_params = [cv2.IMWRITE_JPEG_QUALITY, 67]
         _, jpeg_img=cv2.imencode('.jpg', img_out, compression_params)
