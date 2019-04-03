@@ -60,4 +60,4 @@ RUN apt-get update && apt-get install -y \
 && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 EXPOSE 7070 9098 9111 22222
-CMD ["bash", "-c", "gabriel-control -d -n eth0 -l & sleep 5; gabriel-ucomm -s 127.0.0.1:8021 & sleep 5; cd /openrtist/openrtist_android && python proxy.py -s 127.0.0.1:8021"]
+CMD ["bash", "-c", "gabriel-control -d -n eth0 & sleep 5; gabriel-ucomm -s 127.0.0.1:8021 & sleep 5; cd /openrtist/server && python proxy.py -s 127.0.0.1:8021"]

@@ -18,7 +18,7 @@ The OpenRTiST server application can also use processor graphics on many Intel p
 
 The OpenRTiST server can run on CPU alone.  See below on installing from source for details.
 
-OpenRTiST supports Android and standalone Python clients.  We have tested the Android client on __Nexus 6__ and __Samsung Galaxy S7__.
+OpenRTiST supports Android and standalone Python clients.  We have tested the Android client on __Nexus 6__, __Samsung Galaxy S7__, and __Essential PH-1__.
 
 
 ##  Server Installation using Docker
@@ -68,12 +68,12 @@ pkill -SIGHUP dockerd
 docker pull cmusatyalab/openrtist
 ```
 
-### Step 7A. Launch the container with the default Docker command (which supports Android clients)
+### Step 7A. Launch the Docker container with nvidia-docker
 ```sh
 nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist 
 ```
 
-### Step 7B. Launch the container and manually start the server (if you wish support Python clients or configure things)
+### Step 7B. Launch the container and manually start the server (if you wish configure things)
 ```sh
 nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
 ```
@@ -90,42 +90,25 @@ In the first tmux window (CTRL-b 0), navigate to /gabriel/server/bin.
 cd /gabriel/server/bin
 ```
 ---
-__If executing server for Python clients...__
 
 Execute gabriel-control, specifying the interface inside the docker container with the -n flag
 ```
 ./gabriel-control -n eth0
 ```
 ---
-__If executing server for Android clients...__
-
-__NOTE: You must also add the -l flag to put gabriel into legacy mode!__
-```
-./gabriel-control -n eth0 -l
-```
 In the next tmux window(CTRL-b 1), execute gabriel-ucomm, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
 cd /gabriel/server/bin
 ./gabriel-ucomm -s 172.17.0.2:8021
 ```
+
 In the next tmux window(CTRL-b 2), navigate to the OpenRTiST application directory.
----
-__If executing server for Python clients...__
-
-Execute the Python proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
+Execute the proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
 ```
-cd /openrtist/openrtist_python
+cd /openrtist/server
 ./proxy.py -s 172.17.0.2:8021
 ```
 ---
-__If executing server for Android clients...__
-
-Execute the legacy Android proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
-```
-cd /openrtist/openrtist_android
-./proxy.py -s 172.17.0.2:8021
-```
-
 
 ### Running backend in Amazon AWS
 If you wish to compare between running the server on a cloudlet versus a cloud instance, you can launch the following instance type/image from your Amazon EC2 Dashboard:
