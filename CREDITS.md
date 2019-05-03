@@ -6,6 +6,7 @@ It utilizes the Gabriel platform created by Zhuo Chen (zhuoc@andrew.cmu.edu) fro
 
 With support from Thomas Eiszler (teiszler@andrew.cmu.edu) of Carnegie Mellon University.
 
+Many thanks to Padmanabhan Pillai (padmanabhan.s.pillai@intel.com) for the [OpenVINO](OpenVINO.md) implementation.
 
 It builds upon ideas, algorithms and code from the following contributors:
 
