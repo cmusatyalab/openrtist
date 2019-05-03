@@ -14,7 +14,7 @@ A copy of this license is reproduced in the [LICENSE](LICENSE) file.
 ## Prerequisites
 __The pre-built OpenRTiST server Docker image requires a GPU for image processing.__ We have tested OpenRTiST on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). 
 
-The OpenRTiST server application can also use processor graphics on many Intel processors using Intel OpenVino.  To install the Intel OpenVino version, please checkout / switch to the [openvino](https://github.com/cmusatyalab/openrtist/tree/openvino/) branch of this repository and follow the installation directions there.
+The OpenRTiST server application can also use processor graphics on many Intel processors using [Intel OpenVino](https://software.intel.com/en-us/openvino-toolkit).  To install the Intel OpenVino version, please consult the [OpenVINO README](OpenVINO.md) for instructions on downloading the OpenVINO libraries and configuring the environment to run OpenRTiST from source using OpenVINO.
 
 The OpenRTiST server can run on CPU alone.  See below on installing from source for details.
 
@@ -207,7 +207,7 @@ pip install https://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp27-cp27m-m
 #### 3. Run the server
 There are two different server sources, corresponding to the Android and python clients.  You need to run the matching server, as the protocol is currently a bit different.  Remember to include the gabriel/server path in your ```PYTHONPATH```.  
 
-If you have CUDA issues, or need to run on CPU-only, edit the config.py file and set ```USE_GPU=False```.  This will result in a functional server, but will run much more slowly than the CUDA or [OpenVino version](https://github.com/cmusatyalab/openrtist/tree/openvino).  
+If you have CUDA issues, or need to run on CPU-only, edit the config.py file and set ```USE_GPU=False```.  This will result in a functional server, but will run much more slowly than the CUDA or [OpenVino version](OpenVINO.md).  
 
 Start the server like this:
 ```
