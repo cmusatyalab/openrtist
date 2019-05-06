@@ -39,12 +39,21 @@ import socket
 import sys
 import time
 import threading
+import cv2
 import config
 
-try:
+if not hasattr(config, 'USE_OPENVINO'):
+    try:
+        from openvino.inference_engine import IENetwork, IEPlugin
+        config.USE_OPENVINO = True
+        print "Autodetect:  Loaded OpenVINO"
+    except ImportError:
+        config.USE_OPENVINO = False
+        print "Autodetect:  failed to load OpenVINO; fallback to pyTorch"
+elif config.USE_OPENVINO:
     from openvino.inference_engine import IENetwork, IEPlugin
-    config.USE_OPENVINO = True
-except ImportError:
+
+if config.USE_OPENVINO==False:
     import torch
     from torch.autograd import Variable
     from torch.optim import Adam
@@ -55,7 +64,6 @@ except ImportError:
     import utils
     from transformer_net import TransformerNet
     config.USE_OPENVINO = False
-import cv2
 
 if os.path.isdir("../.."):
     sys.path.insert(0, "../..")

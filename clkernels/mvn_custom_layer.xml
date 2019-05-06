@@ -1,0 +1,34 @@
+<CustomLayer name="MVN" type="SimpleGPU" version="1">
+  <Kernel entry="mvn_kernel">
+    <Source filename="mvn_layer.cl"/>
+  </Kernel>
+  <!-- inputs and outputs of the kernel-->
+  <Buffers>
+    <Tensor arg-index="0" type="input" port-index="0" format="any"/>
+    <Tensor arg-index="1" type="output" port-index="0" format="any"/>
+  </Buffers>
+  <!-- OpenCL compiler options-->
+  <CompilerOptions options="-cl-mad-enable"/>
+  <!-- define the global worksize. The formulas can use the values of the B,F,Y,X dimensions and contain the operators: +,-,/,*,% (all evaluated in integer arithmetic)
+Default value: global="B*F*Y*X,1,1"-->
+  <WorkSizes global="B*F,256,1" local="1,256,1"/>
+</CustomLayer>
+<CustomLayer name="MVN_Scale" type="SimpleGPU" version="1">
+  <Kernel entry="mvn_scale_kernel">
+    <Source filename="mvn_scale_layer.cl"/>
+    <Define name="USE_RELU" type="int" param="use_relu" default="1" />
+  </Kernel>
+  <!-- inputs and outputs of the kernel-->
+  <Buffers>
+    <Tensor arg-index="0" type="input" port-index="0" format="any"/>
+    <Tensor arg-index="1" type="output" port-index="0" format="any"/>
+    <Data arg-index="2" name="weights"/>
+    <Data arg-index="3" name="biases"/>
+  </Buffers>
+  <!-- OpenCL compiler options-->
+  <CompilerOptions options="-cl-mad-enable"/>
+  <!-- define the global worksize. The formulas can use the values of the B,F,Y,X dimensions and contain the operators: +,-,/,*,% (all evaluated in integer arithmetic)
+Default value: global="B*F*Y*X,1,1"-->
+  <WorkSizes global="B*F,256,1" local="1,256,1"/>
+</CustomLayer>
+

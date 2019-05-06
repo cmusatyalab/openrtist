@@ -35,6 +35,9 @@ TASK_SERVER_PORT = 5511
 # set to False to use CPU
 USE_GPU = True
 
+# Set to select OpenVINO (True) or PyTorch (False);  leave undefined to autodetect
+#USE_OPENVINO = True
+
 # Whether or not to save the displayed image in a temporary directory
 SAVE_IMAGE = False
 
