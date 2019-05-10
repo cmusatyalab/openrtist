@@ -12,16 +12,18 @@ A copy of this license is reproduced in the [LICENSE](LICENSE) file.
 
 
 ## Prerequisites
-__The pre-built OpenRTiST server Docker image requires a GPU for image processing.__ We have tested OpenRTiST on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). 
+__The pre-built OpenRTiST server Docker image requires a GPU for image processing.__ 
 
-The OpenRTiST server application can also use processor graphics on many Intel processors using [Intel OpenVino](https://software.intel.com/en-us/openvino-toolkit).  To install the Intel OpenVino version, please consult the [OpenVINO README](OpenVINO.md) for instructions on downloading the OpenVINO libraries and configuring the environment to run OpenRTiST from source using OpenVINO.
+OpenRTiST using PyTorch (including the pre-built image) has been tested on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). 
+
+Alternatively, OpenRTiST can also use the [Intel&reg; OpenVINO toolkit](https://software.intel.com/en-us/openvino-toolkit) for accelerated processing on CPU and processor graphics on many Intel processors.  We have tested OpenVINO support using __Ubuntu 18.04 LTS (Bionic)__ and OpenVINO release 2018.5 on an Intel&reg; Core&trade; i7-6770HQ processor.  OpenVINO is supported when installed from source only. 
 
 The OpenRTiST server can run on CPU alone.  See below on installing from source for details.
 
 OpenRTiST supports Android and standalone Python clients.  We have tested the Android client on __Nexus 6__, __Samsung Galaxy S7__, and __Essential PH-1__.
 
 
-##  Server Installation using Docker
+##  Server Installation using Docker (with PyTorch, requires GPU)
 ### Step 1. Become root
 ```sh
 sudo -i
@@ -182,16 +184,12 @@ If the 'Show Video Recording Button' switch is enabled, a camera icon will be sh
 You can toggle whether or not to use the front-facing camera on the main screen. When this option is enabled, a small rotation icon will be present in the upper right hand corner of this display. This icon can be pressed to rotate the view on devices where the styled frames appear upside down.
 
 
-## Installation from source
-### Methodology
-#### 1. Setup Gabriel 
-Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to install and run the `control server` and `ucomm server`.
-__Note: The android app uses legacy mode. Pass the `-l` parameter while running the Gabriel control.__
+## Installation from source (PyTorch or OpenVINO, GPU or CPU)
+### 1. Install PyTorch or OpenVINO
+The OpenRTiST server can use PyTorch or OpenVINO to execute style transfer networks.  Please install PyTorch or OpenVINO (or both).
 
-Note: Gabriel may require Python 2.7.  Add the path to gabriel/server to your ```PYTHONPATH``` environment variable.
-
-#### 2. Install torchvision and pytorch
-This version of OpenRTiST uses pytorch.  It has been tested with pytorch versions 0.2.0 and 0.3.1 with CUDA support.  As the APIs and layer names have been changed in newer releases, please select an appropriate version from [here](https://pytorch.org/get-started/previous-versions/). __NOTE: Even if you do not have a CUDA-capable GPU, you can install pytorch with CUDA support and run OpenRTiST on CPU only.__
+#### Option A. Install torchvision and pytorch
+OpenRTiST has been tested with pytorch versions 0.2.0 and 0.3.1 with CUDA support.  As the APIs and layer names have been changed in newer releases, please select an appropriate version from [here](https://pytorch.org/get-started/previous-versions/). __NOTE: Even if you do not have a CUDA-capable GPU, you can install pytorch with CUDA support and run OpenRTiST on CPU only.__
 
 First install torchvision:
 ```
@@ -203,37 +201,73 @@ pip uninstall torch
 pip install https://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp27-cp27m-manylinux1_x86_64.whl
 ```
 
+#### Option B. Install OpenVINO
+Download the latest OpenVINO release from https://software.intel.com/en-us/openvino-toolkit.  Full installation instructions are available at https://software.intel.com/en-us/articles/OpenVINO-Install-Linux. 
 
-#### 3. Run the server
-There are two different server sources, corresponding to the Android and python clients.  You need to run the matching server, as the protocol is currently a bit different.  Remember to include the gabriel/server path in your ```PYTHONPATH```.  
+Be sure to install the Intel&reg; Graphics Compute Runtime for OpenCL&trade; Driver components (under Optional Steps) to enable the use of the integrated GPU.  
 
-If you have CUDA issues, or need to run on CPU-only, edit the config.py file and set ```USE_GPU=False```.  This will result in a functional server, but will run much more slowly than the CUDA or [OpenVino version](OpenVINO.md).  
+We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubuntu 18.10 and Ubuntu 16.04, but `setupvars.sh` may not set up the environment correctly, and on the older distro, a new Linux kernel will be needed.  
 
+Note: although OpenVINO lists Python 3.5 as a prerequisite, it supports Python 2.7 as well.  
+
+Setup environment variables and paths to use OpenVINO with Python 2.7:
+```
+$ source /opt/intel/computer_vision_sdk/bin/setupvars.sh -pyver 2.7
+```
+
+### 2. Setup Gabriel 
+Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to install and run the `control server` and `ucomm server`.  E.g., after installing gabriel, run:
+```
+$ cd $HOME/gabriel/server/bin
+$ ./gabriel-control -n eth0 &
+$ ./gabriel-ucomm -n eth0 -s x.x.x.x &
+```
+replacing `eth0` with your network nic device (e.g., may be `eth1` or `eno1`), and `x.x.x.x` with the IP address of the machine.
+Add the path to gabriel/server to your `PYTHONPATH` environment variable, e.g.:
+```
+$ export PYTHONPATH=$HOME/gabriel/server/:$PYTHONPATH
+```
+Note: Gabriel may require Python 2.7.  
+
+
+### 3. Run the server
 Start the server like this:
 ```
-$ cd <gabriel-repo>/server/oprtist/openrtist_<client_type>/
+$ cd <openrtist-repo>/server/
 $ ./proxy.py -s x.x.x.x:8021
-Discovery Control VM
-INFO     execute : java -jar /home/ubuntu/Workspace/gabriel/server/gabriel/lib/gabriel_upnp_client.jar
-INFO     Gabriel Server :
-INFO     {u'acc_tcp_streaming_ip': u'x.x.x.x',
- u'acc_tcp_streaming_port': 10102,
- u'audio_tcp_streaming_ip': u'x.x.x.x',
- u'audio_tcp_streaming_port': 10103,
- u'ucomm_relay_ip': u'x.x.x.x',
- u'ucomm_relay_port': 9090,
- u'ucomm_server_ip': u'x.x.x.x',
- u'ucomm_server_port': 10120,
- u'video_tcp_streaming_ip': u'x.x.x.x',
- u'video_tcp_streaming_port': 10101}
+Autodetect:  Loaded OpenVINO
 TOKEN SIZE OF OFFLOADING ENGINE: 1
-MODEL PATH <gabriel-repo>/server/oprtist/openrtist_<client_type>/models/
+Loading network files:
+        <openrtist-repo>/server/../models/16v2.xml
+        <openrtist-repo>/server/../models/cafe_gogh-16.bin
+Loading model to the plugin
+Loading network files:
+        <openrtist-repo>/server/../models/16v2.xml
+                     .
+                     .
+                     .
+        <openrtist-repo>/server/../models/udnie-16.bin
+Loading model to the plugin
+Loading network files:
+        <openrtist-repo>/server/../models/16v2.xml
+        <openrtist-repo>/server/../models/weeping_woman-16.bin
+Loading model to the plugin
 FINISHED INITIALISATION
 ```
-#### 4.  Run a python or mobile client using source code at gabriel-client-style-(client_type), or the Android client from the Google Play Store. 
-Make sure to change IP address of GABRIEL_IP variable at src/edu/cmu/cs/gabriel/Const.java for the android client and config.py for the python client.  
+Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.  This is not the case for OpenVINO on CPU, or with PyTorch.  Once initialized, the server is ready for clients at this point.
 
-The prebuilt Android client from the Play Store provides an interface to add a server with a custom IP address.
+With either PyTorch or OpenVINO, you can run the server in CPU-only mode by first editing config.py and setting `USE_GPU = False`.  By default, OpenRTiST tries to detect and use OpenVINO, and fails over to PyTorch.  To force it to use one system, add a line to config.py, setting `USE_OPENVINO = <True / False>`.  Remove this line to re-enable the auto-detection behavior.
+
+
+### 4.  Run a python or mobile client using source code at gabriel-client-style-(client_type), or the Android client from the Google Play Store. 
+To run the python client:
+```
+cd <openrtist-repo>/gabriel-client-openrtist-python
+./ui.py <server ip address>
+```
+You can edit the config.py file to change webcam capture parameters.
+
+The prebuilt Android client from the Google Play Store provides an interface to add a server with a custom IP address.
 
 
 ## Credits
