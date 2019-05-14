@@ -144,6 +144,9 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.lasttime = time.time()
         self.lastcount = 0
         self.lastprint = self.lasttime
+        if hasattr(config, 'SERVER_DISPLAY'):
+            if config.SERVER_DISPLAY:
+                cv2.namedWindow("OpenRTiST", cv2.WINDOW_NORMAL)
         print('FINISHED INITIALISATION')
 
     def handle(self, header, data):
@@ -224,6 +227,10 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             self.lastcount = self.stats["count"]
             self.lastprint = t3
         self.lasttime = t3
+        if hasattr(config, 'SERVER_DISPLAY'):
+            if config.SERVER_DISPLAY:
+                cv2.imshow("OpenRTiST", img_out)
+                cv2.waitKey(1)
         return img_data
 
 if __name__ == "__main__":
