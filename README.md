@@ -7,8 +7,19 @@ Carnegie Mellon University
 This is a developing project.
 
 ## License
-All source code and documentation are under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+Unless otherwise stated, all source code and documentation are under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 A copy of this license is reproduced in the [LICENSE](LICENSE) file.
+
+Portions from the following third party sources have
+been modified and are included in this repository.
+These portions are noted in the source files and are
+copyright their respective authors with
+the licenses listed.
+
+Project | Modified | License
+---|---|---|
+[pytorch/examples](https://github.com/pytorch/examples) | Yes | BSD
+
 
 
 ## Prerequisites
