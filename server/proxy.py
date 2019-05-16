@@ -25,6 +25,10 @@
 # Portions of this code borrow from sample code distributed as part of 
 # Intel OpenVino, which is also distributed under the Apache License.
 # 
+# Portions of this code were modified from sampled code distributed as part of
+# the fast_neural_style example that is part of the pytorch repository and is
+# distributed under the BSD 3-Clause License.
+# https://github.com/pytorch/examples/blob/master/LICENSE
 
 import json
 import multiprocessing
