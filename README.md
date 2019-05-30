@@ -289,6 +289,7 @@ unzip train2014.zip -d coco-data/
 cd <openrtist-repo>
 python train_style.py --dataset <coco-data> --style-image <style-image> --save-model-dir models/ --epochs 2
 ```
+To disable flicker-loss which removes flicker for temporal consistency in real-time image stream, set --noise-count 0
 
 ## Credits
 Please see the [CREDITS](CREDITS.md) file for a list of acknowledgments.
