@@ -280,6 +280,15 @@ You can edit the config.py file to change webcam capture parameters.
 
 The prebuilt Android client from the Google Play Store provides an interface to add a server with a custom IP address.
 
+## Training New Styles (Pytorch 0.3.0)
+
+We use COCO 2014 Train Images as our training dataset
+```
+wget http://images.cocodataset.org/zips/train2014.zip 
+unzip train2014.zip -d coco-data/
+cd <openrtist-repo>
+python train_style.py --dataset <coco-data> --style-image <style-image> --save-model-dir models/ --epochs 2
+```
 
 ## Credits
 Please see the [CREDITS](CREDITS.md) file for a list of acknowledgments.
