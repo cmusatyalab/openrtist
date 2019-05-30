@@ -126,7 +126,7 @@ def train(args):
         transformer.train()
         agg_content_loss = 0.
         agg_style_loss = 0.
-        agg_pop_loss = 0.
+        agg_flicker_loss = 0.
         count = 0
         if args.noise_count:
             noiseimg = torch.zeros([3, args.image_size, args.image_size])
@@ -175,11 +175,11 @@ def train(args):
 
             total_loss = content_loss + style_loss
 
-            pop_loss = 0.
+            flicker_loss = 0.
             if args.noise_count:
-              pop_loss = args.noise_weight * mse_loss(y, noisy_y.detach())
-              total_loss += pop_loss
-              agg_pop_loss += pop_loss.data[0]
+              flicker_loss = args.noise_weight * mse_loss(y, noisy_y.detach())
+              total_loss += flicker_loss
+              agg_flicker_loss += flicker_loss.data[0]
 
             total_loss.backward()
             optimizer.step()
@@ -188,12 +188,12 @@ def train(args):
             agg_style_loss += style_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tpop: {:.6f}\ttotal: {:.6f}".format(
+                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
                                   agg_content_loss / (batch_id + 1),
                                   agg_style_loss / (batch_id + 1),
-                                  agg_pop_loss / (batch_id + 1),
-                                  (agg_content_loss + agg_style_loss + agg_pop_loss) / (batch_id + 1)
+                                  agg_flicker_loss / (batch_id + 1),
+                                  (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
                 )
                 print(mesg)
 
@@ -240,9 +240,9 @@ def main():
                         help="weight for style-loss, default is 1e10")
     parser.add_argument("--noise-weight", type=float, default=1000*1e5,
                         help="weight for noise-weight, default is 1000*1e5")
-    parser.add_argument("--noise-count", type=float, default=1000,
+    parser.add_argument("--noise-count", type=int, default=1000,
                         help="weight for noise-count, default is 1000")
-    parser.add_argument("--noise-range", type=float, default=30,
+    parser.add_argument("--noise-range", type=int, default=30,
                         help="weight for noise-range, default is 30")
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="learning rate, default is 1e-3")
