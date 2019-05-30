@@ -93,8 +93,6 @@ def check_paths(args):
 
 
 def train(args):
-    noise_count = 1000 
-    noise_range = 30
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -130,17 +128,17 @@ def train(args):
         agg_style_loss = 0.
         agg_pop_loss = 0.
         count = 0
-        if noise_count:
+        if args.noise_count:
             noiseimg = torch.zeros([3, args.image_size, args.image_size])
 
             # prepare a noise image
-            for ii in range(noise_count):
+            for ii in range(args.noise_count):
                 xx = random.randrange(args.image_size)
                 yy = random.randrange(args.image_size)
 
-                noiseimg[0][yy][xx] += random.randrange(-noise_range, noise_range)
-                noiseimg[1][yy][xx] += random.randrange(-noise_range, noise_range)
-                noiseimg[2][yy][xx] += random.randrange(-noise_range, noise_range)
+                noiseimg[0][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
+                noiseimg[1][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
+                noiseimg[2][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
 
         for batch_id, (x, _) in enumerate(train_loader):
             n_batch = len(x)
@@ -148,7 +146,7 @@ def train(args):
 
             optimizer.zero_grad()
 
-            if noise_count:
+            if args.noise_count:
                 # add the noise image to the source image
                 noisy_x = x.clone()
                 noisy_x = noisy_x + noiseimg
@@ -178,16 +176,16 @@ def train(args):
             total_loss = content_loss + style_loss
 
             pop_loss = 0.
-            if noise_count:
+            if args.noise_count:
               pop_loss = args.noise_weight * mse_loss(y, noisy_y.detach())
               total_loss += pop_loss
+              agg_pop_loss += pop_loss.data[0]
 
             total_loss.backward()
             optimizer.step()
 
             agg_content_loss += content_loss.data[0]
             agg_style_loss += style_loss.data[0]
-            agg_pop_loss += pop_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
                 mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tpop: {:.6f}\ttotal: {:.6f}".format(
@@ -220,7 +218,7 @@ def main():
     parser.add_argument("--epochs", type=int, default=2,
                         help="number of training epochs, default is 2")
     parser.add_argument("--batch-size", type=int, default=2,
-                        help="batch size for training, default is 4")
+                        help="batch size for training, default is 2")
     parser.add_argument("--dataset", type=str, default='/home/ubuntu/COCO/data/',
                         help="path to training dataset, the path should point to a folder "
                              "containing another folder with all the training images")
@@ -231,7 +229,7 @@ def main():
     parser.add_argument("--checkpoint-model-dir", type=str, default=None,
                         help="path to folder where checkpoints of trained models will be saved")
     parser.add_argument("--image-size", type=int, default=512,
-                        help="size of training images, default is 256 X 256")
+                        help="size of training images, default is 512 X 512")
     parser.add_argument("--style-size", type=int, default=None,
                         help="size of style-image, default is the original size of style image")
     parser.add_argument("--seed", type=int, default=42,
@@ -241,7 +239,11 @@ def main():
     parser.add_argument("--style-weight", type=float, default=5e10,
                         help="weight for style-loss, default is 1e10")
     parser.add_argument("--noise-weight", type=float, default=1000*1e5,
-                        help="weight for style-loss, default is 1e10")
+                        help="weight for noise-weight, default is 1000*1e5")
+    parser.add_argument("--noise-count", type=float, default=1000,
+                        help="weight for noise-count, default is 1000")
+    parser.add_argument("--noise-range", type=float, default=30,
+                        help="weight for noise-range, default is 30")
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="learning rate, default is 1e-3")
     parser.add_argument("--log-interval", type=int, default=500,
