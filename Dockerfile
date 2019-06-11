@@ -51,7 +51,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install --upgrade pip && pip install --upgrade numpy && pip install \
     http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl \
-    torchvision 
+    torchvision==0.2.2 
 
 RUN apt-get update && apt-get install -y \
     tmux \
