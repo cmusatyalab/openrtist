@@ -186,7 +186,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             "cafe_gogh",
             "fall_icarus",
             "monet",
-            "weeping_woman"
+            "weeping_woman",
+            "going_to_work",
+            "david_vaughan"
     };
 
 
@@ -204,7 +206,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             "Cafe Terrace at Night (Vincent Van Gogh)",
             "Landscape with the Fall of Icarus (Pieter Bruegel the Elder)",
             "Bain à la Grenouillère (Claude Monet)",
-            "Weeping Woman (Pablo Picasso)"
+            "Weeping Woman (Pablo Picasso)",
+            "Going to Work (L.S. Lowry)",
+            "Painting 015 (David Vaughan)"
     };
 
     int[] imgid={
@@ -221,7 +225,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             R.drawable.cafe_gogh,
             R.drawable.fall_icarus,
             R.drawable.monet,
-            R.drawable.weeping_woman
+            R.drawable.weeping_woman,
+            R.drawable.going_to_work,
+            R.drawable.david_vaughan
     };
 
     @Override
