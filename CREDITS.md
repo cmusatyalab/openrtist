@@ -31,4 +31,5 @@ __List of Featured Artworks in OpenRTiST__
 - Weeping Woman (Pablo Picasso)
 - candy painting (from https://github.com/pytorch/examples/tree/master/fast_neural_style)
 - mosaic painting (from https://github.com/pytorch/examples/tree/master/fast_neural_style)
-
+- Going to Work (L.S. Lowry)
+- Painting 015 (David Vaughan)
