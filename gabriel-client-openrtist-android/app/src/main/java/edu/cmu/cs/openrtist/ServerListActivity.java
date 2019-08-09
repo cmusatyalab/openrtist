@@ -37,7 +37,7 @@ import android.os.Bundle;
 import android.util.Patterns;
 import android.Manifest;
 import android.os.Build;
-import 	androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityCompat;
 import android.util.Log;
 import android.content.Context;
 import android.hardware.camera2.CameraManager;
