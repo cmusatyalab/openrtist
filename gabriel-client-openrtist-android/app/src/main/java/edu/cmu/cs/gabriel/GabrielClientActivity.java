@@ -70,9 +70,8 @@ import org.json.JSONObject;
 import edu.cmu.cs.gabriel.network.ControlThread;
 import edu.cmu.cs.gabriel.network.LogicalTime;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
+import edu.cmu.cs.gabriel.network.Websocket;
 import edu.cmu.cs.gabriel.util.PingThread;
-import edu.cmu.cs.gabriel.network.ResultReceivingThread;
-import edu.cmu.cs.gabriel.network.VideoStreamingThread;
 import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
 import edu.cmu.cs.gabriel.token.TokenController;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
@@ -93,11 +92,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private String serverIP = null;
     private String style_type = "udnie";
     private String prev_style_type = "udnie";
-    private VideoStreamingThread videoStreamingThread = null;
-    private ResultReceivingThread resultThread = null;
     private ControlThread controlThread = null;
     private TokenController tokenController = null;
     private PingThread pingThread = null;
+
+    private Websocket websocket;
 
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
@@ -652,14 +651,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             pingThread.interrupt();
             pingThread = null;
         }
-        if ((videoStreamingThread != null) && (videoStreamingThread.isAlive())) {
-            videoStreamingThread.stopStreaming();
-            videoStreamingThread = null;
-        }
-        if ((resultThread != null) && (resultThread.isAlive())) {
-            resultThread.close();
-            resultThread = null;
-        }
 
         if (Const.IS_EXPERIMENT) {
             if (isFirstExperiment) {
@@ -714,13 +705,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             } catch (InterruptedException e) {}
         }
 
-        resultThread = new ResultReceivingThread(serverIP, Const.RESULT_RECEIVING_PORT, returnMsgHandler);
-        resultThread.start();
-
-        if (Const.SENSOR_VIDEO) {
-            videoStreamingThread = new VideoStreamingThread(serverIP, Const.VIDEO_STREAM_PORT, returnMsgHandler, tokenController, mCamera, logicalTime);
-            videoStreamingThread.start();
-        }
+        websocket = new Websocket(serverIP, 9098, returnMsgHandler, this);
     }
 
     /**
@@ -782,8 +767,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Camera.Parameters parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
-                    if (videoStreamingThread != null) {
-                        videoStreamingThread.push(frame, parameters, style_type);
+                    if (websocket != null) {
+                        websocket.sendFrame(frame, parameters, style_type);
                     }
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
@@ -854,10 +839,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
                         mCamera.addCallbackBuffer(reusedBuffer);
                     }
-                    if (videoStreamingThread == null) {
-                        videoStreamingThread = new VideoStreamingThread(serverIP, Const.VIDEO_STREAM_PORT, returnMsgHandler, tokenController, mCamera, logicalTime);
-                        videoStreamingThread.start();
-                    }
                 } else { // turning off
                     Const.SENSOR_VIDEO = false;
                     if (preview != null) {
@@ -866,10 +847,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         reusedBuffer = null;
                         preview = null;
                         mCamera = null;
-                    }
-                    if (videoStreamingThread != null) {
-                        videoStreamingThread.stopStreaming();
-                        videoStreamingThread = null;
                     }
                 }
             }
@@ -1008,14 +985,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             pingThread.interrupt();
             pingThread = null;
         }
-        if ((resultThread != null) && (resultThread.isAlive())) {
-            resultThread.close();
-            resultThread = null;
-        }
-        if ((videoStreamingThread != null) && (videoStreamingThread.isAlive())) {
-            videoStreamingThread.stopStreaming();
-            videoStreamingThread = null;
-        }
+
         if ((controlThread != null) && (controlThread.isAlive())) {
             controlThread.close();
             controlThread = null;
