@@ -1209,18 +1209,13 @@ public final class Protos {
             com.google.protobuf.MessageOrBuilder {
 
         /**
-         * <code>required string data = 1;</code>
+         * <code>required bytes data = 1;</code>
          */
         boolean hasData();
         /**
-         * <code>required string data = 1;</code>
+         * <code>required bytes data = 1;</code>
          */
-        java.lang.String getData();
-        /**
-         * <code>required string data = 1;</code>
-         */
-        com.google.protobuf.ByteString
-        getDataBytes();
+        com.google.protobuf.ByteString getData();
 
         /**
          * <code>optional string style = 2;</code>
@@ -1248,7 +1243,7 @@ public final class Protos {
             super(builder);
         }
         private Result() {
-            data_ = "";
+            data_ = com.google.protobuf.ByteString.EMPTY;
             style_ = "";
         }
 
@@ -1281,9 +1276,8 @@ public final class Protos {
                             break;
                         }
                         case 10: {
-                            com.google.protobuf.ByteString bs = input.readBytes();
                             bitField0_ |= 0x00000001;
-                            data_ = bs;
+                            data_ = input.readBytes();
                             break;
                         }
                         case 18: {
@@ -1318,45 +1312,18 @@ public final class Protos {
 
         private int bitField0_;
         public static final int DATA_FIELD_NUMBER = 1;
-        private volatile java.lang.Object data_;
+        private com.google.protobuf.ByteString data_;
         /**
-         * <code>required string data = 1;</code>
+         * <code>required bytes data = 1;</code>
          */
         public boolean hasData() {
             return ((bitField0_ & 0x00000001) == 0x00000001);
         }
         /**
-         * <code>required string data = 1;</code>
+         * <code>required bytes data = 1;</code>
          */
-        public java.lang.String getData() {
-            java.lang.Object ref = data_;
-            if (ref instanceof java.lang.String) {
-                return (java.lang.String) ref;
-            } else {
-                com.google.protobuf.ByteString bs =
-                        (com.google.protobuf.ByteString) ref;
-                java.lang.String s = bs.toStringUtf8();
-                if (bs.isValidUtf8()) {
-                    data_ = s;
-                }
-                return s;
-            }
-        }
-        /**
-         * <code>required string data = 1;</code>
-         */
-        public com.google.protobuf.ByteString
-        getDataBytes() {
-            java.lang.Object ref = data_;
-            if (ref instanceof java.lang.String) {
-                com.google.protobuf.ByteString b =
-                        com.google.protobuf.ByteString.copyFromUtf8(
-                                (java.lang.String) ref);
-                data_ = b;
-                return b;
-            } else {
-                return (com.google.protobuf.ByteString) ref;
-            }
+        public com.google.protobuf.ByteString getData() {
+            return data_;
         }
 
         public static final int STYLE_FIELD_NUMBER = 2;
@@ -1418,7 +1385,7 @@ public final class Protos {
         public void writeTo(com.google.protobuf.CodedOutputStream output)
                 throws java.io.IOException {
             if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                com.google.protobuf.GeneratedMessageV3.writeString(output, 1, data_);
+                output.writeBytes(1, data_);
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 com.google.protobuf.GeneratedMessageV3.writeString(output, 2, style_);
@@ -1432,7 +1399,8 @@ public final class Protos {
 
             size = 0;
             if (((bitField0_ & 0x00000001) == 0x00000001)) {
-                size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, data_);
+                size += com.google.protobuf.CodedOutputStream
+                        .computeBytesSize(1, data_);
             }
             if (((bitField0_ & 0x00000002) == 0x00000002)) {
                 size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, style_);
@@ -1601,7 +1569,7 @@ public final class Protos {
             }
             public Builder clear() {
                 super.clear();
-                data_ = "";
+                data_ = com.google.protobuf.ByteString.EMPTY;
                 bitField0_ = (bitField0_ & ~0x00000001);
                 style_ = "";
                 bitField0_ = (bitField0_ & ~0x00000002);
@@ -1680,9 +1648,7 @@ public final class Protos {
             public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.Result other) {
                 if (other == edu.cmu.cs.gabriel.network.Protos.Result.getDefaultInstance()) return this;
                 if (other.hasData()) {
-                    bitField0_ |= 0x00000001;
-                    data_ = other.data_;
-                    onChanged();
+                    setData(other.getData());
                 }
                 if (other.hasStyle()) {
                     bitField0_ |= 0x00000002;
@@ -1720,51 +1686,23 @@ public final class Protos {
             }
             private int bitField0_;
 
-            private java.lang.Object data_ = "";
+            private com.google.protobuf.ByteString data_ = com.google.protobuf.ByteString.EMPTY;
             /**
-             * <code>required string data = 1;</code>
+             * <code>required bytes data = 1;</code>
              */
             public boolean hasData() {
                 return ((bitField0_ & 0x00000001) == 0x00000001);
             }
             /**
-             * <code>required string data = 1;</code>
+             * <code>required bytes data = 1;</code>
              */
-            public java.lang.String getData() {
-                java.lang.Object ref = data_;
-                if (!(ref instanceof java.lang.String)) {
-                    com.google.protobuf.ByteString bs =
-                            (com.google.protobuf.ByteString) ref;
-                    java.lang.String s = bs.toStringUtf8();
-                    if (bs.isValidUtf8()) {
-                        data_ = s;
-                    }
-                    return s;
-                } else {
-                    return (java.lang.String) ref;
-                }
+            public com.google.protobuf.ByteString getData() {
+                return data_;
             }
             /**
-             * <code>required string data = 1;</code>
+             * <code>required bytes data = 1;</code>
              */
-            public com.google.protobuf.ByteString
-            getDataBytes() {
-                java.lang.Object ref = data_;
-                if (ref instanceof String) {
-                    com.google.protobuf.ByteString b =
-                            com.google.protobuf.ByteString.copyFromUtf8(
-                                    (java.lang.String) ref);
-                    data_ = b;
-                    return b;
-                } else {
-                    return (com.google.protobuf.ByteString) ref;
-                }
-            }
-            /**
-             * <code>required string data = 1;</code>
-             */
-            public Builder setData(
-                    java.lang.String value) {
+            public Builder setData(com.google.protobuf.ByteString value) {
                 if (value == null) {
                     throw new NullPointerException();
                 }
@@ -1774,24 +1712,11 @@ public final class Protos {
                 return this;
             }
             /**
-             * <code>required string data = 1;</code>
+             * <code>required bytes data = 1;</code>
              */
             public Builder clearData() {
                 bitField0_ = (bitField0_ & ~0x00000001);
                 data_ = getDefaultInstance().getData();
-                onChanged();
-                return this;
-            }
-            /**
-             * <code>required string data = 1;</code>
-             */
-            public Builder setDataBytes(
-                    com.google.protobuf.ByteString value) {
-                if (value == null) {
-                    throw new NullPointerException();
-                }
-                bitField0_ |= 0x00000001;
-                data_ = value;
                 onChanged();
                 return this;
             }
@@ -1944,7 +1869,7 @@ public final class Protos {
                         "put.Type\022\014\n\004data\030\003 \002(\014\022\r\n\005style\030\004 \001(\t\022\020\n" +
                         "\010filename\030\005 \001(\t\"2\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VI" +
                         "DEO\020\001\022\t\n\005AUDIO\020\002\022\t\n\005ACCEL\020\003\"%\n\006Result\022\014\n" +
-                        "\004data\030\001 \002(\t\022\r\n\005style\030\002 \001(\tB$\n\032edu.cmu.cs" +
+                        "\004data\030\001 \002(\014\022\r\n\005style\030\002 \001(\tB$\n\032edu.cmu.cs" +
                         ".gabriel.networkB\006Protos"
         };
         com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
