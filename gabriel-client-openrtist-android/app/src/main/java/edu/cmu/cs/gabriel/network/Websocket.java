@@ -66,9 +66,9 @@ public class Websocket {
             @Override
             public void onNext(Result result) {
                 System.out.println("Received");
-                String imageFeedbackString = result.getData();
-                byte[] data = Base64.decode(imageFeedbackString.getBytes(), Base64.DEFAULT);
-                Bitmap imageFeedback = BitmapFactory.decodeByteArray(data,0,data.length);
+
+                ByteString dataString = result.getData();
+                Bitmap imageFeedback = BitmapFactory.decodeByteArray(dataString.toByteArray(),0, dataString.size());
 
                 Message msg = Message.obtain();
                 msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
