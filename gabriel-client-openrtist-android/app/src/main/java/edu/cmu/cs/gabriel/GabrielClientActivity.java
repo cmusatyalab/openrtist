@@ -144,6 +144,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     private int framesProcessed = 0;
     private byte[] frameToSend;
+    Camera.Parameters parameters;
     Object frameToSendLock = new Object();
 
     // Background threads based on
@@ -188,8 +189,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             tokenController.getCurrentToken();  // Wait until we have a token
 
             synchronized (frameToSendLock) {
-                if (frameToSend != null && websocket != null) {
-                    websocket.sendFrame(frameToSend, mCamera.getParameters(), style_type);
+                if (frameToSend != null && parameters != null && websocket != null) {
+                    websocket.sendFrame(frameToSend, parameters, style_type);
                     tokenController.decreaseToken();
                 }
             }
@@ -790,7 +791,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
-                Camera.Parameters parameters = mCamera.getParameters();
+                parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
                     synchronized (frameToSendLock) {
