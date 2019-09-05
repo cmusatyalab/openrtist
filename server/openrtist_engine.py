@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import logging
 import torch
@@ -14,6 +15,7 @@ from gabriel_server import gabriel_pb2
 
 
 DEFAULT_STYLE = 'the_scream'
+COMPRESSION_PARAMS = [cv2.IMWRITE_JPEG_QUALITY, 67]
 
 
 logger = logging.getLogger(__name__)
@@ -47,18 +49,47 @@ class OpenrtistEngine(Engine):
 
     def handle(self, input):
         if input.style != self.style:
-            self.model = self.path + header['style'] + ".model"
+            self.model = self.path + input.syle + ".model"
             self.style_model.load_state_dict(torch.load(self.model))
             if (self.use_gpu):
                 self.style_model.cuda()
-            self.style_type = header['style']
+            self.style_type = input.style
             logger.info('New Style: %s', self.style_type)
 
         if (input.type != gabriel_pb2.Input.Type.IMAGE):
             return self.error_output(input.frame_id)
 
-        self.process_image(input.payload)
+        image = self.process_image(input.payload)
+        image = self.apply_watermark(image)
 
+        _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
+        img_data = jpeg_img.tostring()
+
+        return img_data
 
 
     def process_image(self, image):
+        np_data=np.fromstring(image, dtype=np.uint8)
+        img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
+        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        content_image = self.content_transform(img)
+        if (config.USE_GPU):
+            content_image = content_image.cuda()
+        content_image = content_image.unsqueeze(0)
+        content_image = Variable(content_image, volatile=True)
+
+        output = self.style_model(content_image)
+        img_out = output.data[0].clamp(0, 255).cpu().numpy()
+
+        return img_out
+
+    def apply_watermark(self, image):
+        img_mrk = image[-30:,-120:] # The waterMark is of dimension 30x120
+        img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
+        img_mrk[:,:,1] = (1-self.alpha)*img_mrk[:,:,1] + self.alpha*self.mrk
+        img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
+        image[-30:,-120:] = img_mrk
+        img_out = image.astype('uint8')
+        img_out = cv2.cvtColor(img_out,cv2.COLOR_RGB2BGR)
+
+        return img_out
