@@ -10,7 +10,7 @@ from torchvision import transforms
 from PIL import Image
 import utils
 from transformer_net import TransformerNet
-from gabriel_server.cognitive_engine import Engine
+from gabriel_server import cognitive_engine
 from gabriel_server import gabriel_pb2
 
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: support openvino
-class OpenrtistEngine(Engine):
+class OpenrtistEngine(cognitive_engine.Engine):
     def __init__(self, use_gpu):
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
@@ -57,7 +57,7 @@ class OpenrtistEngine(Engine):
             logger.info('New Style: %s', self.style_type)
 
         if (input.type != gabriel_pb2.Input.Type.IMAGE):
-            return self.error_output(input.frame_id)
+            return cognitive_engine.error_output(input.frame_id)
 
         image = self.process_image(input.payload)
         image = self.apply_watermark(image)
@@ -65,8 +65,15 @@ class OpenrtistEngine(Engine):
         _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
         img_data = jpeg_img.tostring()
 
-        return img_data
+        result = gabriel_pb2.Output.Result()
+        result.type = gabriel_pb2.Output.Result.ResultType.IMAGE
+        result.payload = img_data
 
+        output = gabriel_pb2.Output()
+        output.frame_id = input.frame_id
+        output.status = gabriel_pb2.Output.Status.SUCCESS
+        output.results.append(result)
+        return output
 
     def process_image(self, image):
         np_data=np.fromstring(image, dtype=np.uint8)
