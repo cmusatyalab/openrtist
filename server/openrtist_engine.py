@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import logging
@@ -8,7 +9,6 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 from PIL import Image
-import utils
 from transformer_net import TransformerNet
 from gabriel_server import cognitive_engine
 from gabriel_server import gabriel_pb2
@@ -49,7 +49,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
     def handle(self, input):
         if input.style != self.style:
-            self.model = self.path + input.syle + ".model"
+            self.model = self.path + input.style + ".model"
             self.style_model.load_state_dict(torch.load(self.model))
             if (self.use_gpu):
                 self.style_model.cuda()
@@ -80,13 +80,14 @@ class OpenrtistEngine(cognitive_engine.Engine):
         img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
-        if (config.USE_GPU):
+        if (self.use_gpu):
             content_image = content_image.cuda()
         content_image = content_image.unsqueeze(0)
         content_image = Variable(content_image, volatile=True)
 
         output = self.style_model(content_image)
         img_out = output.data[0].clamp(0, 255).cpu().numpy()
+        img_out = img_out.transpose(1, 2, 0)
 
         return img_out
 
