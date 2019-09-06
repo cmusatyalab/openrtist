@@ -7,10 +7,8 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.media.session.MediaSession;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Base64;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
@@ -26,10 +24,9 @@ import com.tinder.scarlet.ws.Send;
 import java.io.ByteArrayOutputStream;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.gabriel.network.Protos.Input;
-import edu.cmu.cs.gabriel.network.Protos.Output;
+import edu.cmu.cs.gabriel.network.Protos.FromClient;
+import edu.cmu.cs.gabriel.network.Protos.FromServer;
 
-import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
 import edu.cmu.cs.gabriel.token.TokenController;
 import okhttp3.OkHttpClient;
 
@@ -39,10 +36,10 @@ public class Websocket {
 
     private interface GabrielSocket {
         @Send
-        void Send(Input input);
+        void Send(FromClient fromClient);
 
         @Receive
-        Stream<Output> Receive();
+        Stream<FromServer> Receive();
 
         @Receive
         Stream<WebSocket.Event> observeWebSocketEvent();
@@ -52,6 +49,7 @@ public class Websocket {
     private Handler returnMsgHandler;
     private long frameID;
     private TokenController tokenController;
+    private com.tinder.scarlet.Lifecycle lc;
 
     public Websocket(String serverIP, int port, Handler returnMsgHandler, Activity activity, TokenController tokenController) {
         this.returnMsgHandler = returnMsgHandler;
@@ -61,34 +59,40 @@ public class Websocket {
 
         OkHttpClient okClient = new OkHttpClient();
 
+        this.lc = AndroidLifecycle.ofApplicationForeground(activity.getApplication());
+
         webSocketInterface = new Scarlet.Builder()
                 .webSocketFactory(OkHttpClientUtils.newWebSocketFactory(okClient, url))
                 .addMessageAdapterFactory(new ProtobufMessageAdapter.Factory())
-                .lifecycle(AndroidLifecycle.ofApplicationForeground(activity.getApplication()))
+                .lifecycle(lc)
                 .build().create(GabrielSocket.class);
 
-        webSocketInterface.Receive().start(new Stream.Observer<Output>() {
+        webSocketInterface.Receive().start(new Stream.Observer<FromServer>() {
             @Override
-            public void onNext(Output output) {
+            public void onNext(FromServer fromServer) {
 
                 String status;
 
-                if (output.getStatus() == Output.Status.SUCCESS) {
-                    if (output.getResultsCount() == 1) {
-                        Output.Result result = output.getResults(0);
-                        ByteString dataString = result.getPayload();
+                if (fromServer.getStatus() == FromServer.Status.SUCCESS) {
+                    if (fromServer.getResultsCount() == 1) {
+                        FromServer.Result result = fromServer.getResults(0);
+                        if (result.getType() == FromServer.Result.ResultType.IMAGE) {
+                            ByteString dataString = result.getPayload();
 
-                        Bitmap imageFeedback = BitmapFactory.decodeByteArray(dataString.toByteArray(),0, dataString.size());
+                            Bitmap imageFeedback = BitmapFactory.decodeByteArray(dataString.toByteArray(),0, dataString.size());
 
-                        Message msg = Message.obtain();
-                        msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                        msg.obj = imageFeedback;
-                        Websocket.this.returnMsgHandler.sendMessage(msg);
+                            Message msg = Message.obtain();
+                            msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+                            msg.obj = imageFeedback;
+                            Websocket.this.returnMsgHandler.sendMessage(msg);
+                        } else {
+                            Log.e(TAG, "Got result of type " + result.getType().name());
+                        }
                     } else {
-                        Log.e(TAG, "Got " + output.getResultsCount() + " result in output.");
+                        Log.e(TAG, "Got " + fromServer.getResultsCount() + " result in output.");
                     }
                 } else {
-                    Log.e(TAG, "Output status was: " + output.getStatus().name());
+                    Log.e(TAG, "Output status was: " + fromServer.getStatus().name());
                 }
 
                 // Refill token
@@ -124,7 +128,6 @@ public class Websocket {
 
             }
         });
-
     }
 
     public void sendFrame(byte[] frame, Camera.Parameters parameters, String style) {
@@ -154,14 +157,18 @@ public class Websocket {
         }
         this.frameID++;
 
-        Input.Builder inputBuilder = Input.newBuilder();
-        inputBuilder.setFrameId(this.frameID);
-        inputBuilder.setType(Input.Type.IMAGE);
-        inputBuilder.setPayload(ByteString.copyFrom(data));
-        inputBuilder.setStyle(style);
+        FromClient.Builder fromClientBuilder = FromClient.newBuilder();
+        fromClientBuilder.setFrameId(this.frameID);
+        fromClientBuilder.setType(FromClient.Type.IMAGE);
+        fromClientBuilder.setPayload(ByteString.copyFrom(data));
+        fromClientBuilder.setStyle(style);
 
-        Input input = inputBuilder.build();
+        FromClient fromClient = fromClientBuilder.build();
 
-        webSocketInterface.Send(input);
+        webSocketInterface.Send(fromClient);
+    }
+
+    public void stop() {
+
     }
 }
