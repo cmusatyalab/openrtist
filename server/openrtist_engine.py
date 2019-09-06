@@ -57,7 +57,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             logger.info('New Style: %s', self.style_type)
 
         if (from_client.type != gabriel_pb2.FromClient.Type.IMAGE):
-            return cognitive_engine.error_output(from_client.frame_id)
+            return cognitive_engine.wrong_input_format_error(from_client.frame_id)
 
         image = self.process_image(from_client.payload)
         image = self.apply_watermark(image)
