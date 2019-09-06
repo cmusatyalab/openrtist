@@ -47,33 +47,33 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         logger.info('FINISHED INITIALISATION')
 
-    def handle(self, input):
-        if input.style != self.style:
-            self.model = self.path + input.style + ".model"
+    def handle(self, from_client):
+        if from_client.style != self.style:
+            self.model = self.path + from_client.style + ".model"
             self.style_model.load_state_dict(torch.load(self.model))
             if (self.use_gpu):
                 self.style_model.cuda()
-            self.style_type = input.style
+            self.style_type = from_client.style
             logger.info('New Style: %s', self.style_type)
 
-        if (input.type != gabriel_pb2.Input.Type.IMAGE):
-            return cognitive_engine.error_output(input.frame_id)
+        if (from_client.type != gabriel_pb2.FromClient.Type.IMAGE):
+            return cognitive_engine.error_output(from_client.frame_id)
 
-        image = self.process_image(input.payload)
+        image = self.process_image(from_client.payload)
         image = self.apply_watermark(image)
 
         _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
         img_data = jpeg_img.tostring()
 
-        result = gabriel_pb2.Output.Result()
-        result.type = gabriel_pb2.Output.Result.ResultType.IMAGE
+        result = gabriel_pb2.FromServer.Result()
+        result.type = gabriel_pb2.FromServer.Result.ResultType.IMAGE
         result.payload = img_data
 
-        output = gabriel_pb2.Output()
-        output.frame_id = input.frame_id
-        output.status = gabriel_pb2.Output.Status.SUCCESS
-        output.results.append(result)
-        return output
+        from_server = gabriel_pb2.FromServer()
+        from_server.frame_id = from_client.frame_id
+        from_server.status = gabriel_pb2.FromServer.Status.SUCCESS
+        from_server.results.append(result)
+        return from_server
 
     def process_image(self, image):
         np_data=np.fromstring(image, dtype=np.uint8)

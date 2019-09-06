@@ -39,29 +39,11 @@ public final class Protos {
 
     /**
      * <pre>
-     * Only used by Server:
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    java.lang.String getHost();
-    /**
-     * <pre>
-     * Only used by Server:
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    com.google.protobuf.ByteString
-        getHostBytes();
-
-    /**
-     * <pre>
      * engine-specific fields:
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 5;</code>
+     * <code>optional string style = 4;</code>
      */
     java.lang.String getStyle();
     /**
@@ -70,7 +52,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 5;</code>
+     * <code>optional string style = 4;</code>
      */
     com.google.protobuf.ByteString
         getStyleBytes();
@@ -90,7 +72,6 @@ public final class Protos {
       frameId_ = 0L;
       type_ = 0;
       payload_ = com.google.protobuf.ByteString.EMPTY;
-      host_ = "";
       style_ = "";
     }
 
@@ -136,12 +117,6 @@ public final class Protos {
               break;
             }
             case 34: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              host_ = s;
-              break;
-            }
-            case 42: {
               java.lang.String s = input.readStringRequireUtf8();
 
               style_ = s;
@@ -320,49 +295,7 @@ public final class Protos {
       return payload_;
     }
 
-    public static final int HOST_FIELD_NUMBER = 4;
-    private volatile java.lang.Object host_;
-    /**
-     * <pre>
-     * Only used by Server:
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    public java.lang.String getHost() {
-      java.lang.Object ref = host_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        host_ = s;
-        return s;
-      }
-    }
-    /**
-     * <pre>
-     * Only used by Server:
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    public com.google.protobuf.ByteString
-        getHostBytes() {
-      java.lang.Object ref = host_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        host_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
-    public static final int STYLE_FIELD_NUMBER = 5;
+    public static final int STYLE_FIELD_NUMBER = 4;
     private volatile java.lang.Object style_;
     /**
      * <pre>
@@ -370,7 +303,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 5;</code>
+     * <code>optional string style = 4;</code>
      */
     public java.lang.String getStyle() {
       java.lang.Object ref = style_;
@@ -390,7 +323,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 5;</code>
+     * <code>optional string style = 4;</code>
      */
     public com.google.protobuf.ByteString
         getStyleBytes() {
@@ -427,11 +360,8 @@ public final class Protos {
       if (!payload_.isEmpty()) {
         output.writeBytes(3, payload_);
       }
-      if (!getHostBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, host_);
-      }
       if (!getStyleBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, style_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, style_);
       }
     }
 
@@ -452,11 +382,8 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, payload_);
       }
-      if (!getHostBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, host_);
-      }
       if (!getStyleBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, style_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, style_);
       }
       memoizedSize = size;
       return size;
@@ -479,8 +406,6 @@ public final class Protos {
       result = result && type_ == other.type_;
       result = result && getPayload()
           .equals(other.getPayload());
-      result = result && getHost()
-          .equals(other.getHost());
       result = result && getStyle()
           .equals(other.getStyle());
       return result;
@@ -500,8 +425,6 @@ public final class Protos {
       hash = (53 * hash) + type_;
       hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
       hash = (53 * hash) + getPayload().hashCode();
-      hash = (37 * hash) + HOST_FIELD_NUMBER;
-      hash = (53 * hash) + getHost().hashCode();
       hash = (37 * hash) + STYLE_FIELD_NUMBER;
       hash = (53 * hash) + getStyle().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -628,8 +551,6 @@ public final class Protos {
 
         payload_ = com.google.protobuf.ByteString.EMPTY;
 
-        host_ = "";
-
         style_ = "";
 
         return this;
@@ -657,7 +578,6 @@ public final class Protos {
         result.frameId_ = frameId_;
         result.type_ = type_;
         result.payload_ = payload_;
-        result.host_ = host_;
         result.style_ = style_;
         onBuilt();
         return result;
@@ -708,10 +628,6 @@ public final class Protos {
         }
         if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
           setPayload(other.getPayload());
-        }
-        if (!other.getHost().isEmpty()) {
-          host_ = other.host_;
-          onChanged();
         }
         if (!other.getStyle().isEmpty()) {
           style_ = other.style_;
@@ -842,95 +758,6 @@ public final class Protos {
         return this;
       }
 
-      private java.lang.Object host_ = "";
-      /**
-       * <pre>
-       * Only used by Server:
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public java.lang.String getHost() {
-        java.lang.Object ref = host_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          host_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <pre>
-       * Only used by Server:
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public com.google.protobuf.ByteString
-          getHostBytes() {
-        java.lang.Object ref = host_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          host_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <pre>
-       * Only used by Server:
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public Builder setHost(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        host_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Only used by Server:
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public Builder clearHost() {
-        
-        host_ = getDefaultInstance().getHost();
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Only used by Server:
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public Builder setHostBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        host_ = value;
-        onChanged();
-        return this;
-      }
-
       private java.lang.Object style_ = "";
       /**
        * <pre>
@@ -938,7 +765,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 5;</code>
+       * <code>optional string style = 4;</code>
        */
       public java.lang.String getStyle() {
         java.lang.Object ref = style_;
@@ -958,7 +785,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 5;</code>
+       * <code>optional string style = 4;</code>
        */
       public com.google.protobuf.ByteString
           getStyleBytes() {
@@ -979,7 +806,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 5;</code>
+       * <code>optional string style = 4;</code>
        */
       public Builder setStyle(
           java.lang.String value) {
@@ -997,7 +824,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 5;</code>
+       * <code>optional string style = 4;</code>
        */
       public Builder clearStyle() {
         
@@ -1011,7 +838,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 5;</code>
+       * <code>optional string style = 4;</code>
        */
       public Builder setStyleBytes(
           com.google.protobuf.ByteString value) {
@@ -1114,24 +941,6 @@ public final class Protos {
      */
     edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index);
-
-    /**
-     * <pre>
-     * Only used by Gabriel server
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    java.lang.String getHost();
-    /**
-     * <pre>
-     * Only used by Gabriel server
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    com.google.protobuf.ByteString
-        getHostBytes();
   }
   /**
    * Protobuf type {@code gabriel.FromServer}
@@ -1148,7 +957,6 @@ public final class Protos {
       frameId_ = 0L;
       status_ = 0;
       results_ = java.util.Collections.emptyList();
-      host_ = "";
     }
 
     @java.lang.Override
@@ -1194,12 +1002,6 @@ public final class Protos {
               }
               results_.add(
                   input.readMessage(edu.cmu.cs.gabriel.network.Protos.FromServer.Result.parser(), extensionRegistry));
-              break;
-            }
-            case 34: {
-              java.lang.String s = input.readStringRequireUtf8();
-
-              host_ = s;
               break;
             }
           }
@@ -1443,48 +1245,48 @@ public final class Protos {
       public enum ResultType
           implements com.google.protobuf.ProtocolMessageEnum {
         /**
-         * <code>ANIMATION = 0;</code>
+         * <code>IMAGE = 0;</code>
          */
-        ANIMATION(0),
+        IMAGE(0),
         /**
          * <code>VIDEO = 1;</code>
          */
         VIDEO(1),
         /**
-         * <code>IMAGE = 2;</code>
+         * <code>AUDIO = 2;</code>
          */
-        IMAGE(2),
+        AUDIO(2),
         /**
-         * <code>AUDIO = 3;</code>
+         * <code>TEXT = 3;</code>
          */
-        AUDIO(3),
+        TEXT(3),
         /**
-         * <code>TEXT = 4;</code>
+         * <code>ANIMATION = 4;</code>
          */
-        TEXT(4),
+        ANIMATION(4),
         UNRECOGNIZED(-1),
         ;
 
         /**
-         * <code>ANIMATION = 0;</code>
+         * <code>IMAGE = 0;</code>
          */
-        public static final int ANIMATION_VALUE = 0;
+        public static final int IMAGE_VALUE = 0;
         /**
          * <code>VIDEO = 1;</code>
          */
         public static final int VIDEO_VALUE = 1;
         /**
-         * <code>IMAGE = 2;</code>
+         * <code>AUDIO = 2;</code>
          */
-        public static final int IMAGE_VALUE = 2;
+        public static final int AUDIO_VALUE = 2;
         /**
-         * <code>AUDIO = 3;</code>
+         * <code>TEXT = 3;</code>
          */
-        public static final int AUDIO_VALUE = 3;
+        public static final int TEXT_VALUE = 3;
         /**
-         * <code>TEXT = 4;</code>
+         * <code>ANIMATION = 4;</code>
          */
-        public static final int TEXT_VALUE = 4;
+        public static final int ANIMATION_VALUE = 4;
 
 
         public final int getNumber() {
@@ -1505,11 +1307,11 @@ public final class Protos {
 
         public static ResultType forNumber(int value) {
           switch (value) {
-            case 0: return ANIMATION;
+            case 0: return IMAGE;
             case 1: return VIDEO;
-            case 2: return IMAGE;
-            case 3: return AUDIO;
-            case 4: return TEXT;
+            case 2: return AUDIO;
+            case 3: return TEXT;
+            case 4: return ANIMATION;
             default: return null;
           }
         }
@@ -1599,7 +1401,7 @@ public final class Protos {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.ANIMATION.getNumber()) {
+        if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.IMAGE.getNumber()) {
           output.writeEnum(1, type_);
         }
         if (!payload_.isEmpty()) {
@@ -1612,7 +1414,7 @@ public final class Protos {
         if (size != -1) return size;
 
         size = 0;
-        if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.ANIMATION.getNumber()) {
+        if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.IMAGE.getNumber()) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(1, type_);
         }
@@ -2054,48 +1856,6 @@ public final class Protos {
       return results_.get(index);
     }
 
-    public static final int HOST_FIELD_NUMBER = 4;
-    private volatile java.lang.Object host_;
-    /**
-     * <pre>
-     * Only used by Gabriel server
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    public java.lang.String getHost() {
-      java.lang.Object ref = host_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        host_ = s;
-        return s;
-      }
-    }
-    /**
-     * <pre>
-     * Only used by Gabriel server
-     * </pre>
-     *
-     * <code>optional string host = 4;</code>
-     */
-    public com.google.protobuf.ByteString
-        getHostBytes() {
-      java.lang.Object ref = host_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        host_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2117,9 +1877,6 @@ public final class Protos {
       for (int i = 0; i < results_.size(); i++) {
         output.writeMessage(3, results_.get(i));
       }
-      if (!getHostBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, host_);
-      }
     }
 
     public int getSerializedSize() {
@@ -2138,9 +1895,6 @@ public final class Protos {
       for (int i = 0; i < results_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, results_.get(i));
-      }
-      if (!getHostBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, host_);
       }
       memoizedSize = size;
       return size;
@@ -2163,8 +1917,6 @@ public final class Protos {
       result = result && status_ == other.status_;
       result = result && getResultsList()
           .equals(other.getResultsList());
-      result = result && getHost()
-          .equals(other.getHost());
       return result;
     }
 
@@ -2184,8 +1936,6 @@ public final class Protos {
         hash = (37 * hash) + RESULTS_FIELD_NUMBER;
         hash = (53 * hash) + getResultsList().hashCode();
       }
-      hash = (37 * hash) + HOST_FIELD_NUMBER;
-      hash = (53 * hash) + getHost().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2315,8 +2065,6 @@ public final class Protos {
         } else {
           resultsBuilder_.clear();
         }
-        host_ = "";
-
         return this;
       }
 
@@ -2352,7 +2100,6 @@ public final class Protos {
         } else {
           result.results_ = resultsBuilder_.build();
         }
-        result.host_ = host_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2426,10 +2173,6 @@ public final class Protos {
               resultsBuilder_.addAllMessages(other.results_);
             }
           }
-        }
-        if (!other.getHost().isEmpty()) {
-          host_ = other.host_;
-          onChanged();
         }
         onChanged();
         return this;
@@ -2767,95 +2510,6 @@ public final class Protos {
         }
         return resultsBuilder_;
       }
-
-      private java.lang.Object host_ = "";
-      /**
-       * <pre>
-       * Only used by Gabriel server
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public java.lang.String getHost() {
-        java.lang.Object ref = host_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          host_ = s;
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
-      }
-      /**
-       * <pre>
-       * Only used by Gabriel server
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public com.google.protobuf.ByteString
-          getHostBytes() {
-        java.lang.Object ref = host_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          host_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <pre>
-       * Only used by Gabriel server
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public Builder setHost(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        host_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Only used by Gabriel server
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public Builder clearHost() {
-        
-        host_ = getDefaultInstance().getHost();
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * Only used by Gabriel server
-       * </pre>
-       *
-       * <code>optional string host = 4;</code>
-       */
-      public Builder setHostBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        host_ = value;
-        onChanged();
-        return this;
-      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -2929,22 +2583,21 @@ public final class Protos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rgabriel.proto\022\007gabriel\"\260\001\n\nFromClient\022" +
+      "\n\rgabriel.proto\022\007gabriel\"\242\001\n\nFromClient\022" +
       "\020\n\010frame_id\030\001 \001(\004\022&\n\004type\030\002 \001(\0162\030.gabrie" +
-      "l.FromClient.Type\022\017\n\007payload\030\003 \001(\014\022\014\n\004ho" +
-      "st\030\004 \001(\t\022\r\n\005style\030\005 \001(\t\":\n\004Type\022\t\n\005IMAGE" +
-      "\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\021\n\rACCELEROMETE" +
-      "R\020\003\"\364\002\n\nFromServer\022\020\n\010frame_id\030\001 \001(\004\022*\n\006" +
-      "status\030\002 \001(\0162\032.gabriel.FromServer.Status" +
-      "\022+\n\007results\030\003 \003(\0132\032.gabriel.FromServer.R" +
-      "esult\022\014\n\004host\030\004 \001(\t\032\226\001\n\006Result\0223\n\004type\030\001" +
-      " \001(\0162%.gabriel.FromServer.Result.ResultT",
-      "ype\022\017\n\007payload\030\002 \001(\014\"F\n\nResultType\022\r\n\tAN" +
-      "IMATION\020\000\022\t\n\005VIDEO\020\001\022\t\n\005IMAGE\020\002\022\t\n\005AUDIO" +
-      "\020\003\022\010\n\004TEXT\020\004\"T\n\006Status\022\013\n\007SUCCESS\020\000\022\025\n\021U" +
-      "NSPECIFIED_ERROR\020\001\022\016\n\nQUEUE_FULL\020\002\022\026\n\022WR" +
-      "ONG_INPUT_FORMAT\020\003B$\n\032edu.cmu.cs.gabriel" +
-      ".networkB\006Protosb\006proto3"
+      "l.FromClient.Type\022\017\n\007payload\030\003 \001(\014\022\r\n\005st" +
+      "yle\030\004 \001(\t\":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022" +
+      "\t\n\005AUDIO\020\002\022\021\n\rACCELEROMETER\020\003\"\346\002\n\nFromSe" +
+      "rver\022\020\n\010frame_id\030\001 \001(\004\022*\n\006status\030\002 \001(\0162\032" +
+      ".gabriel.FromServer.Status\022+\n\007results\030\003 " +
+      "\003(\0132\032.gabriel.FromServer.Result\032\226\001\n\006Resu" +
+      "lt\0223\n\004type\030\001 \001(\0162%.gabriel.FromServer.Re" +
+      "sult.ResultType\022\017\n\007payload\030\002 \001(\014\"F\n\nResu",
+      "ltType\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022" +
+      "\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004\"T\n\006Status\022\013\n\007SU" +
+      "CCESS\020\000\022\025\n\021UNSPECIFIED_ERROR\020\001\022\016\n\nQUEUE_" +
+      "FULL\020\002\022\026\n\022WRONG_INPUT_FORMAT\020\003B$\n\032edu.cm" +
+      "u.cs.gabriel.networkB\006Protosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2963,13 +2616,13 @@ public final class Protos {
     internal_static_gabriel_FromClient_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromClient_descriptor,
-        new java.lang.String[] { "FrameId", "Type", "Payload", "Host", "Style", });
+        new java.lang.String[] { "FrameId", "Type", "Payload", "Style", });
     internal_static_gabriel_FromServer_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_gabriel_FromServer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromServer_descriptor,
-        new java.lang.String[] { "FrameId", "Status", "Results", "Host", });
+        new java.lang.String[] { "FrameId", "Status", "Results", });
     internal_static_gabriel_FromServer_Result_descriptor =
       internal_static_gabriel_FromServer_descriptor.getNestedTypes().get(0);
     internal_static_gabriel_FromServer_Result_fieldAccessorTable = new
