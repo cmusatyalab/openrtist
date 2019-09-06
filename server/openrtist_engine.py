@@ -53,8 +53,8 @@ class OpenrtistEngine(cognitive_engine.Engine):
             self.style_model.load_state_dict(torch.load(self.model))
             if (self.use_gpu):
                 self.style_model.cuda()
-            self.style_type = from_client.style
-            logger.info('New Style: %s', self.style_type)
+            self.style = from_client.style
+            logger.info('New Style: %s', self.style)
 
         if (from_client.type != gabriel_pb2.FromClient.Type.IMAGE):
             return cognitive_engine.wrong_input_format_error(from_client.frame_id)

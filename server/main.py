@@ -2,7 +2,7 @@ from gabriel_server.server import Server
 from openrtist_engine import OpenrtistEngine
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def engine_setup():
