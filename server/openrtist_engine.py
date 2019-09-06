@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import logging
@@ -8,9 +9,8 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 from PIL import Image
-import utils
 from transformer_net import TransformerNet
-from gabriel_server.cognitive_engine import Engine
+from gabriel_server import cognitive_engine
 from gabriel_server import gabriel_pb2
 
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: support openvino
-class OpenrtistEngine(Engine):
+class OpenrtistEngine(cognitive_engine.Engine):
     def __init__(self, use_gpu):
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
@@ -49,7 +49,7 @@ class OpenrtistEngine(Engine):
 
     def handle(self, input):
         if input.style != self.style:
-            self.model = self.path + input.syle + ".model"
+            self.model = self.path + input.style + ".model"
             self.style_model.load_state_dict(torch.load(self.model))
             if (self.use_gpu):
                 self.style_model.cuda()
@@ -57,7 +57,7 @@ class OpenrtistEngine(Engine):
             logger.info('New Style: %s', self.style_type)
 
         if (input.type != gabriel_pb2.Input.Type.IMAGE):
-            return self.error_output(input.frame_id)
+            return cognitive_engine.error_output(input.frame_id)
 
         image = self.process_image(input.payload)
         image = self.apply_watermark(image)
@@ -65,21 +65,29 @@ class OpenrtistEngine(Engine):
         _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
         img_data = jpeg_img.tostring()
 
-        return img_data
+        result = gabriel_pb2.Output.Result()
+        result.type = gabriel_pb2.Output.Result.ResultType.IMAGE
+        result.payload = img_data
 
+        output = gabriel_pb2.Output()
+        output.frame_id = input.frame_id
+        output.status = gabriel_pb2.Output.Status.SUCCESS
+        output.results.append(result)
+        return output
 
     def process_image(self, image):
         np_data=np.fromstring(image, dtype=np.uint8)
         img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         content_image = self.content_transform(img)
-        if (config.USE_GPU):
+        if (self.use_gpu):
             content_image = content_image.cuda()
         content_image = content_image.unsqueeze(0)
         content_image = Variable(content_image, volatile=True)
 
         output = self.style_model(content_image)
         img_out = output.data[0].clamp(0, 255).cpu().numpy()
+        img_out = img_out.transpose(1, 2, 0)
 
         return img_out
 
