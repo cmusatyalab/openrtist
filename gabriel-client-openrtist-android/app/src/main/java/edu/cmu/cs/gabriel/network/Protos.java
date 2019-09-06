@@ -38,12 +38,22 @@ public final class Protos {
     com.google.protobuf.ByteString getPayload();
 
     /**
+     * <code>optional string engine = 4;</code>
+     */
+    java.lang.String getEngine();
+    /**
+     * <code>optional string engine = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getEngineBytes();
+
+    /**
      * <pre>
      * engine-specific fields:
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     java.lang.String getStyle();
     /**
@@ -52,7 +62,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     com.google.protobuf.ByteString
         getStyleBytes();
@@ -72,6 +82,7 @@ public final class Protos {
       frameId_ = 0L;
       type_ = 0;
       payload_ = com.google.protobuf.ByteString.EMPTY;
+      engine_ = "";
       style_ = "";
     }
 
@@ -117,6 +128,12 @@ public final class Protos {
               break;
             }
             case 34: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              engine_ = s;
+              break;
+            }
+            case 42: {
               java.lang.String s = input.readStringRequireUtf8();
 
               style_ = s;
@@ -295,7 +312,41 @@ public final class Protos {
       return payload_;
     }
 
-    public static final int STYLE_FIELD_NUMBER = 4;
+    public static final int ENGINE_FIELD_NUMBER = 4;
+    private volatile java.lang.Object engine_;
+    /**
+     * <code>optional string engine = 4;</code>
+     */
+    public java.lang.String getEngine() {
+      java.lang.Object ref = engine_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        engine_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string engine = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getEngineBytes() {
+      java.lang.Object ref = engine_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        engine_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int STYLE_FIELD_NUMBER = 5;
     private volatile java.lang.Object style_;
     /**
      * <pre>
@@ -303,7 +354,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     public java.lang.String getStyle() {
       java.lang.Object ref = style_;
@@ -323,7 +374,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     public com.google.protobuf.ByteString
         getStyleBytes() {
@@ -360,8 +411,11 @@ public final class Protos {
       if (!payload_.isEmpty()) {
         output.writeBytes(3, payload_);
       }
+      if (!getEngineBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, engine_);
+      }
       if (!getStyleBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, style_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, style_);
       }
     }
 
@@ -382,8 +436,11 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, payload_);
       }
+      if (!getEngineBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, engine_);
+      }
       if (!getStyleBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, style_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, style_);
       }
       memoizedSize = size;
       return size;
@@ -406,6 +463,8 @@ public final class Protos {
       result = result && type_ == other.type_;
       result = result && getPayload()
           .equals(other.getPayload());
+      result = result && getEngine()
+          .equals(other.getEngine());
       result = result && getStyle()
           .equals(other.getStyle());
       return result;
@@ -425,6 +484,8 @@ public final class Protos {
       hash = (53 * hash) + type_;
       hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
       hash = (53 * hash) + getPayload().hashCode();
+      hash = (37 * hash) + ENGINE_FIELD_NUMBER;
+      hash = (53 * hash) + getEngine().hashCode();
       hash = (37 * hash) + STYLE_FIELD_NUMBER;
       hash = (53 * hash) + getStyle().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -551,6 +612,8 @@ public final class Protos {
 
         payload_ = com.google.protobuf.ByteString.EMPTY;
 
+        engine_ = "";
+
         style_ = "";
 
         return this;
@@ -578,6 +641,7 @@ public final class Protos {
         result.frameId_ = frameId_;
         result.type_ = type_;
         result.payload_ = payload_;
+        result.engine_ = engine_;
         result.style_ = style_;
         onBuilt();
         return result;
@@ -628,6 +692,10 @@ public final class Protos {
         }
         if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
           setPayload(other.getPayload());
+        }
+        if (!other.getEngine().isEmpty()) {
+          engine_ = other.engine_;
+          onChanged();
         }
         if (!other.getStyle().isEmpty()) {
           style_ = other.style_;
@@ -758,6 +826,75 @@ public final class Protos {
         return this;
       }
 
+      private java.lang.Object engine_ = "";
+      /**
+       * <code>optional string engine = 4;</code>
+       */
+      public java.lang.String getEngine() {
+        java.lang.Object ref = engine_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          engine_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string engine = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getEngineBytes() {
+        java.lang.Object ref = engine_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          engine_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string engine = 4;</code>
+       */
+      public Builder setEngine(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        engine_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string engine = 4;</code>
+       */
+      public Builder clearEngine() {
+        
+        engine_ = getDefaultInstance().getEngine();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string engine = 4;</code>
+       */
+      public Builder setEngineBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        engine_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.lang.Object style_ = "";
       /**
        * <pre>
@@ -765,7 +902,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public java.lang.String getStyle() {
         java.lang.Object ref = style_;
@@ -785,7 +922,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public com.google.protobuf.ByteString
           getStyleBytes() {
@@ -806,7 +943,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public Builder setStyle(
           java.lang.String value) {
@@ -824,7 +961,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public Builder clearStyle() {
         
@@ -838,7 +975,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public Builder setStyleBytes(
           com.google.protobuf.ByteString value) {
@@ -919,25 +1056,35 @@ public final class Protos {
     edu.cmu.cs.gabriel.network.Protos.FromServer.Status getStatus();
 
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>optional string engine = 3;</code>
+     */
+    java.lang.String getEngine();
+    /**
+     * <code>optional string engine = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getEngineBytes();
+
+    /**
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> 
         getResultsList();
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index);
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     int getResultsCount();
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
         getResultsOrBuilderList();
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index);
@@ -956,6 +1103,7 @@ public final class Protos {
     private FromServer() {
       frameId_ = 0L;
       status_ = 0;
+      engine_ = "";
       results_ = java.util.Collections.emptyList();
     }
 
@@ -996,9 +1144,15 @@ public final class Protos {
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              engine_ = s;
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.FromServer.Result>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               results_.add(
                   input.readMessage(edu.cmu.cs.gabriel.network.Protos.FromServer.Result.parser(), extensionRegistry));
@@ -1012,7 +1166,7 @@ public final class Protos {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           results_ = java.util.Collections.unmodifiableList(results_);
         }
         makeExtensionsImmutable();
@@ -1821,35 +1975,69 @@ public final class Protos {
       return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Status.UNRECOGNIZED : result;
     }
 
-    public static final int RESULTS_FIELD_NUMBER = 3;
+    public static final int ENGINE_FIELD_NUMBER = 3;
+    private volatile java.lang.Object engine_;
+    /**
+     * <code>optional string engine = 3;</code>
+     */
+    public java.lang.String getEngine() {
+      java.lang.Object ref = engine_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        engine_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string engine = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getEngineBytes() {
+      java.lang.Object ref = engine_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        engine_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int RESULTS_FIELD_NUMBER = 4;
     private java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> results_;
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> getResultsList() {
       return results_;
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
         getResultsOrBuilderList() {
       return results_;
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public int getResultsCount() {
       return results_.size();
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index) {
       return results_.get(index);
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index) {
@@ -1874,8 +2062,11 @@ public final class Protos {
       if (status_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Status.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
+      if (!getEngineBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, engine_);
+      }
       for (int i = 0; i < results_.size(); i++) {
-        output.writeMessage(3, results_.get(i));
+        output.writeMessage(4, results_.get(i));
       }
     }
 
@@ -1892,9 +2083,12 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
+      if (!getEngineBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, engine_);
+      }
       for (int i = 0; i < results_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, results_.get(i));
+          .computeMessageSize(4, results_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -1915,6 +2109,8 @@ public final class Protos {
       result = result && (getFrameId()
           == other.getFrameId());
       result = result && status_ == other.status_;
+      result = result && getEngine()
+          .equals(other.getEngine());
       result = result && getResultsList()
           .equals(other.getResultsList());
       return result;
@@ -1932,6 +2128,8 @@ public final class Protos {
           getFrameId());
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + status_;
+      hash = (37 * hash) + ENGINE_FIELD_NUMBER;
+      hash = (53 * hash) + getEngine().hashCode();
       if (getResultsCount() > 0) {
         hash = (37 * hash) + RESULTS_FIELD_NUMBER;
         hash = (53 * hash) + getResultsList().hashCode();
@@ -2059,9 +2257,11 @@ public final class Protos {
 
         status_ = 0;
 
+        engine_ = "";
+
         if (resultsBuilder_ == null) {
           results_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           resultsBuilder_.clear();
         }
@@ -2091,10 +2291,11 @@ public final class Protos {
         int to_bitField0_ = 0;
         result.frameId_ = frameId_;
         result.status_ = status_;
+        result.engine_ = engine_;
         if (resultsBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
             results_ = java.util.Collections.unmodifiableList(results_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.results_ = results_;
         } else {
@@ -2148,11 +2349,15 @@ public final class Protos {
         if (other.status_ != 0) {
           setStatusValue(other.getStatusValue());
         }
+        if (!other.getEngine().isEmpty()) {
+          engine_ = other.engine_;
+          onChanged();
+        }
         if (resultsBuilder_ == null) {
           if (!other.results_.isEmpty()) {
             if (results_.isEmpty()) {
               results_ = other.results_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureResultsIsMutable();
               results_.addAll(other.results_);
@@ -2165,7 +2370,7 @@ public final class Protos {
               resultsBuilder_.dispose();
               resultsBuilder_ = null;
               results_ = other.results_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000008);
               resultsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getResultsFieldBuilder() : null;
@@ -2271,12 +2476,81 @@ public final class Protos {
         return this;
       }
 
+      private java.lang.Object engine_ = "";
+      /**
+       * <code>optional string engine = 3;</code>
+       */
+      public java.lang.String getEngine() {
+        java.lang.Object ref = engine_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          engine_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string engine = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getEngineBytes() {
+        java.lang.Object ref = engine_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          engine_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string engine = 3;</code>
+       */
+      public Builder setEngine(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        engine_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string engine = 3;</code>
+       */
+      public Builder clearEngine() {
+        
+        engine_ = getDefaultInstance().getEngine();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string engine = 3;</code>
+       */
+      public Builder setEngineBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        engine_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> results_ =
         java.util.Collections.emptyList();
       private void ensureResultsIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.FromServer.Result>(results_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -2284,7 +2558,7 @@ public final class Protos {
           edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> resultsBuilder_;
 
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> getResultsList() {
         if (resultsBuilder_ == null) {
@@ -2294,7 +2568,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public int getResultsCount() {
         if (resultsBuilder_ == null) {
@@ -2304,7 +2578,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index) {
         if (resultsBuilder_ == null) {
@@ -2314,7 +2588,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder setResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
@@ -2331,7 +2605,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder setResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
@@ -2345,7 +2619,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
         if (resultsBuilder_ == null) {
@@ -2361,7 +2635,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
@@ -2378,7 +2652,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(
           edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
@@ -2392,7 +2666,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
@@ -2406,7 +2680,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addAllResults(
           java.lang.Iterable<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.Result> values) {
@@ -2421,12 +2695,12 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder clearResults() {
         if (resultsBuilder_ == null) {
           results_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           resultsBuilder_.clear();
@@ -2434,7 +2708,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder removeResults(int index) {
         if (resultsBuilder_ == null) {
@@ -2447,14 +2721,14 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder getResultsBuilder(
           int index) {
         return getResultsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
           int index) {
@@ -2464,7 +2738,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
            getResultsOrBuilderList() {
@@ -2475,14 +2749,14 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder addResultsBuilder() {
         return getResultsFieldBuilder().addBuilder(
             edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance());
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder addResultsBuilder(
           int index) {
@@ -2490,7 +2764,7 @@ public final class Protos {
             index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance());
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder> 
            getResultsBuilderList() {
@@ -2503,7 +2777,7 @@ public final class Protos {
           resultsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder>(
                   results_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
                   isClean());
           results_ = null;
@@ -2583,21 +2857,22 @@ public final class Protos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rgabriel.proto\022\007gabriel\"\242\001\n\nFromClient\022" +
+      "\n\rgabriel.proto\022\007gabriel\"\262\001\n\nFromClient\022" +
       "\020\n\010frame_id\030\001 \001(\004\022&\n\004type\030\002 \001(\0162\030.gabrie" +
-      "l.FromClient.Type\022\017\n\007payload\030\003 \001(\014\022\r\n\005st" +
-      "yle\030\004 \001(\t\":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022" +
-      "\t\n\005AUDIO\020\002\022\021\n\rACCELEROMETER\020\003\"\346\002\n\nFromSe" +
-      "rver\022\020\n\010frame_id\030\001 \001(\004\022*\n\006status\030\002 \001(\0162\032" +
-      ".gabriel.FromServer.Status\022+\n\007results\030\003 " +
-      "\003(\0132\032.gabriel.FromServer.Result\032\226\001\n\006Resu" +
-      "lt\0223\n\004type\030\001 \001(\0162%.gabriel.FromServer.Re" +
-      "sult.ResultType\022\017\n\007payload\030\002 \001(\014\"F\n\nResu",
-      "ltType\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022" +
-      "\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004\"T\n\006Status\022\013\n\007SU" +
-      "CCESS\020\000\022\025\n\021UNSPECIFIED_ERROR\020\001\022\016\n\nQUEUE_" +
-      "FULL\020\002\022\026\n\022WRONG_INPUT_FORMAT\020\003B$\n\032edu.cm" +
-      "u.cs.gabriel.networkB\006Protosb\006proto3"
+      "l.FromClient.Type\022\017\n\007payload\030\003 \001(\014\022\016\n\006en" +
+      "gine\030\004 \001(\t\022\r\n\005style\030\005 \001(\t\":\n\004Type\022\t\n\005IMA" +
+      "GE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\021\n\rACCELEROME" +
+      "TER\020\003\"\366\002\n\nFromServer\022\020\n\010frame_id\030\001 \001(\004\022*" +
+      "\n\006status\030\002 \001(\0162\032.gabriel.FromServer.Stat" +
+      "us\022\016\n\006engine\030\003 \001(\t\022+\n\007results\030\004 \003(\0132\032.ga" +
+      "briel.FromServer.Result\032\226\001\n\006Result\0223\n\004ty" +
+      "pe\030\001 \001(\0162%.gabriel.FromServer.Result.Res",
+      "ultType\022\017\n\007payload\030\002 \001(\014\"F\n\nResultType\022\t" +
+      "\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\010\n\004TEXT\020" +
+      "\003\022\r\n\tANIMATION\020\004\"T\n\006Status\022\013\n\007SUCCESS\020\000\022" +
+      "\025\n\021UNSPECIFIED_ERROR\020\001\022\016\n\nQUEUE_FULL\020\002\022\026" +
+      "\n\022WRONG_INPUT_FORMAT\020\003B$\n\032edu.cmu.cs.gab" +
+      "riel.networkB\006Protosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2616,13 +2891,13 @@ public final class Protos {
     internal_static_gabriel_FromClient_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromClient_descriptor,
-        new java.lang.String[] { "FrameId", "Type", "Payload", "Style", });
+        new java.lang.String[] { "FrameId", "Type", "Payload", "Engine", "Style", });
     internal_static_gabriel_FromServer_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_gabriel_FromServer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromServer_descriptor,
-        new java.lang.String[] { "FrameId", "Status", "Results", });
+        new java.lang.String[] { "FrameId", "Status", "Engine", "Results", });
     internal_static_gabriel_FromServer_Result_descriptor =
       internal_static_gabriel_FromServer_descriptor.getNestedTypes().get(0);
     internal_static_gabriel_FromServer_Result_fieldAccessorTable = new
