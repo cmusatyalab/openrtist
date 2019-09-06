@@ -41,6 +41,7 @@ import android.hardware.Camera.Size;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 import android.view.TextureView;
@@ -92,9 +93,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private String serverIP = null;
     private String style_type = "udnie";
     private String prev_style_type = "udnie";
-    private ControlThread controlThread = null;
     private TokenController tokenController = null;
-    private PingThread pingThread = null;
 
     private Websocket websocket;
 
@@ -144,6 +143,60 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private TextView fpsLabel = null;
 
     private int framesProcessed = 0;
+    private byte[] frameToSend;
+    Camera.Parameters parameters;
+    Object frameToSendLock = new Object();
+
+    // Background threads based on
+    // https://github.com/googlesamples/android-Camera2Basic/blob/master/Application/src/main/java/com/example/android/camera2basic/Camera2BasicFragment.java#L652
+    /**
+     * Thread for running tasks that shouldn't block the UI.
+     */
+    private HandlerThread backgroundThread;
+
+    /**
+     * A {@link Handler} for running tasks in the background.
+     */
+    private Handler backgroundHandler;
+
+    /**
+     * Starts a background thread and its {@link Handler}.
+     */
+    private void startBackgroundThread() {
+        backgroundThread = new HandlerThread("ImageUpload");
+        backgroundThread.start();
+        backgroundHandler = new Handler(backgroundThread.getLooper());
+        backgroundHandler.post(imageUpload);
+    }
+
+    /**
+     * Stops the background thread and its {@link Handler}.
+     */
+    private void stopBackgroundThread() {
+        backgroundThread.quitSafely();
+        try {
+            backgroundThread.join();
+            backgroundThread = null;
+            backgroundHandler = null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Runnable imageUpload = new Runnable() {
+        @Override
+        public void run() {
+            tokenController.getCurrentToken();  // Wait until we have a token
+
+            synchronized (frameToSendLock) {
+                if (frameToSend != null && parameters != null && websocket != null) {
+                    websocket.sendFrame(frameToSend, parameters, style_type);
+                    tokenController.decreaseToken();
+                }
+            }
+            backgroundHandler.post(imageUpload);
+        }
+    };
 
     //List of Styles
 
@@ -449,6 +502,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             serverIP = Const.SERVER_IP;
             initPerRun(serverIP, Const.TOKEN_SIZE, null);
         }
+        startBackgroundThread();
     }
 
     @Override
@@ -459,6 +513,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         if(capturingScreen)
             stopRecording();
         this.terminate();
+        stopBackgroundThread();
         super.onPause();
     }
 
@@ -646,12 +701,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private void initPerRun(String serverIP, int tokenSize, File latencyFile) {
         Log.v(LOG_TAG, "++initPerRun");
 
-        if ((pingThread != null) && (pingThread.isAlive())) {
-            pingThread.kill();
-            pingThread.interrupt();
-            pingThread = null;
-        }
-
         if (Const.IS_EXPERIMENT) {
             if (isFirstExperiment) {
                 isFirstExperiment = false;
@@ -659,7 +708,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 try {
                     Thread.sleep(20 * 1000);
                 } catch (InterruptedException e) {}
-                controlThread.sendControlMsg("ping");
                 // wait a while for ping to finish...
                 try {
                     Thread.sleep(5 * 1000);
@@ -669,17 +717,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         if (tokenController != null) {
             tokenController.close();
         }
-        if ((controlThread != null) && (controlThread.isAlive())) {
-            controlThread.close();
-            controlThread = null;
-        }
 
         if (serverIP == null) return;
-
-        if (Const.BACKGROUND_PING) {
-	        pingThread = new PingThread(serverIP, Const.PING_INTERVAL);
-	        pingThread.start();
-        }
 
         logicalTime = new LogicalTime();
 
@@ -693,19 +732,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             }
         }
 
-        controlThread = new ControlThread(serverIP, Const.CONTROL_PORT, returnMsgHandler, tokenController);
-        controlThread.setPriority(Thread.MIN_PRIORITY);
-        controlThread.start();
-
-        if (Const.IS_EXPERIMENT) {
-            controlThread.sendControlMsg("ping");
-            // wait a while for ping to finish...
-            try {
-                Thread.sleep(5 * 1000);
-            } catch (InterruptedException e) {}
-        }
-
-        websocket = new Websocket(serverIP, 9098, returnMsgHandler, this);
+        websocket = new Websocket(serverIP, 9098, returnMsgHandler, this, tokenController);
     }
 
     /**
@@ -764,11 +791,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
-                Camera.Parameters parameters = mCamera.getParameters();
+                parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
-                    if (websocket != null) {
-                        websocket.sendFrame(frame, parameters, style_type);
+                    synchronized (frameToSendLock) {
+                        frameToSend = frame;
                     }
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
@@ -980,16 +1007,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         isRunning = false;
 
-        if ((pingThread != null) && (pingThread.isAlive())) {
-            pingThread.kill();
-            pingThread.interrupt();
-            pingThread = null;
-        }
-
-        if ((controlThread != null) && (controlThread.isAlive())) {
-            controlThread.close();
-            controlThread = null;
-        }
         if (tokenController != null){
             tokenController.close();
             tokenController = null;

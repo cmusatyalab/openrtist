@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.media.session.MediaSession;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
@@ -26,8 +27,10 @@ import java.io.ByteArrayOutputStream;
 
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.network.Protos.Input;
-import edu.cmu.cs.gabriel.network.Protos.Result;
+import edu.cmu.cs.gabriel.network.Protos.Output;
 
+import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
+import edu.cmu.cs.gabriel.token.TokenController;
 import okhttp3.OkHttpClient;
 
 public class Websocket {
@@ -39,7 +42,7 @@ public class Websocket {
         void Send(Input input);
 
         @Receive
-        Stream<Result> Receive();
+        Stream<Output> Receive();
 
         @Receive
         Stream<WebSocket.Event> observeWebSocketEvent();
@@ -48,11 +51,13 @@ public class Websocket {
     private GabrielSocket webSocketInterface;
     private Handler returnMsgHandler;
     private long frameID;
+    private TokenController tokenController;
 
-    public Websocket(String serverIP, int port, Handler returnMsgHandler, Activity activity) {
+    public Websocket(String serverIP, int port, Handler returnMsgHandler, Activity activity, TokenController tokenController) {
         this.returnMsgHandler = returnMsgHandler;
         String url = "ws://" + serverIP + ":" + port;
         frameID = 0;
+        this.tokenController = tokenController;
 
         OkHttpClient okClient = new OkHttpClient();
 
@@ -62,18 +67,32 @@ public class Websocket {
                 .lifecycle(AndroidLifecycle.ofApplicationForeground(activity.getApplication()))
                 .build().create(GabrielSocket.class);
 
-        webSocketInterface.Receive().start(new Stream.Observer<Result>() {
+        webSocketInterface.Receive().start(new Stream.Observer<Output>() {
             @Override
-            public void onNext(Result result) {
-                System.out.println("Received");
+            public void onNext(Output output) {
 
-                ByteString dataString = result.getData();
-                Bitmap imageFeedback = BitmapFactory.decodeByteArray(dataString.toByteArray(),0, dataString.size());
+                String status;
 
-                Message msg = Message.obtain();
-                msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                msg.obj = imageFeedback;
-                Websocket.this.returnMsgHandler.sendMessage(msg);
+                if (output.getStatus() == Output.Status.SUCCESS) {
+                    if (output.getResultsCount() == 1) {
+                        Output.Result result = output.getResults(0);
+                        ByteString dataString = result.getPayload();
+
+                        Bitmap imageFeedback = BitmapFactory.decodeByteArray(dataString.toByteArray(),0, dataString.size());
+
+                        Message msg = Message.obtain();
+                        msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+                        msg.obj = imageFeedback;
+                        Websocket.this.returnMsgHandler.sendMessage(msg);
+                    } else {
+                        Log.e(TAG, "Got " + output.getResultsCount() + " result in output.");
+                    }
+                } else {
+                    Log.e(TAG, "Output status was: " + output.getStatus().name());
+                }
+
+                // Refill token
+                Websocket.this.tokenController.increaseTokens(1);
             }
 
             @Override
@@ -109,7 +128,6 @@ public class Websocket {
     }
 
     public void sendFrame(byte[] frame, Camera.Parameters parameters, String style) {
-        System.out.println("Sending");
         byte[] data;
 
         Camera.Size cameraImageSize = parameters.getPreviewSize();
@@ -137,9 +155,9 @@ public class Websocket {
         this.frameID++;
 
         Input.Builder inputBuilder = Input.newBuilder();
-        inputBuilder.setUpdateId(Long.toString(this.frameID));
+        inputBuilder.setFrameId(this.frameID);
         inputBuilder.setType(Input.Type.IMAGE);
-        inputBuilder.setData(ByteString.copyFrom(data));
+        inputBuilder.setPayload(ByteString.copyFrom(data));
         inputBuilder.setStyle(style);
 
         Input input = inputBuilder.build();
