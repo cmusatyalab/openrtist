@@ -14,8 +14,8 @@ public final class Protos {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  public interface InputOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:gabriel.Input)
+  public interface FromClientOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:gabriel.FromClient)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -24,13 +24,13 @@ public final class Protos {
     long getFrameId();
 
     /**
-     * <code>optional .gabriel.Input.Type type = 2;</code>
+     * <code>optional .gabriel.FromClient.Type type = 2;</code>
      */
     int getTypeValue();
     /**
-     * <code>optional .gabriel.Input.Type type = 2;</code>
+     * <code>optional .gabriel.FromClient.Type type = 2;</code>
      */
-    edu.cmu.cs.gabriel.network.Protos.Input.Type getType();
+    edu.cmu.cs.gabriel.network.Protos.FromClient.Type getType();
 
     /**
      * <code>optional bytes payload = 3;</code>
@@ -39,11 +39,29 @@ public final class Protos {
 
     /**
      * <pre>
+     * Only used by Server:
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    java.lang.String getHost();
+    /**
+     * <pre>
+     * Only used by Server:
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getHostBytes();
+
+    /**
+     * <pre>
      * engine-specific fields:
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     java.lang.String getStyle();
     /**
@@ -52,26 +70,27 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     com.google.protobuf.ByteString
         getStyleBytes();
   }
   /**
-   * Protobuf type {@code gabriel.Input}
+   * Protobuf type {@code gabriel.FromClient}
    */
-  public  static final class Input extends
+  public  static final class FromClient extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:gabriel.Input)
-      InputOrBuilder {
-    // Use Input.newBuilder() to construct.
-    private Input(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:gabriel.FromClient)
+      FromClientOrBuilder {
+    // Use FromClient.newBuilder() to construct.
+    private FromClient(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private Input() {
+    private FromClient() {
       frameId_ = 0L;
       type_ = 0;
       payload_ = com.google.protobuf.ByteString.EMPTY;
+      host_ = "";
       style_ = "";
     }
 
@@ -80,7 +99,7 @@ public final class Protos {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private Input(
+    private FromClient(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -119,6 +138,12 @@ public final class Protos {
             case 34: {
               java.lang.String s = input.readStringRequireUtf8();
 
+              host_ = s;
+              break;
+            }
+            case 42: {
+              java.lang.String s = input.readStringRequireUtf8();
+
               style_ = s;
               break;
             }
@@ -135,18 +160,18 @@ public final class Protos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Input_descriptor;
+      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromClient_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Input_fieldAccessorTable
+      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromClient_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              edu.cmu.cs.gabriel.network.Protos.Input.class, edu.cmu.cs.gabriel.network.Protos.Input.Builder.class);
+              edu.cmu.cs.gabriel.network.Protos.FromClient.class, edu.cmu.cs.gabriel.network.Protos.FromClient.Builder.class);
     }
 
     /**
-     * Protobuf enum {@code gabriel.Input.Type}
+     * Protobuf enum {@code gabriel.FromClient.Type}
      */
     public enum Type
         implements com.google.protobuf.ProtocolMessageEnum {
@@ -235,7 +260,7 @@ public final class Protos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return edu.cmu.cs.gabriel.network.Protos.Input.getDescriptor().getEnumTypes().get(0);
+        return edu.cmu.cs.gabriel.network.Protos.FromClient.getDescriptor().getEnumTypes().get(0);
       }
 
       private static final Type[] VALUES = values();
@@ -258,7 +283,7 @@ public final class Protos {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:gabriel.Input.Type)
+      // @@protoc_insertion_point(enum_scope:gabriel.FromClient.Type)
     }
 
     public static final int FRAME_ID_FIELD_NUMBER = 1;
@@ -273,17 +298,17 @@ public final class Protos {
     public static final int TYPE_FIELD_NUMBER = 2;
     private int type_;
     /**
-     * <code>optional .gabriel.Input.Type type = 2;</code>
+     * <code>optional .gabriel.FromClient.Type type = 2;</code>
      */
     public int getTypeValue() {
       return type_;
     }
     /**
-     * <code>optional .gabriel.Input.Type type = 2;</code>
+     * <code>optional .gabriel.FromClient.Type type = 2;</code>
      */
-    public edu.cmu.cs.gabriel.network.Protos.Input.Type getType() {
-      edu.cmu.cs.gabriel.network.Protos.Input.Type result = edu.cmu.cs.gabriel.network.Protos.Input.Type.valueOf(type_);
-      return result == null ? edu.cmu.cs.gabriel.network.Protos.Input.Type.UNRECOGNIZED : result;
+    public edu.cmu.cs.gabriel.network.Protos.FromClient.Type getType() {
+      edu.cmu.cs.gabriel.network.Protos.FromClient.Type result = edu.cmu.cs.gabriel.network.Protos.FromClient.Type.valueOf(type_);
+      return result == null ? edu.cmu.cs.gabriel.network.Protos.FromClient.Type.UNRECOGNIZED : result;
     }
 
     public static final int PAYLOAD_FIELD_NUMBER = 3;
@@ -295,7 +320,49 @@ public final class Protos {
       return payload_;
     }
 
-    public static final int STYLE_FIELD_NUMBER = 4;
+    public static final int HOST_FIELD_NUMBER = 4;
+    private volatile java.lang.Object host_;
+    /**
+     * <pre>
+     * Only used by Server:
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    public java.lang.String getHost() {
+      java.lang.Object ref = host_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        host_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Only used by Server:
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getHostBytes() {
+      java.lang.Object ref = host_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        host_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    public static final int STYLE_FIELD_NUMBER = 5;
     private volatile java.lang.Object style_;
     /**
      * <pre>
@@ -303,7 +370,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     public java.lang.String getStyle() {
       java.lang.Object ref = style_;
@@ -323,7 +390,7 @@ public final class Protos {
      * OpenArtist:
      * </pre>
      *
-     * <code>optional string style = 4;</code>
+     * <code>optional string style = 5;</code>
      */
     public com.google.protobuf.ByteString
         getStyleBytes() {
@@ -354,14 +421,17 @@ public final class Protos {
       if (frameId_ != 0L) {
         output.writeUInt64(1, frameId_);
       }
-      if (type_ != edu.cmu.cs.gabriel.network.Protos.Input.Type.IMAGE.getNumber()) {
+      if (type_ != edu.cmu.cs.gabriel.network.Protos.FromClient.Type.IMAGE.getNumber()) {
         output.writeEnum(2, type_);
       }
       if (!payload_.isEmpty()) {
         output.writeBytes(3, payload_);
       }
+      if (!getHostBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, host_);
+      }
       if (!getStyleBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, style_);
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, style_);
       }
     }
 
@@ -374,7 +444,7 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(1, frameId_);
       }
-      if (type_ != edu.cmu.cs.gabriel.network.Protos.Input.Type.IMAGE.getNumber()) {
+      if (type_ != edu.cmu.cs.gabriel.network.Protos.FromClient.Type.IMAGE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, type_);
       }
@@ -382,8 +452,11 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(3, payload_);
       }
+      if (!getHostBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, host_);
+      }
       if (!getStyleBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, style_);
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, style_);
       }
       memoizedSize = size;
       return size;
@@ -395,10 +468,10 @@ public final class Protos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof edu.cmu.cs.gabriel.network.Protos.Input)) {
+      if (!(obj instanceof edu.cmu.cs.gabriel.network.Protos.FromClient)) {
         return super.equals(obj);
       }
-      edu.cmu.cs.gabriel.network.Protos.Input other = (edu.cmu.cs.gabriel.network.Protos.Input) obj;
+      edu.cmu.cs.gabriel.network.Protos.FromClient other = (edu.cmu.cs.gabriel.network.Protos.FromClient) obj;
 
       boolean result = true;
       result = result && (getFrameId()
@@ -406,6 +479,8 @@ public final class Protos {
       result = result && type_ == other.type_;
       result = result && getPayload()
           .equals(other.getPayload());
+      result = result && getHost()
+          .equals(other.getHost());
       result = result && getStyle()
           .equals(other.getStyle());
       return result;
@@ -425,6 +500,8 @@ public final class Protos {
       hash = (53 * hash) + type_;
       hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
       hash = (53 * hash) + getPayload().hashCode();
+      hash = (37 * hash) + HOST_FIELD_NUMBER;
+      hash = (53 * hash) + getHost().hashCode();
       hash = (37 * hash) + STYLE_FIELD_NUMBER;
       hash = (53 * hash) + getStyle().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -432,58 +509,58 @@ public final class Protos {
       return hash;
     }
 
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(byte[] data)
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(java.io.InputStream input)
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseDelimitedFrom(java.io.InputStream input)
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseDelimitedFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Input parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -495,7 +572,7 @@ public final class Protos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(edu.cmu.cs.gabriel.network.Protos.Input prototype) {
+    public static Builder newBuilder(edu.cmu.cs.gabriel.network.Protos.FromClient prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -510,25 +587,25 @@ public final class Protos {
       return builder;
     }
     /**
-     * Protobuf type {@code gabriel.Input}
+     * Protobuf type {@code gabriel.FromClient}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:gabriel.Input)
-        edu.cmu.cs.gabriel.network.Protos.InputOrBuilder {
+        // @@protoc_insertion_point(builder_implements:gabriel.FromClient)
+        edu.cmu.cs.gabriel.network.Protos.FromClientOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Input_descriptor;
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromClient_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Input_fieldAccessorTable
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromClient_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                edu.cmu.cs.gabriel.network.Protos.Input.class, edu.cmu.cs.gabriel.network.Protos.Input.Builder.class);
+                edu.cmu.cs.gabriel.network.Protos.FromClient.class, edu.cmu.cs.gabriel.network.Protos.FromClient.Builder.class);
       }
 
-      // Construct using edu.cmu.cs.gabriel.network.Protos.Input.newBuilder()
+      // Construct using edu.cmu.cs.gabriel.network.Protos.FromClient.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -551,6 +628,8 @@ public final class Protos {
 
         payload_ = com.google.protobuf.ByteString.EMPTY;
 
+        host_ = "";
+
         style_ = "";
 
         return this;
@@ -558,26 +637,27 @@ public final class Protos {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Input_descriptor;
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromClient_descriptor;
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Input getDefaultInstanceForType() {
-        return edu.cmu.cs.gabriel.network.Protos.Input.getDefaultInstance();
+      public edu.cmu.cs.gabriel.network.Protos.FromClient getDefaultInstanceForType() {
+        return edu.cmu.cs.gabriel.network.Protos.FromClient.getDefaultInstance();
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Input build() {
-        edu.cmu.cs.gabriel.network.Protos.Input result = buildPartial();
+      public edu.cmu.cs.gabriel.network.Protos.FromClient build() {
+        edu.cmu.cs.gabriel.network.Protos.FromClient result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Input buildPartial() {
-        edu.cmu.cs.gabriel.network.Protos.Input result = new edu.cmu.cs.gabriel.network.Protos.Input(this);
+      public edu.cmu.cs.gabriel.network.Protos.FromClient buildPartial() {
+        edu.cmu.cs.gabriel.network.Protos.FromClient result = new edu.cmu.cs.gabriel.network.Protos.FromClient(this);
         result.frameId_ = frameId_;
         result.type_ = type_;
         result.payload_ = payload_;
+        result.host_ = host_;
         result.style_ = style_;
         onBuilt();
         return result;
@@ -610,16 +690,16 @@ public final class Protos {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof edu.cmu.cs.gabriel.network.Protos.Input) {
-          return mergeFrom((edu.cmu.cs.gabriel.network.Protos.Input)other);
+        if (other instanceof edu.cmu.cs.gabriel.network.Protos.FromClient) {
+          return mergeFrom((edu.cmu.cs.gabriel.network.Protos.FromClient)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.Input other) {
-        if (other == edu.cmu.cs.gabriel.network.Protos.Input.getDefaultInstance()) return this;
+      public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.FromClient other) {
+        if (other == edu.cmu.cs.gabriel.network.Protos.FromClient.getDefaultInstance()) return this;
         if (other.getFrameId() != 0L) {
           setFrameId(other.getFrameId());
         }
@@ -628,6 +708,10 @@ public final class Protos {
         }
         if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
           setPayload(other.getPayload());
+        }
+        if (!other.getHost().isEmpty()) {
+          host_ = other.host_;
+          onChanged();
         }
         if (!other.getStyle().isEmpty()) {
           style_ = other.style_;
@@ -645,11 +729,11 @@ public final class Protos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        edu.cmu.cs.gabriel.network.Protos.Input parsedMessage = null;
+        edu.cmu.cs.gabriel.network.Protos.FromClient parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (edu.cmu.cs.gabriel.network.Protos.Input) e.getUnfinishedMessage();
+          parsedMessage = (edu.cmu.cs.gabriel.network.Protos.FromClient) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -687,13 +771,13 @@ public final class Protos {
 
       private int type_ = 0;
       /**
-       * <code>optional .gabriel.Input.Type type = 2;</code>
+       * <code>optional .gabriel.FromClient.Type type = 2;</code>
        */
       public int getTypeValue() {
         return type_;
       }
       /**
-       * <code>optional .gabriel.Input.Type type = 2;</code>
+       * <code>optional .gabriel.FromClient.Type type = 2;</code>
        */
       public Builder setTypeValue(int value) {
         type_ = value;
@@ -701,16 +785,16 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>optional .gabriel.Input.Type type = 2;</code>
+       * <code>optional .gabriel.FromClient.Type type = 2;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Input.Type getType() {
-        edu.cmu.cs.gabriel.network.Protos.Input.Type result = edu.cmu.cs.gabriel.network.Protos.Input.Type.valueOf(type_);
-        return result == null ? edu.cmu.cs.gabriel.network.Protos.Input.Type.UNRECOGNIZED : result;
+      public edu.cmu.cs.gabriel.network.Protos.FromClient.Type getType() {
+        edu.cmu.cs.gabriel.network.Protos.FromClient.Type result = edu.cmu.cs.gabriel.network.Protos.FromClient.Type.valueOf(type_);
+        return result == null ? edu.cmu.cs.gabriel.network.Protos.FromClient.Type.UNRECOGNIZED : result;
       }
       /**
-       * <code>optional .gabriel.Input.Type type = 2;</code>
+       * <code>optional .gabriel.FromClient.Type type = 2;</code>
        */
-      public Builder setType(edu.cmu.cs.gabriel.network.Protos.Input.Type value) {
+      public Builder setType(edu.cmu.cs.gabriel.network.Protos.FromClient.Type value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -720,7 +804,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>optional .gabriel.Input.Type type = 2;</code>
+       * <code>optional .gabriel.FromClient.Type type = 2;</code>
        */
       public Builder clearType() {
         
@@ -758,6 +842,95 @@ public final class Protos {
         return this;
       }
 
+      private java.lang.Object host_ = "";
+      /**
+       * <pre>
+       * Only used by Server:
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public java.lang.String getHost() {
+        java.lang.Object ref = host_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          host_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Only used by Server:
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getHostBytes() {
+        java.lang.Object ref = host_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          host_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Only used by Server:
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public Builder setHost(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        host_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Only used by Server:
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public Builder clearHost() {
+        
+        host_ = getDefaultInstance().getHost();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Only used by Server:
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public Builder setHostBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        host_ = value;
+        onChanged();
+        return this;
+      }
+
       private java.lang.Object style_ = "";
       /**
        * <pre>
@@ -765,7 +938,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public java.lang.String getStyle() {
         java.lang.Object ref = style_;
@@ -785,7 +958,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public com.google.protobuf.ByteString
           getStyleBytes() {
@@ -806,7 +979,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public Builder setStyle(
           java.lang.String value) {
@@ -824,7 +997,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public Builder clearStyle() {
         
@@ -838,7 +1011,7 @@ public final class Protos {
        * OpenArtist:
        * </pre>
        *
-       * <code>optional string style = 4;</code>
+       * <code>optional string style = 5;</code>
        */
       public Builder setStyleBytes(
           com.google.protobuf.ByteString value) {
@@ -862,46 +1035,46 @@ public final class Protos {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:gabriel.Input)
+      // @@protoc_insertion_point(builder_scope:gabriel.FromClient)
     }
 
-    // @@protoc_insertion_point(class_scope:gabriel.Input)
-    private static final edu.cmu.cs.gabriel.network.Protos.Input DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:gabriel.FromClient)
+    private static final edu.cmu.cs.gabriel.network.Protos.FromClient DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new edu.cmu.cs.gabriel.network.Protos.Input();
+      DEFAULT_INSTANCE = new edu.cmu.cs.gabriel.network.Protos.FromClient();
     }
 
-    public static edu.cmu.cs.gabriel.network.Protos.Input getDefaultInstance() {
+    public static edu.cmu.cs.gabriel.network.Protos.FromClient getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<Input>
-        PARSER = new com.google.protobuf.AbstractParser<Input>() {
-      public Input parsePartialFrom(
+    private static final com.google.protobuf.Parser<FromClient>
+        PARSER = new com.google.protobuf.AbstractParser<FromClient>() {
+      public FromClient parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Input(input, extensionRegistry);
+          return new FromClient(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<Input> parser() {
+    public static com.google.protobuf.Parser<FromClient> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<Input> getParserForType() {
+    public com.google.protobuf.Parser<FromClient> getParserForType() {
       return PARSER;
     }
 
-    public edu.cmu.cs.gabriel.network.Protos.Input getDefaultInstanceForType() {
+    public edu.cmu.cs.gabriel.network.Protos.FromClient getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface OutputOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:gabriel.Output)
+  public interface FromServerOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:gabriel.FromServer)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -910,53 +1083,72 @@ public final class Protos {
     long getFrameId();
 
     /**
-     * <code>optional .gabriel.Output.Status status = 2;</code>
+     * <code>optional .gabriel.FromServer.Status status = 2;</code>
      */
     int getStatusValue();
     /**
-     * <code>optional .gabriel.Output.Status status = 2;</code>
+     * <code>optional .gabriel.FromServer.Status status = 2;</code>
      */
-    edu.cmu.cs.gabriel.network.Protos.Output.Status getStatus();
+    edu.cmu.cs.gabriel.network.Protos.FromServer.Status getStatus();
 
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    java.util.List<edu.cmu.cs.gabriel.network.Protos.Output.Result> 
+    java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> 
         getResultsList();
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    edu.cmu.cs.gabriel.network.Protos.Output.Result getResults(int index);
+    edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index);
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
     int getResultsCount();
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder> 
+    java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
         getResultsOrBuilderList();
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder getResultsOrBuilder(
+    edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index);
+
+    /**
+     * <pre>
+     * Only used by Gabriel server
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    java.lang.String getHost();
+    /**
+     * <pre>
+     * Only used by Gabriel server
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    com.google.protobuf.ByteString
+        getHostBytes();
   }
   /**
-   * Protobuf type {@code gabriel.Output}
+   * Protobuf type {@code gabriel.FromServer}
    */
-  public  static final class Output extends
+  public  static final class FromServer extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:gabriel.Output)
-      OutputOrBuilder {
-    // Use Output.newBuilder() to construct.
-    private Output(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:gabriel.FromServer)
+      FromServerOrBuilder {
+    // Use FromServer.newBuilder() to construct.
+    private FromServer(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private Output() {
+    private FromServer() {
       frameId_ = 0L;
       status_ = 0;
       results_ = java.util.Collections.emptyList();
+      host_ = "";
     }
 
     @java.lang.Override
@@ -964,7 +1156,7 @@ public final class Protos {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private Output(
+    private FromServer(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -997,11 +1189,17 @@ public final class Protos {
             }
             case 26: {
               if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.Output.Result>();
+                results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.FromServer.Result>();
                 mutable_bitField0_ |= 0x00000004;
               }
               results_.add(
-                  input.readMessage(edu.cmu.cs.gabriel.network.Protos.Output.Result.parser(), extensionRegistry));
+                  input.readMessage(edu.cmu.cs.gabriel.network.Protos.FromServer.Result.parser(), extensionRegistry));
+              break;
+            }
+            case 34: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              host_ = s;
               break;
             }
           }
@@ -1020,18 +1218,18 @@ public final class Protos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_descriptor;
+      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_fieldAccessorTable
+      return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              edu.cmu.cs.gabriel.network.Protos.Output.class, edu.cmu.cs.gabriel.network.Protos.Output.Builder.class);
+              edu.cmu.cs.gabriel.network.Protos.FromServer.class, edu.cmu.cs.gabriel.network.Protos.FromServer.Builder.class);
     }
 
     /**
-     * Protobuf enum {@code gabriel.Output.Status}
+     * Protobuf enum {@code gabriel.FromServer.Status}
      */
     public enum Status
         implements com.google.protobuf.ProtocolMessageEnum {
@@ -1120,7 +1318,7 @@ public final class Protos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return edu.cmu.cs.gabriel.network.Protos.Output.getDescriptor().getEnumTypes().get(0);
+        return edu.cmu.cs.gabriel.network.Protos.FromServer.getDescriptor().getEnumTypes().get(0);
       }
 
       private static final Status[] VALUES = values();
@@ -1143,21 +1341,21 @@ public final class Protos {
         this.value = value;
       }
 
-      // @@protoc_insertion_point(enum_scope:gabriel.Output.Status)
+      // @@protoc_insertion_point(enum_scope:gabriel.FromServer.Status)
     }
 
     public interface ResultOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:gabriel.Output.Result)
+        // @@protoc_insertion_point(interface_extends:gabriel.FromServer.Result)
         com.google.protobuf.MessageOrBuilder {
 
       /**
-       * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+       * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
        */
       int getTypeValue();
       /**
-       * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+       * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
        */
-      edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType getType();
+      edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType getType();
 
       /**
        * <code>optional bytes payload = 2;</code>
@@ -1165,11 +1363,11 @@ public final class Protos {
       com.google.protobuf.ByteString getPayload();
     }
     /**
-     * Protobuf type {@code gabriel.Output.Result}
+     * Protobuf type {@code gabriel.FromServer.Result}
      */
     public  static final class Result extends
         com.google.protobuf.GeneratedMessageV3 implements
-        // @@protoc_insertion_point(message_implements:gabriel.Output.Result)
+        // @@protoc_insertion_point(message_implements:gabriel.FromServer.Result)
         ResultOrBuilder {
       // Use Result.newBuilder() to construct.
       private Result(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
@@ -1229,18 +1427,18 @@ public final class Protos {
       }
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_Result_descriptor;
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_Result_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_Result_fieldAccessorTable
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_Result_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                edu.cmu.cs.gabriel.network.Protos.Output.Result.class, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder.class);
+                edu.cmu.cs.gabriel.network.Protos.FromServer.Result.class, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder.class);
       }
 
       /**
-       * Protobuf enum {@code gabriel.Output.Result.ResultType}
+       * Protobuf enum {@code gabriel.FromServer.Result.ResultType}
        */
       public enum ResultType
           implements com.google.protobuf.ProtocolMessageEnum {
@@ -1338,7 +1536,7 @@ public final class Protos {
         }
         public static final com.google.protobuf.Descriptors.EnumDescriptor
             getDescriptor() {
-          return edu.cmu.cs.gabriel.network.Protos.Output.Result.getDescriptor().getEnumTypes().get(0);
+          return edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDescriptor().getEnumTypes().get(0);
         }
 
         private static final ResultType[] VALUES = values();
@@ -1361,23 +1559,23 @@ public final class Protos {
           this.value = value;
         }
 
-        // @@protoc_insertion_point(enum_scope:gabriel.Output.Result.ResultType)
+        // @@protoc_insertion_point(enum_scope:gabriel.FromServer.Result.ResultType)
       }
 
       public static final int TYPE_FIELD_NUMBER = 1;
       private int type_;
       /**
-       * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+       * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
        */
       public int getTypeValue() {
         return type_;
       }
       /**
-       * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+       * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType getType() {
-        edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType result = edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType.valueOf(type_);
-        return result == null ? edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType.UNRECOGNIZED : result;
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType getType() {
+        edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType result = edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.valueOf(type_);
+        return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.UNRECOGNIZED : result;
       }
 
       public static final int PAYLOAD_FIELD_NUMBER = 2;
@@ -1401,7 +1599,7 @@ public final class Protos {
 
       public void writeTo(com.google.protobuf.CodedOutputStream output)
                           throws java.io.IOException {
-        if (type_ != edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType.ANIMATION.getNumber()) {
+        if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.ANIMATION.getNumber()) {
           output.writeEnum(1, type_);
         }
         if (!payload_.isEmpty()) {
@@ -1414,7 +1612,7 @@ public final class Protos {
         if (size != -1) return size;
 
         size = 0;
-        if (type_ != edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType.ANIMATION.getNumber()) {
+        if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.ANIMATION.getNumber()) {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(1, type_);
         }
@@ -1432,10 +1630,10 @@ public final class Protos {
         if (obj == this) {
          return true;
         }
-        if (!(obj instanceof edu.cmu.cs.gabriel.network.Protos.Output.Result)) {
+        if (!(obj instanceof edu.cmu.cs.gabriel.network.Protos.FromServer.Result)) {
           return super.equals(obj);
         }
-        edu.cmu.cs.gabriel.network.Protos.Output.Result other = (edu.cmu.cs.gabriel.network.Protos.Output.Result) obj;
+        edu.cmu.cs.gabriel.network.Protos.FromServer.Result other = (edu.cmu.cs.gabriel.network.Protos.FromServer.Result) obj;
 
         boolean result = true;
         result = result && type_ == other.type_;
@@ -1460,58 +1658,58 @@ public final class Protos {
         return hash;
       }
 
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(
           com.google.protobuf.ByteString data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(
           com.google.protobuf.ByteString data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(byte[] data)
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(byte[] data)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(
           byte[] data,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
         return PARSER.parseFrom(data, extensionRegistry);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(java.io.InputStream input)
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input, extensionRegistry);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseDelimitedFrom(java.io.InputStream input)
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseDelimitedFrom(java.io.InputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseDelimitedFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseDelimitedFrom(
           java.io.InputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(
           com.google.protobuf.CodedInputStream input)
           throws java.io.IOException {
         return com.google.protobuf.GeneratedMessageV3
             .parseWithIOException(PARSER, input);
       }
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result parseFrom(
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result parseFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
@@ -1523,7 +1721,7 @@ public final class Protos {
       public static Builder newBuilder() {
         return DEFAULT_INSTANCE.toBuilder();
       }
-      public static Builder newBuilder(edu.cmu.cs.gabriel.network.Protos.Output.Result prototype) {
+      public static Builder newBuilder(edu.cmu.cs.gabriel.network.Protos.FromServer.Result prototype) {
         return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
       }
       public Builder toBuilder() {
@@ -1538,25 +1736,25 @@ public final class Protos {
         return builder;
       }
       /**
-       * Protobuf type {@code gabriel.Output.Result}
+       * Protobuf type {@code gabriel.FromServer.Result}
        */
       public static final class Builder extends
           com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-          // @@protoc_insertion_point(builder_implements:gabriel.Output.Result)
-          edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder {
+          // @@protoc_insertion_point(builder_implements:gabriel.FromServer.Result)
+          edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder {
         public static final com.google.protobuf.Descriptors.Descriptor
             getDescriptor() {
-          return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_Result_descriptor;
+          return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_Result_descriptor;
         }
 
         protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internalGetFieldAccessorTable() {
-          return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_Result_fieldAccessorTable
+          return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_Result_fieldAccessorTable
               .ensureFieldAccessorsInitialized(
-                  edu.cmu.cs.gabriel.network.Protos.Output.Result.class, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder.class);
+                  edu.cmu.cs.gabriel.network.Protos.FromServer.Result.class, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder.class);
         }
 
-        // Construct using edu.cmu.cs.gabriel.network.Protos.Output.Result.newBuilder()
+        // Construct using edu.cmu.cs.gabriel.network.Protos.FromServer.Result.newBuilder()
         private Builder() {
           maybeForceBuilderInitialization();
         }
@@ -1582,23 +1780,23 @@ public final class Protos {
 
         public com.google.protobuf.Descriptors.Descriptor
             getDescriptorForType() {
-          return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_Result_descriptor;
+          return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_Result_descriptor;
         }
 
-        public edu.cmu.cs.gabriel.network.Protos.Output.Result getDefaultInstanceForType() {
-          return edu.cmu.cs.gabriel.network.Protos.Output.Result.getDefaultInstance();
+        public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getDefaultInstanceForType() {
+          return edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance();
         }
 
-        public edu.cmu.cs.gabriel.network.Protos.Output.Result build() {
-          edu.cmu.cs.gabriel.network.Protos.Output.Result result = buildPartial();
+        public edu.cmu.cs.gabriel.network.Protos.FromServer.Result build() {
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result result = buildPartial();
           if (!result.isInitialized()) {
             throw newUninitializedMessageException(result);
           }
           return result;
         }
 
-        public edu.cmu.cs.gabriel.network.Protos.Output.Result buildPartial() {
-          edu.cmu.cs.gabriel.network.Protos.Output.Result result = new edu.cmu.cs.gabriel.network.Protos.Output.Result(this);
+        public edu.cmu.cs.gabriel.network.Protos.FromServer.Result buildPartial() {
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result result = new edu.cmu.cs.gabriel.network.Protos.FromServer.Result(this);
           result.type_ = type_;
           result.payload_ = payload_;
           onBuilt();
@@ -1632,16 +1830,16 @@ public final class Protos {
           return (Builder) super.addRepeatedField(field, value);
         }
         public Builder mergeFrom(com.google.protobuf.Message other) {
-          if (other instanceof edu.cmu.cs.gabriel.network.Protos.Output.Result) {
-            return mergeFrom((edu.cmu.cs.gabriel.network.Protos.Output.Result)other);
+          if (other instanceof edu.cmu.cs.gabriel.network.Protos.FromServer.Result) {
+            return mergeFrom((edu.cmu.cs.gabriel.network.Protos.FromServer.Result)other);
           } else {
             super.mergeFrom(other);
             return this;
           }
         }
 
-        public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.Output.Result other) {
-          if (other == edu.cmu.cs.gabriel.network.Protos.Output.Result.getDefaultInstance()) return this;
+        public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.FromServer.Result other) {
+          if (other == edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance()) return this;
           if (other.type_ != 0) {
             setTypeValue(other.getTypeValue());
           }
@@ -1660,11 +1858,11 @@ public final class Protos {
             com.google.protobuf.CodedInputStream input,
             com.google.protobuf.ExtensionRegistryLite extensionRegistry)
             throws java.io.IOException {
-          edu.cmu.cs.gabriel.network.Protos.Output.Result parsedMessage = null;
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result parsedMessage = null;
           try {
             parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
           } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-            parsedMessage = (edu.cmu.cs.gabriel.network.Protos.Output.Result) e.getUnfinishedMessage();
+            parsedMessage = (edu.cmu.cs.gabriel.network.Protos.FromServer.Result) e.getUnfinishedMessage();
             throw e.unwrapIOException();
           } finally {
             if (parsedMessage != null) {
@@ -1676,13 +1874,13 @@ public final class Protos {
 
         private int type_ = 0;
         /**
-         * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+         * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
          */
         public int getTypeValue() {
           return type_;
         }
         /**
-         * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+         * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
          */
         public Builder setTypeValue(int value) {
           type_ = value;
@@ -1690,16 +1888,16 @@ public final class Protos {
           return this;
         }
         /**
-         * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+         * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
          */
-        public edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType getType() {
-          edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType result = edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType.valueOf(type_);
-          return result == null ? edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType.UNRECOGNIZED : result;
+        public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType getType() {
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType result = edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.valueOf(type_);
+          return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.UNRECOGNIZED : result;
         }
         /**
-         * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+         * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
          */
-        public Builder setType(edu.cmu.cs.gabriel.network.Protos.Output.Result.ResultType value) {
+        public Builder setType(edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType value) {
           if (value == null) {
             throw new NullPointerException();
           }
@@ -1709,7 +1907,7 @@ public final class Protos {
           return this;
         }
         /**
-         * <code>optional .gabriel.Output.Result.ResultType type = 1;</code>
+         * <code>optional .gabriel.FromServer.Result.ResultType type = 1;</code>
          */
         public Builder clearType() {
           
@@ -1757,16 +1955,16 @@ public final class Protos {
         }
 
 
-        // @@protoc_insertion_point(builder_scope:gabriel.Output.Result)
+        // @@protoc_insertion_point(builder_scope:gabriel.FromServer.Result)
       }
 
-      // @@protoc_insertion_point(class_scope:gabriel.Output.Result)
-      private static final edu.cmu.cs.gabriel.network.Protos.Output.Result DEFAULT_INSTANCE;
+      // @@protoc_insertion_point(class_scope:gabriel.FromServer.Result)
+      private static final edu.cmu.cs.gabriel.network.Protos.FromServer.Result DEFAULT_INSTANCE;
       static {
-        DEFAULT_INSTANCE = new edu.cmu.cs.gabriel.network.Protos.Output.Result();
+        DEFAULT_INSTANCE = new edu.cmu.cs.gabriel.network.Protos.FromServer.Result();
       }
 
-      public static edu.cmu.cs.gabriel.network.Protos.Output.Result getDefaultInstance() {
+      public static edu.cmu.cs.gabriel.network.Protos.FromServer.Result getDefaultInstance() {
         return DEFAULT_INSTANCE;
       }
 
@@ -1789,7 +1987,7 @@ public final class Protos {
         return PARSER;
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Output.Result getDefaultInstanceForType() {
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getDefaultInstanceForType() {
         return DEFAULT_INSTANCE;
       }
 
@@ -1808,52 +2006,94 @@ public final class Protos {
     public static final int STATUS_FIELD_NUMBER = 2;
     private int status_;
     /**
-     * <code>optional .gabriel.Output.Status status = 2;</code>
+     * <code>optional .gabriel.FromServer.Status status = 2;</code>
      */
     public int getStatusValue() {
       return status_;
     }
     /**
-     * <code>optional .gabriel.Output.Status status = 2;</code>
+     * <code>optional .gabriel.FromServer.Status status = 2;</code>
      */
-    public edu.cmu.cs.gabriel.network.Protos.Output.Status getStatus() {
-      edu.cmu.cs.gabriel.network.Protos.Output.Status result = edu.cmu.cs.gabriel.network.Protos.Output.Status.valueOf(status_);
-      return result == null ? edu.cmu.cs.gabriel.network.Protos.Output.Status.UNRECOGNIZED : result;
+    public edu.cmu.cs.gabriel.network.Protos.FromServer.Status getStatus() {
+      edu.cmu.cs.gabriel.network.Protos.FromServer.Status result = edu.cmu.cs.gabriel.network.Protos.FromServer.Status.valueOf(status_);
+      return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Status.UNRECOGNIZED : result;
     }
 
     public static final int RESULTS_FIELD_NUMBER = 3;
-    private java.util.List<edu.cmu.cs.gabriel.network.Protos.Output.Result> results_;
+    private java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> results_;
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    public java.util.List<edu.cmu.cs.gabriel.network.Protos.Output.Result> getResultsList() {
+    public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> getResultsList() {
       return results_;
     }
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder> 
+    public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
         getResultsOrBuilderList() {
       return results_;
     }
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
     public int getResultsCount() {
       return results_.size();
     }
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    public edu.cmu.cs.gabriel.network.Protos.Output.Result getResults(int index) {
+    public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index) {
       return results_.get(index);
     }
     /**
-     * <code>repeated .gabriel.Output.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
      */
-    public edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder getResultsOrBuilder(
+    public edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index) {
       return results_.get(index);
+    }
+
+    public static final int HOST_FIELD_NUMBER = 4;
+    private volatile java.lang.Object host_;
+    /**
+     * <pre>
+     * Only used by Gabriel server
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    public java.lang.String getHost() {
+      java.lang.Object ref = host_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        host_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * Only used by Gabriel server
+     * </pre>
+     *
+     * <code>optional string host = 4;</code>
+     */
+    public com.google.protobuf.ByteString
+        getHostBytes() {
+      java.lang.Object ref = host_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        host_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1871,11 +2111,14 @@ public final class Protos {
       if (frameId_ != 0L) {
         output.writeUInt64(1, frameId_);
       }
-      if (status_ != edu.cmu.cs.gabriel.network.Protos.Output.Status.SUCCESS.getNumber()) {
+      if (status_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Status.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
       for (int i = 0; i < results_.size(); i++) {
         output.writeMessage(3, results_.get(i));
+      }
+      if (!getHostBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 4, host_);
       }
     }
 
@@ -1888,13 +2131,16 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(1, frameId_);
       }
-      if (status_ != edu.cmu.cs.gabriel.network.Protos.Output.Status.SUCCESS.getNumber()) {
+      if (status_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Status.SUCCESS.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
       for (int i = 0; i < results_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, results_.get(i));
+      }
+      if (!getHostBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, host_);
       }
       memoizedSize = size;
       return size;
@@ -1906,10 +2152,10 @@ public final class Protos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof edu.cmu.cs.gabriel.network.Protos.Output)) {
+      if (!(obj instanceof edu.cmu.cs.gabriel.network.Protos.FromServer)) {
         return super.equals(obj);
       }
-      edu.cmu.cs.gabriel.network.Protos.Output other = (edu.cmu.cs.gabriel.network.Protos.Output) obj;
+      edu.cmu.cs.gabriel.network.Protos.FromServer other = (edu.cmu.cs.gabriel.network.Protos.FromServer) obj;
 
       boolean result = true;
       result = result && (getFrameId()
@@ -1917,6 +2163,8 @@ public final class Protos {
       result = result && status_ == other.status_;
       result = result && getResultsList()
           .equals(other.getResultsList());
+      result = result && getHost()
+          .equals(other.getHost());
       return result;
     }
 
@@ -1936,63 +2184,65 @@ public final class Protos {
         hash = (37 * hash) + RESULTS_FIELD_NUMBER;
         hash = (53 * hash) + getResultsList().hashCode();
       }
+      hash = (37 * hash) + HOST_FIELD_NUMBER;
+      hash = (53 * hash) + getHost().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(byte[] data)
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(java.io.InputStream input)
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseDelimitedFrom(java.io.InputStream input)
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseDelimitedFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static edu.cmu.cs.gabriel.network.Protos.Output parseFrom(
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2004,7 +2254,7 @@ public final class Protos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(edu.cmu.cs.gabriel.network.Protos.Output prototype) {
+    public static Builder newBuilder(edu.cmu.cs.gabriel.network.Protos.FromServer prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2019,25 +2269,25 @@ public final class Protos {
       return builder;
     }
     /**
-     * Protobuf type {@code gabriel.Output}
+     * Protobuf type {@code gabriel.FromServer}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:gabriel.Output)
-        edu.cmu.cs.gabriel.network.Protos.OutputOrBuilder {
+        // @@protoc_insertion_point(builder_implements:gabriel.FromServer)
+        edu.cmu.cs.gabriel.network.Protos.FromServerOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_descriptor;
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_fieldAccessorTable
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                edu.cmu.cs.gabriel.network.Protos.Output.class, edu.cmu.cs.gabriel.network.Protos.Output.Builder.class);
+                edu.cmu.cs.gabriel.network.Protos.FromServer.class, edu.cmu.cs.gabriel.network.Protos.FromServer.Builder.class);
       }
 
-      // Construct using edu.cmu.cs.gabriel.network.Protos.Output.newBuilder()
+      // Construct using edu.cmu.cs.gabriel.network.Protos.FromServer.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2065,28 +2315,30 @@ public final class Protos {
         } else {
           resultsBuilder_.clear();
         }
+        host_ = "";
+
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_Output_descriptor;
+        return edu.cmu.cs.gabriel.network.Protos.internal_static_gabriel_FromServer_descriptor;
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Output getDefaultInstanceForType() {
-        return edu.cmu.cs.gabriel.network.Protos.Output.getDefaultInstance();
+      public edu.cmu.cs.gabriel.network.Protos.FromServer getDefaultInstanceForType() {
+        return edu.cmu.cs.gabriel.network.Protos.FromServer.getDefaultInstance();
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Output build() {
-        edu.cmu.cs.gabriel.network.Protos.Output result = buildPartial();
+      public edu.cmu.cs.gabriel.network.Protos.FromServer build() {
+        edu.cmu.cs.gabriel.network.Protos.FromServer result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public edu.cmu.cs.gabriel.network.Protos.Output buildPartial() {
-        edu.cmu.cs.gabriel.network.Protos.Output result = new edu.cmu.cs.gabriel.network.Protos.Output(this);
+      public edu.cmu.cs.gabriel.network.Protos.FromServer buildPartial() {
+        edu.cmu.cs.gabriel.network.Protos.FromServer result = new edu.cmu.cs.gabriel.network.Protos.FromServer(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.frameId_ = frameId_;
@@ -2100,6 +2352,7 @@ public final class Protos {
         } else {
           result.results_ = resultsBuilder_.build();
         }
+        result.host_ = host_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2132,16 +2385,16 @@ public final class Protos {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof edu.cmu.cs.gabriel.network.Protos.Output) {
-          return mergeFrom((edu.cmu.cs.gabriel.network.Protos.Output)other);
+        if (other instanceof edu.cmu.cs.gabriel.network.Protos.FromServer) {
+          return mergeFrom((edu.cmu.cs.gabriel.network.Protos.FromServer)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.Output other) {
-        if (other == edu.cmu.cs.gabriel.network.Protos.Output.getDefaultInstance()) return this;
+      public Builder mergeFrom(edu.cmu.cs.gabriel.network.Protos.FromServer other) {
+        if (other == edu.cmu.cs.gabriel.network.Protos.FromServer.getDefaultInstance()) return this;
         if (other.getFrameId() != 0L) {
           setFrameId(other.getFrameId());
         }
@@ -2174,6 +2427,10 @@ public final class Protos {
             }
           }
         }
+        if (!other.getHost().isEmpty()) {
+          host_ = other.host_;
+          onChanged();
+        }
         onChanged();
         return this;
       }
@@ -2186,11 +2443,11 @@ public final class Protos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        edu.cmu.cs.gabriel.network.Protos.Output parsedMessage = null;
+        edu.cmu.cs.gabriel.network.Protos.FromServer parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (edu.cmu.cs.gabriel.network.Protos.Output) e.getUnfinishedMessage();
+          parsedMessage = (edu.cmu.cs.gabriel.network.Protos.FromServer) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2229,13 +2486,13 @@ public final class Protos {
 
       private int status_ = 0;
       /**
-       * <code>optional .gabriel.Output.Status status = 2;</code>
+       * <code>optional .gabriel.FromServer.Status status = 2;</code>
        */
       public int getStatusValue() {
         return status_;
       }
       /**
-       * <code>optional .gabriel.Output.Status status = 2;</code>
+       * <code>optional .gabriel.FromServer.Status status = 2;</code>
        */
       public Builder setStatusValue(int value) {
         status_ = value;
@@ -2243,16 +2500,16 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>optional .gabriel.Output.Status status = 2;</code>
+       * <code>optional .gabriel.FromServer.Status status = 2;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.Status getStatus() {
-        edu.cmu.cs.gabriel.network.Protos.Output.Status result = edu.cmu.cs.gabriel.network.Protos.Output.Status.valueOf(status_);
-        return result == null ? edu.cmu.cs.gabriel.network.Protos.Output.Status.UNRECOGNIZED : result;
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Status getStatus() {
+        edu.cmu.cs.gabriel.network.Protos.FromServer.Status result = edu.cmu.cs.gabriel.network.Protos.FromServer.Status.valueOf(status_);
+        return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Status.UNRECOGNIZED : result;
       }
       /**
-       * <code>optional .gabriel.Output.Status status = 2;</code>
+       * <code>optional .gabriel.FromServer.Status status = 2;</code>
        */
-      public Builder setStatus(edu.cmu.cs.gabriel.network.Protos.Output.Status value) {
+      public Builder setStatus(edu.cmu.cs.gabriel.network.Protos.FromServer.Status value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -2262,7 +2519,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>optional .gabriel.Output.Status status = 2;</code>
+       * <code>optional .gabriel.FromServer.Status status = 2;</code>
        */
       public Builder clearStatus() {
         
@@ -2271,22 +2528,22 @@ public final class Protos {
         return this;
       }
 
-      private java.util.List<edu.cmu.cs.gabriel.network.Protos.Output.Result> results_ =
+      private java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> results_ =
         java.util.Collections.emptyList();
       private void ensureResultsIsMutable() {
         if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.Output.Result>(results_);
+          results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.FromServer.Result>(results_);
           bitField0_ |= 0x00000004;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          edu.cmu.cs.gabriel.network.Protos.Output.Result, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder, edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder> resultsBuilder_;
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> resultsBuilder_;
 
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public java.util.List<edu.cmu.cs.gabriel.network.Protos.Output.Result> getResultsList() {
+      public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> getResultsList() {
         if (resultsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(results_);
         } else {
@@ -2294,7 +2551,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public int getResultsCount() {
         if (resultsBuilder_ == null) {
@@ -2304,9 +2561,9 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.Result getResults(int index) {
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index) {
         if (resultsBuilder_ == null) {
           return results_.get(index);
         } else {
@@ -2314,10 +2571,10 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder setResults(
-          int index, edu.cmu.cs.gabriel.network.Protos.Output.Result value) {
+          int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
         if (resultsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2331,10 +2588,10 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder setResults(
-          int index, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder builderForValue) {
+          int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
         if (resultsBuilder_ == null) {
           ensureResultsIsMutable();
           results_.set(index, builderForValue.build());
@@ -2345,9 +2602,9 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public Builder addResults(edu.cmu.cs.gabriel.network.Protos.Output.Result value) {
+      public Builder addResults(edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
         if (resultsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2361,10 +2618,10 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder addResults(
-          int index, edu.cmu.cs.gabriel.network.Protos.Output.Result value) {
+          int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
         if (resultsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2378,10 +2635,10 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder addResults(
-          edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder builderForValue) {
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
         if (resultsBuilder_ == null) {
           ensureResultsIsMutable();
           results_.add(builderForValue.build());
@@ -2392,10 +2649,10 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder addResults(
-          int index, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder builderForValue) {
+          int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
         if (resultsBuilder_ == null) {
           ensureResultsIsMutable();
           results_.add(index, builderForValue.build());
@@ -2406,10 +2663,10 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder addAllResults(
-          java.lang.Iterable<? extends edu.cmu.cs.gabriel.network.Protos.Output.Result> values) {
+          java.lang.Iterable<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.Result> values) {
         if (resultsBuilder_ == null) {
           ensureResultsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2421,7 +2678,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder clearResults() {
         if (resultsBuilder_ == null) {
@@ -2434,7 +2691,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
       public Builder removeResults(int index) {
         if (resultsBuilder_ == null) {
@@ -2447,16 +2704,16 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder getResultsBuilder(
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder getResultsBuilder(
           int index) {
         return getResultsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder getResultsOrBuilder(
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
           int index) {
         if (resultsBuilder_ == null) {
           return results_.get(index);  } else {
@@ -2464,9 +2721,9 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder> 
+      public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
            getResultsOrBuilderList() {
         if (resultsBuilder_ != null) {
           return resultsBuilder_.getMessageOrBuilderList();
@@ -2475,33 +2732,33 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder addResultsBuilder() {
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder addResultsBuilder() {
         return getResultsFieldBuilder().addBuilder(
-            edu.cmu.cs.gabriel.network.Protos.Output.Result.getDefaultInstance());
+            edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance());
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder addResultsBuilder(
+      public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder addResultsBuilder(
           int index) {
         return getResultsFieldBuilder().addBuilder(
-            index, edu.cmu.cs.gabriel.network.Protos.Output.Result.getDefaultInstance());
+            index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance());
       }
       /**
-       * <code>repeated .gabriel.Output.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
        */
-      public java.util.List<edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder> 
+      public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder> 
            getResultsBuilderList() {
         return getResultsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          edu.cmu.cs.gabriel.network.Protos.Output.Result, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder, edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder> 
+          edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
           getResultsFieldBuilder() {
         if (resultsBuilder_ == null) {
           resultsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              edu.cmu.cs.gabriel.network.Protos.Output.Result, edu.cmu.cs.gabriel.network.Protos.Output.Result.Builder, edu.cmu.cs.gabriel.network.Protos.Output.ResultOrBuilder>(
+              edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder>(
                   results_,
                   ((bitField0_ & 0x00000004) == 0x00000004),
                   getParentForChildren(),
@@ -2509,6 +2766,95 @@ public final class Protos {
           results_ = null;
         }
         return resultsBuilder_;
+      }
+
+      private java.lang.Object host_ = "";
+      /**
+       * <pre>
+       * Only used by Gabriel server
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public java.lang.String getHost() {
+        java.lang.Object ref = host_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          host_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Only used by Gabriel server
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getHostBytes() {
+        java.lang.Object ref = host_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          host_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * Only used by Gabriel server
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public Builder setHost(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        host_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Only used by Gabriel server
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public Builder clearHost() {
+        
+        host_ = getDefaultInstance().getHost();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * Only used by Gabriel server
+       * </pre>
+       *
+       * <code>optional string host = 4;</code>
+       */
+      public Builder setHostBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        host_ = value;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -2521,59 +2867,59 @@ public final class Protos {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:gabriel.Output)
+      // @@protoc_insertion_point(builder_scope:gabriel.FromServer)
     }
 
-    // @@protoc_insertion_point(class_scope:gabriel.Output)
-    private static final edu.cmu.cs.gabriel.network.Protos.Output DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:gabriel.FromServer)
+    private static final edu.cmu.cs.gabriel.network.Protos.FromServer DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new edu.cmu.cs.gabriel.network.Protos.Output();
+      DEFAULT_INSTANCE = new edu.cmu.cs.gabriel.network.Protos.FromServer();
     }
 
-    public static edu.cmu.cs.gabriel.network.Protos.Output getDefaultInstance() {
+    public static edu.cmu.cs.gabriel.network.Protos.FromServer getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<Output>
-        PARSER = new com.google.protobuf.AbstractParser<Output>() {
-      public Output parsePartialFrom(
+    private static final com.google.protobuf.Parser<FromServer>
+        PARSER = new com.google.protobuf.AbstractParser<FromServer>() {
+      public FromServer parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new Output(input, extensionRegistry);
+          return new FromServer(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<Output> parser() {
+    public static com.google.protobuf.Parser<FromServer> parser() {
       return PARSER;
     }
 
     @java.lang.Override
-    public com.google.protobuf.Parser<Output> getParserForType() {
+    public com.google.protobuf.Parser<FromServer> getParserForType() {
       return PARSER;
     }
 
-    public edu.cmu.cs.gabriel.network.Protos.Output getDefaultInstanceForType() {
+    public edu.cmu.cs.gabriel.network.Protos.FromServer getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_gabriel_Input_descriptor;
+    internal_static_gabriel_FromClient_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_gabriel_Input_fieldAccessorTable;
+      internal_static_gabriel_FromClient_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_gabriel_Output_descriptor;
+    internal_static_gabriel_FromServer_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_gabriel_Output_fieldAccessorTable;
+      internal_static_gabriel_FromServer_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_gabriel_Output_Result_descriptor;
+    internal_static_gabriel_FromServer_Result_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_gabriel_Output_Result_fieldAccessorTable;
+      internal_static_gabriel_FromServer_Result_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -2583,21 +2929,22 @@ public final class Protos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rgabriel.proto\022\007gabriel\"\230\001\n\005Input\022\020\n\010fr" +
-      "ame_id\030\001 \001(\004\022!\n\004type\030\002 \001(\0162\023.gabriel.Inp" +
-      "ut.Type\022\017\n\007payload\030\003 \001(\014\022\r\n\005style\030\004 \001(\t\"" +
-      ":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002" +
-      "\022\021\n\rACCELEROMETER\020\003\"\326\002\n\006Output\022\020\n\010frame_" +
-      "id\030\001 \001(\004\022&\n\006status\030\002 \001(\0162\026.gabriel.Outpu" +
-      "t.Status\022\'\n\007results\030\003 \003(\0132\026.gabriel.Outp" +
-      "ut.Result\032\222\001\n\006Result\022/\n\004type\030\001 \001(\0162!.gab" +
-      "riel.Output.Result.ResultType\022\017\n\007payload" +
-      "\030\002 \001(\014\"F\n\nResultType\022\r\n\tANIMATION\020\000\022\t\n\005V",
-      "IDEO\020\001\022\t\n\005IMAGE\020\002\022\t\n\005AUDIO\020\003\022\010\n\004TEXT\020\004\"T" +
-      "\n\006Status\022\013\n\007SUCCESS\020\000\022\025\n\021UNSPECIFIED_ERR" +
-      "OR\020\001\022\016\n\nQUEUE_FULL\020\002\022\026\n\022WRONG_INPUT_FORM" +
-      "AT\020\003B$\n\032edu.cmu.cs.gabriel.networkB\006Prot" +
-      "osb\006proto3"
+      "\n\rgabriel.proto\022\007gabriel\"\260\001\n\nFromClient\022" +
+      "\020\n\010frame_id\030\001 \001(\004\022&\n\004type\030\002 \001(\0162\030.gabrie" +
+      "l.FromClient.Type\022\017\n\007payload\030\003 \001(\014\022\014\n\004ho" +
+      "st\030\004 \001(\t\022\r\n\005style\030\005 \001(\t\":\n\004Type\022\t\n\005IMAGE" +
+      "\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\021\n\rACCELEROMETE" +
+      "R\020\003\"\364\002\n\nFromServer\022\020\n\010frame_id\030\001 \001(\004\022*\n\006" +
+      "status\030\002 \001(\0162\032.gabriel.FromServer.Status" +
+      "\022+\n\007results\030\003 \003(\0132\032.gabriel.FromServer.R" +
+      "esult\022\014\n\004host\030\004 \001(\t\032\226\001\n\006Result\0223\n\004type\030\001" +
+      " \001(\0162%.gabriel.FromServer.Result.ResultT",
+      "ype\022\017\n\007payload\030\002 \001(\014\"F\n\nResultType\022\r\n\tAN" +
+      "IMATION\020\000\022\t\n\005VIDEO\020\001\022\t\n\005IMAGE\020\002\022\t\n\005AUDIO" +
+      "\020\003\022\010\n\004TEXT\020\004\"T\n\006Status\022\013\n\007SUCCESS\020\000\022\025\n\021U" +
+      "NSPECIFIED_ERROR\020\001\022\016\n\nQUEUE_FULL\020\002\022\026\n\022WR" +
+      "ONG_INPUT_FORMAT\020\003B$\n\032edu.cmu.cs.gabriel" +
+      ".networkB\006Protosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -2611,23 +2958,23 @@ public final class Protos {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_gabriel_Input_descriptor =
+    internal_static_gabriel_FromClient_descriptor =
       getDescriptor().getMessageTypes().get(0);
-    internal_static_gabriel_Input_fieldAccessorTable = new
+    internal_static_gabriel_FromClient_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_gabriel_Input_descriptor,
-        new java.lang.String[] { "FrameId", "Type", "Payload", "Style", });
-    internal_static_gabriel_Output_descriptor =
+        internal_static_gabriel_FromClient_descriptor,
+        new java.lang.String[] { "FrameId", "Type", "Payload", "Host", "Style", });
+    internal_static_gabriel_FromServer_descriptor =
       getDescriptor().getMessageTypes().get(1);
-    internal_static_gabriel_Output_fieldAccessorTable = new
+    internal_static_gabriel_FromServer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_gabriel_Output_descriptor,
-        new java.lang.String[] { "FrameId", "Status", "Results", });
-    internal_static_gabriel_Output_Result_descriptor =
-      internal_static_gabriel_Output_descriptor.getNestedTypes().get(0);
-    internal_static_gabriel_Output_Result_fieldAccessorTable = new
+        internal_static_gabriel_FromServer_descriptor,
+        new java.lang.String[] { "FrameId", "Status", "Results", "Host", });
+    internal_static_gabriel_FromServer_Result_descriptor =
+      internal_static_gabriel_FromServer_descriptor.getNestedTypes().get(0);
+    internal_static_gabriel_FromServer_Result_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_gabriel_Output_Result_descriptor,
+        internal_static_gabriel_FromServer_Result_descriptor,
         new java.lang.String[] { "Type", "Payload", });
   }
 
