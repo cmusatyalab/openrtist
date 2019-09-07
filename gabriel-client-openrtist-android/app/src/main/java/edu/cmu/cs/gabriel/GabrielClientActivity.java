@@ -186,15 +186,20 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private Runnable imageUpload = new Runnable() {
         @Override
         public void run() {
-            tokenController.getCurrentToken();  // Wait until we have a token
+            if (tokenController != null) {
+                tokenController.getCurrentToken();  // Wait until we have a token
 
-            synchronized (frameToSendLock) {
-                if (frameToSend != null && parameters != null && websocket != null) {
-                    websocket.sendFrame(frameToSend, parameters, style_type);
-                    tokenController.decreaseToken();
+                synchronized (frameToSendLock) {
+                    if (frameToSend != null && parameters != null && websocket != null
+                            && websocket.isConnected() && !style_type.equals("none")) {
+                        websocket.sendFrame(frameToSend, parameters, style_type);
+                        if (tokenController != null) {
+                            tokenController.decreaseToken();
+                        }
+                    }
                 }
+                backgroundHandler.post(imageUpload);
             }
-            backgroundHandler.post(imageUpload);
         }
     };
 
@@ -1007,6 +1012,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         isRunning = false;
 
+        if (websocket != null) {
+            websocket.stop();
+            websocket = null;
+        }
         if (tokenController != null){
             tokenController.close();
             tokenController = null;
