@@ -191,7 +191,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
                 synchronized (frameToSendLock) {
                     if (frameToSend != null && parameters != null && websocket != null
-                            && !style_type.equals("none")) {
+                            && websocket.isConnected() && !style_type.equals("none")) {
                         websocket.sendFrame(frameToSend, parameters, style_type);
                         if (tokenController != null) {
                             tokenController.decreaseToken();
@@ -1012,6 +1012,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         isRunning = false;
 
+        if (websocket != null) {
+            websocket.stop();
+            websocket = null;
+        }
         if (tokenController != null){
             tokenController.close();
             tokenController = null;
