@@ -12,9 +12,12 @@ import android.os.Message;
 import android.util.Log;
 
 import com.google.protobuf.ByteString;
+import com.tinder.scarlet.Lifecycle;
 import com.tinder.scarlet.Scarlet;
+import com.tinder.scarlet.ShutdownReason;
 import com.tinder.scarlet.Stream;
 import com.tinder.scarlet.WebSocket;
+import com.tinder.scarlet.lifecycle.LifecycleRegistry;
 import com.tinder.scarlet.lifecycle.android.AndroidLifecycle;
 import com.tinder.scarlet.messageadapter.protobuf.ProtobufMessageAdapter;
 import com.tinder.scarlet.websocket.okhttp.OkHttpClientUtils;
@@ -49,37 +52,41 @@ public class Websocket {
     private Handler returnMsgHandler;
     private long frameID;
     private TokenController tokenController;
-    private com.tinder.scarlet.Lifecycle lc;
+    private LifecycleRegistry lifecycleRegistry;
+    private boolean connected;
 
-    public Websocket(String serverIP, int port, Handler returnMsgHandler, Activity activity, TokenController tokenController) {
+    public Websocket(String serverIP, int port, Handler returnMsgHandler, Activity activity,
+                     TokenController tokenController) {
         this.returnMsgHandler = returnMsgHandler;
         String url = "ws://" + serverIP + ":" + port;
         frameID = 0;
         this.tokenController = tokenController;
+        this.connected = false;
 
         OkHttpClient okClient = new OkHttpClient();
 
-        this.lc = AndroidLifecycle.ofApplicationForeground(activity.getApplication());
+        Lifecycle androidLifecycle = AndroidLifecycle.ofApplicationForeground(
+                activity.getApplication());
+        this.lifecycleRegistry = new LifecycleRegistry(0L);
+        this.lifecycleRegistry.onNext(Lifecycle.State.Started.INSTANCE);
 
         webSocketInterface = new Scarlet.Builder()
                 .webSocketFactory(OkHttpClientUtils.newWebSocketFactory(okClient, url))
                 .addMessageAdapterFactory(new ProtobufMessageAdapter.Factory())
-                .lifecycle(lc)
+                .lifecycle(androidLifecycle.combineWith(lifecycleRegistry))
                 .build().create(GabrielSocket.class);
 
         webSocketInterface.Receive().start(new Stream.Observer<FromServer>() {
             @Override
             public void onNext(FromServer fromServer) {
-
-                String status;
-
                 if (fromServer.getStatus() == FromServer.Status.SUCCESS) {
                     if (fromServer.getResultsCount() == 1) {
                         FromServer.Result result = fromServer.getResults(0);
                         if (result.getType() == FromServer.Result.ResultType.IMAGE) {
                             ByteString dataString = result.getPayload();
 
-                            Bitmap imageFeedback = BitmapFactory.decodeByteArray(dataString.toByteArray(),0, dataString.size());
+                            Bitmap imageFeedback = BitmapFactory.decodeByteArray(
+                                    dataString.toByteArray(),0, dataString.size());
 
                             Message msg = Message.obtain();
                             msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
@@ -89,7 +96,8 @@ public class Websocket {
                             Log.e(TAG, "Got result of type " + result.getType().name());
                         }
                     } else {
-                        Log.e(TAG, "Got " + fromServer.getResultsCount() + " result in output.");
+                        Log.e(TAG, "Got " + fromServer.getResultsCount() +
+                                " results in output.");
                     }
                 } else {
                     Log.e(TAG, "Output status was: " + fromServer.getStatus().name());
@@ -114,6 +122,16 @@ public class Websocket {
             @Override
             public void onNext(WebSocket.Event receivedUpdate) {
                 Log.i(TAG, receivedUpdate.toString());
+
+                if (receivedUpdate instanceof WebSocket.Event.OnConnectionOpened) {
+                    Websocket.this.connected = true;
+                } else if (receivedUpdate instanceof WebSocket.Event.OnConnectionClosing ||
+                        receivedUpdate instanceof WebSocket.Event.OnConnectionFailed) {
+                    Websocket.this.connected = false;
+                    if (Websocket.this.tokenController != null) {
+                        Websocket.this.tokenController.reset();
+                    }
+                }
             }
 
             @Override
@@ -138,7 +156,8 @@ public class Websocket {
                 cameraImageSize.height, null);
         ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
         // chooses quality 67 and it roughly matches quality 5 in avconv
-        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 67, tmpBuffer);
+        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()),
+                67, tmpBuffer);
         if (Const.USING_FRONT_CAMERA) {
             byte[] newFrame = tmpBuffer.toByteArray();
             Bitmap bitmap = BitmapFactory.decodeByteArray(newFrame, 0, newFrame.length);
@@ -148,7 +167,8 @@ public class Websocket {
                 matrix.postRotate(180);
             }
             matrix.postScale(-1, 1);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    matrix, false);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 67, rotatedStream);
             //this.frameBuffer = tmpBuffer.toByteArray();
             data = rotatedStream.toByteArray();
@@ -169,6 +189,10 @@ public class Websocket {
     }
 
     public void stop() {
+        lifecycleRegistry.onNext(new Lifecycle.State.Stopped.WithReason(ShutdownReason.GRACEFUL));
+    }
 
+    public boolean isConnected() {
+        return connected;
     }
 }
