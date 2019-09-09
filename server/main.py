@@ -1,17 +1,14 @@
-from gabriel_server.server import Server
+from gabriel_server import single_engine_runner
 from openrtist_engine import OpenrtistEngine
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
-def engine_setup():
-    return OpenrtistEngine(use_gpu=True)
-
-
 def main():
-    server = Server()
-    server.serve(engine_setup)
+    def engine_setup():
+        return OpenrtistEngine(use_gpu=True)
+    single_engine_runner.run(engine_setup)
 
 
 if __name__ == '__main__':
