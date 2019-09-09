@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 
 # TODO: support openvino
 class OpenrtistEngine(cognitive_engine.Engine):
+    @property
+    def proto_engine(self):
+        return gabriel_pb2.Engine.OPENRTIST
+
     def __init__(self, use_gpu):
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
@@ -34,7 +38,6 @@ class OpenrtistEngine(cognitive_engine.Engine):
         self.use_gpu = use_gpu
         if (use_gpu):
             self.style_model.cuda()
-
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
         self.style = DEFAULT_STYLE
@@ -67,6 +70,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         result = gabriel_pb2.FromServer.Result()
         result.type = gabriel_pb2.FromServer.Result.ResultType.IMAGE
+        result.engine = self.proto_engine
         result.payload = img_data
 
         from_server = gabriel_pb2.FromServer()
