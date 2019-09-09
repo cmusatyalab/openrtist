@@ -517,8 +517,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             iterationHandler.removeCallbacks(styleIterator);
         if(capturingScreen)
             stopRecording();
-        this.terminate();
+
+        // We have to add a token to get the background thread to stop
+        this.tokenController.increaseTokens(1);
         stopBackgroundThread();
+
+        this.terminate();
+
         super.onPause();
     }
 

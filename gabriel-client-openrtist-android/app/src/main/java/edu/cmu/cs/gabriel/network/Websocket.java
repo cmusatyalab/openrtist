@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -29,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.network.Protos.FromClient;
 import edu.cmu.cs.gabriel.network.Protos.FromServer;
+import edu.cmu.cs.gabriel.network.Protos.Engine;
 
 import edu.cmu.cs.gabriel.token.TokenController;
 import okhttp3.OkHttpClient;
@@ -83,15 +85,21 @@ public class Websocket {
                     if (fromServer.getResultsCount() == 1) {
                         FromServer.Result result = fromServer.getResults(0);
                         if (result.getType() == FromServer.Result.ResultType.IMAGE) {
-                            ByteString dataString = result.getPayload();
+                            if (result.getEngine() == Engine.OPENRTIST) {
+                                ByteString dataString = result.getPayload();
 
-                            Bitmap imageFeedback = BitmapFactory.decodeByteArray(
-                                    dataString.toByteArray(),0, dataString.size());
+                                Bitmap imageFeedback = BitmapFactory.decodeByteArray(
+                                        dataString.toByteArray(), 0, dataString.size());
 
-                            Message msg = Message.obtain();
-                            msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                            msg.obj = imageFeedback;
-                            Websocket.this.returnMsgHandler.sendMessage(msg);
+                                Message msg = Message.obtain();
+                                msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+                                msg.obj = imageFeedback;
+                                Websocket.this.returnMsgHandler.sendMessage(msg);
+                            } else {
+                                Log.e(
+                                        TAG,
+                                        "Got result from engine" + result.getEngine().name());
+                            }
                         } else {
                             Log.e(TAG, "Got result of type " + result.getType().name());
                         }
@@ -127,10 +135,19 @@ public class Websocket {
                     Websocket.this.connected = true;
                 } else if (receivedUpdate instanceof WebSocket.Event.OnConnectionClosing ||
                         receivedUpdate instanceof WebSocket.Event.OnConnectionFailed) {
-                    Websocket.this.connected = false;
                     if (Websocket.this.tokenController != null) {
                         Websocket.this.tokenController.reset();
                     }
+
+                    if (Websocket.this.connected) {
+                        Message msg = Message.obtain();
+                        msg.what = NetworkProtocol.NETWORK_RET_FAILED;
+                        Bundle data = new Bundle();
+                        data.putString("message", "Connection Error");
+                        msg.setData(data);
+                        Websocket.this.returnMsgHandler.sendMessage(msg);
+                    }
+                    Websocket.this.connected = false;
                 }
             }
 
