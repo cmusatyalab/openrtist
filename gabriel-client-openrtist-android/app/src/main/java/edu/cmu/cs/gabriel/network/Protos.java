@@ -14,95 +14,6 @@ public final class Protos {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
-  /**
-   * Protobuf enum {@code gabriel.Engine}
-   */
-  public enum Engine
-      implements com.google.protobuf.ProtocolMessageEnum {
-    /**
-     * <code>OPENRTIST = 0;</code>
-     */
-    OPENRTIST(0),
-    UNRECOGNIZED(-1),
-    ;
-
-    /**
-     * <code>OPENRTIST = 0;</code>
-     */
-    public static final int OPENRTIST_VALUE = 0;
-
-
-    public final int getNumber() {
-      if (this == UNRECOGNIZED) {
-        throw new java.lang.IllegalArgumentException(
-            "Can't get the number of an unknown enum value.");
-      }
-      return value;
-    }
-
-    /**
-     * @deprecated Use {@link #forNumber(int)} instead.
-     */
-    @java.lang.Deprecated
-    public static Engine valueOf(int value) {
-      return forNumber(value);
-    }
-
-    public static Engine forNumber(int value) {
-      switch (value) {
-        case 0: return OPENRTIST;
-        default: return null;
-      }
-    }
-
-    public static com.google.protobuf.Internal.EnumLiteMap<Engine>
-        internalGetValueMap() {
-      return internalValueMap;
-    }
-    private static final com.google.protobuf.Internal.EnumLiteMap<
-        Engine> internalValueMap =
-          new com.google.protobuf.Internal.EnumLiteMap<Engine>() {
-            public Engine findValueByNumber(int number) {
-              return Engine.forNumber(number);
-            }
-          };
-
-    public final com.google.protobuf.Descriptors.EnumValueDescriptor
-        getValueDescriptor() {
-      return getDescriptor().getValues().get(ordinal());
-    }
-    public final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptorForType() {
-      return getDescriptor();
-    }
-    public static final com.google.protobuf.Descriptors.EnumDescriptor
-        getDescriptor() {
-      return edu.cmu.cs.gabriel.network.Protos.getDescriptor().getEnumTypes().get(0);
-    }
-
-    private static final Engine[] VALUES = values();
-
-    public static Engine valueOf(
-        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
-      if (desc.getType() != getDescriptor()) {
-        throw new java.lang.IllegalArgumentException(
-          "EnumValueDescriptor is not for this type.");
-      }
-      if (desc.getIndex() == -1) {
-        return UNRECOGNIZED;
-      }
-      return VALUES[desc.getIndex()];
-    }
-
-    private final int value;
-
-    private Engine(int value) {
-      this.value = value;
-    }
-
-    // @@protoc_insertion_point(enum_scope:gabriel.Engine)
-  }
-
   public interface FromClientOrBuilder extends
       // @@protoc_insertion_point(interface_extends:gabriel.FromClient)
       com.google.protobuf.MessageOrBuilder {
@@ -122,13 +33,14 @@ public final class Protos {
     edu.cmu.cs.gabriel.network.Protos.FromClient.Type getType();
 
     /**
-     * <code>optional .gabriel.Engine engine = 3;</code>
+     * <code>optional string engine_name = 3;</code>
      */
-    int getEngineValue();
+    java.lang.String getEngineName();
     /**
-     * <code>optional .gabriel.Engine engine = 3;</code>
+     * <code>optional string engine_name = 3;</code>
      */
-    edu.cmu.cs.gabriel.network.Protos.Engine getEngine();
+    com.google.protobuf.ByteString
+        getEngineNameBytes();
 
     /**
      * <code>optional bytes payload = 4;</code>
@@ -136,24 +48,17 @@ public final class Protos {
     com.google.protobuf.ByteString getPayload();
 
     /**
-     * <pre>
-     * engine-specific fields:
-     * OpenArtist:
-     * </pre>
-     *
-     * <code>optional string style = 5;</code>
+     * <code>optional .google.protobuf.Any engine_fields = 5;</code>
      */
-    java.lang.String getStyle();
+    boolean hasEngineFields();
     /**
-     * <pre>
-     * engine-specific fields:
-     * OpenArtist:
-     * </pre>
-     *
-     * <code>optional string style = 5;</code>
+     * <code>optional .google.protobuf.Any engine_fields = 5;</code>
      */
-    com.google.protobuf.ByteString
-        getStyleBytes();
+    com.google.protobuf.Any getEngineFields();
+    /**
+     * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+     */
+    com.google.protobuf.AnyOrBuilder getEngineFieldsOrBuilder();
   }
   /**
    * <pre>
@@ -173,9 +78,8 @@ public final class Protos {
     private FromClient() {
       frameId_ = 0L;
       type_ = 0;
-      engine_ = 0;
+      engineName_ = "";
       payload_ = com.google.protobuf.ByteString.EMPTY;
-      style_ = "";
     }
 
     @java.lang.Override
@@ -214,10 +118,10 @@ public final class Protos {
               type_ = rawValue;
               break;
             }
-            case 24: {
-              int rawValue = input.readEnum();
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
 
-              engine_ = rawValue;
+              engineName_ = s;
               break;
             }
             case 34: {
@@ -226,9 +130,16 @@ public final class Protos {
               break;
             }
             case 42: {
-              java.lang.String s = input.readStringRequireUtf8();
+              com.google.protobuf.Any.Builder subBuilder = null;
+              if (engineFields_ != null) {
+                subBuilder = engineFields_.toBuilder();
+              }
+              engineFields_ = input.readMessage(com.google.protobuf.Any.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(engineFields_);
+                engineFields_ = subBuilder.buildPartial();
+              }
 
-              style_ = s;
               break;
             }
           }
@@ -395,20 +306,38 @@ public final class Protos {
       return result == null ? edu.cmu.cs.gabriel.network.Protos.FromClient.Type.UNRECOGNIZED : result;
     }
 
-    public static final int ENGINE_FIELD_NUMBER = 3;
-    private int engine_;
+    public static final int ENGINE_NAME_FIELD_NUMBER = 3;
+    private volatile java.lang.Object engineName_;
     /**
-     * <code>optional .gabriel.Engine engine = 3;</code>
+     * <code>optional string engine_name = 3;</code>
      */
-    public int getEngineValue() {
-      return engine_;
+    public java.lang.String getEngineName() {
+      java.lang.Object ref = engineName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        engineName_ = s;
+        return s;
+      }
     }
     /**
-     * <code>optional .gabriel.Engine engine = 3;</code>
+     * <code>optional string engine_name = 3;</code>
      */
-    public edu.cmu.cs.gabriel.network.Protos.Engine getEngine() {
-      edu.cmu.cs.gabriel.network.Protos.Engine result = edu.cmu.cs.gabriel.network.Protos.Engine.valueOf(engine_);
-      return result == null ? edu.cmu.cs.gabriel.network.Protos.Engine.UNRECOGNIZED : result;
+    public com.google.protobuf.ByteString
+        getEngineNameBytes() {
+      java.lang.Object ref = engineName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        engineName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     public static final int PAYLOAD_FIELD_NUMBER = 4;
@@ -420,48 +349,25 @@ public final class Protos {
       return payload_;
     }
 
-    public static final int STYLE_FIELD_NUMBER = 5;
-    private volatile java.lang.Object style_;
+    public static final int ENGINE_FIELDS_FIELD_NUMBER = 5;
+    private com.google.protobuf.Any engineFields_;
     /**
-     * <pre>
-     * engine-specific fields:
-     * OpenArtist:
-     * </pre>
-     *
-     * <code>optional string style = 5;</code>
+     * <code>optional .google.protobuf.Any engine_fields = 5;</code>
      */
-    public java.lang.String getStyle() {
-      java.lang.Object ref = style_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        style_ = s;
-        return s;
-      }
+    public boolean hasEngineFields() {
+      return engineFields_ != null;
     }
     /**
-     * <pre>
-     * engine-specific fields:
-     * OpenArtist:
-     * </pre>
-     *
-     * <code>optional string style = 5;</code>
+     * <code>optional .google.protobuf.Any engine_fields = 5;</code>
      */
-    public com.google.protobuf.ByteString
-        getStyleBytes() {
-      java.lang.Object ref = style_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        style_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public com.google.protobuf.Any getEngineFields() {
+      return engineFields_ == null ? com.google.protobuf.Any.getDefaultInstance() : engineFields_;
+    }
+    /**
+     * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+     */
+    public com.google.protobuf.AnyOrBuilder getEngineFieldsOrBuilder() {
+      return getEngineFields();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -482,14 +388,14 @@ public final class Protos {
       if (type_ != edu.cmu.cs.gabriel.network.Protos.FromClient.Type.IMAGE.getNumber()) {
         output.writeEnum(2, type_);
       }
-      if (engine_ != edu.cmu.cs.gabriel.network.Protos.Engine.OPENRTIST.getNumber()) {
-        output.writeEnum(3, engine_);
+      if (!getEngineNameBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, engineName_);
       }
       if (!payload_.isEmpty()) {
         output.writeBytes(4, payload_);
       }
-      if (!getStyleBytes().isEmpty()) {
-        com.google.protobuf.GeneratedMessageV3.writeString(output, 5, style_);
+      if (engineFields_ != null) {
+        output.writeMessage(5, getEngineFields());
       }
     }
 
@@ -506,16 +412,16 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, type_);
       }
-      if (engine_ != edu.cmu.cs.gabriel.network.Protos.Engine.OPENRTIST.getNumber()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeEnumSize(3, engine_);
+      if (!getEngineNameBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, engineName_);
       }
       if (!payload_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(4, payload_);
       }
-      if (!getStyleBytes().isEmpty()) {
-        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, style_);
+      if (engineFields_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, getEngineFields());
       }
       memoizedSize = size;
       return size;
@@ -536,11 +442,15 @@ public final class Protos {
       result = result && (getFrameId()
           == other.getFrameId());
       result = result && type_ == other.type_;
-      result = result && engine_ == other.engine_;
+      result = result && getEngineName()
+          .equals(other.getEngineName());
       result = result && getPayload()
           .equals(other.getPayload());
-      result = result && getStyle()
-          .equals(other.getStyle());
+      result = result && (hasEngineFields() == other.hasEngineFields());
+      if (hasEngineFields()) {
+        result = result && getEngineFields()
+            .equals(other.getEngineFields());
+      }
       return result;
     }
 
@@ -556,12 +466,14 @@ public final class Protos {
           getFrameId());
       hash = (37 * hash) + TYPE_FIELD_NUMBER;
       hash = (53 * hash) + type_;
-      hash = (37 * hash) + ENGINE_FIELD_NUMBER;
-      hash = (53 * hash) + engine_;
+      hash = (37 * hash) + ENGINE_NAME_FIELD_NUMBER;
+      hash = (53 * hash) + getEngineName().hashCode();
       hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
       hash = (53 * hash) + getPayload().hashCode();
-      hash = (37 * hash) + STYLE_FIELD_NUMBER;
-      hash = (53 * hash) + getStyle().hashCode();
+      if (hasEngineFields()) {
+        hash = (37 * hash) + ENGINE_FIELDS_FIELD_NUMBER;
+        hash = (53 * hash) + getEngineFields().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -688,12 +600,16 @@ public final class Protos {
 
         type_ = 0;
 
-        engine_ = 0;
+        engineName_ = "";
 
         payload_ = com.google.protobuf.ByteString.EMPTY;
 
-        style_ = "";
-
+        if (engineFieldsBuilder_ == null) {
+          engineFields_ = null;
+        } else {
+          engineFields_ = null;
+          engineFieldsBuilder_ = null;
+        }
         return this;
       }
 
@@ -718,9 +634,13 @@ public final class Protos {
         edu.cmu.cs.gabriel.network.Protos.FromClient result = new edu.cmu.cs.gabriel.network.Protos.FromClient(this);
         result.frameId_ = frameId_;
         result.type_ = type_;
-        result.engine_ = engine_;
+        result.engineName_ = engineName_;
         result.payload_ = payload_;
-        result.style_ = style_;
+        if (engineFieldsBuilder_ == null) {
+          result.engineFields_ = engineFields_;
+        } else {
+          result.engineFields_ = engineFieldsBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -768,15 +688,15 @@ public final class Protos {
         if (other.type_ != 0) {
           setTypeValue(other.getTypeValue());
         }
-        if (other.engine_ != 0) {
-          setEngineValue(other.getEngineValue());
+        if (!other.getEngineName().isEmpty()) {
+          engineName_ = other.engineName_;
+          onChanged();
         }
         if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
           setPayload(other.getPayload());
         }
-        if (!other.getStyle().isEmpty()) {
-          style_ = other.style_;
-          onChanged();
+        if (other.hasEngineFields()) {
+          mergeEngineFields(other.getEngineFields());
         }
         onChanged();
         return this;
@@ -874,46 +794,71 @@ public final class Protos {
         return this;
       }
 
-      private int engine_ = 0;
+      private java.lang.Object engineName_ = "";
       /**
-       * <code>optional .gabriel.Engine engine = 3;</code>
+       * <code>optional string engine_name = 3;</code>
        */
-      public int getEngineValue() {
-        return engine_;
-      }
-      /**
-       * <code>optional .gabriel.Engine engine = 3;</code>
-       */
-      public Builder setEngineValue(int value) {
-        engine_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional .gabriel.Engine engine = 3;</code>
-       */
-      public edu.cmu.cs.gabriel.network.Protos.Engine getEngine() {
-        edu.cmu.cs.gabriel.network.Protos.Engine result = edu.cmu.cs.gabriel.network.Protos.Engine.valueOf(engine_);
-        return result == null ? edu.cmu.cs.gabriel.network.Protos.Engine.UNRECOGNIZED : result;
-      }
-      /**
-       * <code>optional .gabriel.Engine engine = 3;</code>
-       */
-      public Builder setEngine(edu.cmu.cs.gabriel.network.Protos.Engine value) {
-        if (value == null) {
-          throw new NullPointerException();
+      public java.lang.String getEngineName() {
+        java.lang.Object ref = engineName_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          engineName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
         }
-        
-        engine_ = value.getNumber();
+      }
+      /**
+       * <code>optional string engine_name = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getEngineNameBytes() {
+        java.lang.Object ref = engineName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          engineName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string engine_name = 3;</code>
+       */
+      public Builder setEngineName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        engineName_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional .gabriel.Engine engine = 3;</code>
+       * <code>optional string engine_name = 3;</code>
        */
-      public Builder clearEngine() {
+      public Builder clearEngineName() {
         
-        engine_ = 0;
+        engineName_ = getDefaultInstance().getEngineName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string engine_name = 3;</code>
+       */
+      public Builder setEngineNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        engineName_ = value;
         onChanged();
         return this;
       }
@@ -947,98 +892,121 @@ public final class Protos {
         return this;
       }
 
-      private java.lang.Object style_ = "";
+      private com.google.protobuf.Any engineFields_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Any, com.google.protobuf.Any.Builder, com.google.protobuf.AnyOrBuilder> engineFieldsBuilder_;
       /**
-       * <pre>
-       * engine-specific fields:
-       * OpenArtist:
-       * </pre>
-       *
-       * <code>optional string style = 5;</code>
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
        */
-      public java.lang.String getStyle() {
-        java.lang.Object ref = style_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          style_ = s;
-          return s;
+      public boolean hasEngineFields() {
+        return engineFieldsBuilder_ != null || engineFields_ != null;
+      }
+      /**
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+       */
+      public com.google.protobuf.Any getEngineFields() {
+        if (engineFieldsBuilder_ == null) {
+          return engineFields_ == null ? com.google.protobuf.Any.getDefaultInstance() : engineFields_;
         } else {
-          return (java.lang.String) ref;
+          return engineFieldsBuilder_.getMessage();
         }
       }
       /**
-       * <pre>
-       * engine-specific fields:
-       * OpenArtist:
-       * </pre>
-       *
-       * <code>optional string style = 5;</code>
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
        */
-      public com.google.protobuf.ByteString
-          getStyleBytes() {
-        java.lang.Object ref = style_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          style_ = b;
-          return b;
+      public Builder setEngineFields(com.google.protobuf.Any value) {
+        if (engineFieldsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          engineFields_ = value;
+          onChanged();
         } else {
-          return (com.google.protobuf.ByteString) ref;
+          engineFieldsBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+       */
+      public Builder setEngineFields(
+          com.google.protobuf.Any.Builder builderForValue) {
+        if (engineFieldsBuilder_ == null) {
+          engineFields_ = builderForValue.build();
+          onChanged();
+        } else {
+          engineFieldsBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+       */
+      public Builder mergeEngineFields(com.google.protobuf.Any value) {
+        if (engineFieldsBuilder_ == null) {
+          if (engineFields_ != null) {
+            engineFields_ =
+              com.google.protobuf.Any.newBuilder(engineFields_).mergeFrom(value).buildPartial();
+          } else {
+            engineFields_ = value;
+          }
+          onChanged();
+        } else {
+          engineFieldsBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+       */
+      public Builder clearEngineFields() {
+        if (engineFieldsBuilder_ == null) {
+          engineFields_ = null;
+          onChanged();
+        } else {
+          engineFields_ = null;
+          engineFieldsBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+       */
+      public com.google.protobuf.Any.Builder getEngineFieldsBuilder() {
+        
+        onChanged();
+        return getEngineFieldsFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
+       */
+      public com.google.protobuf.AnyOrBuilder getEngineFieldsOrBuilder() {
+        if (engineFieldsBuilder_ != null) {
+          return engineFieldsBuilder_.getMessageOrBuilder();
+        } else {
+          return engineFields_ == null ?
+              com.google.protobuf.Any.getDefaultInstance() : engineFields_;
         }
       }
       /**
-       * <pre>
-       * engine-specific fields:
-       * OpenArtist:
-       * </pre>
-       *
-       * <code>optional string style = 5;</code>
+       * <code>optional .google.protobuf.Any engine_fields = 5;</code>
        */
-      public Builder setStyle(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        style_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * engine-specific fields:
-       * OpenArtist:
-       * </pre>
-       *
-       * <code>optional string style = 5;</code>
-       */
-      public Builder clearStyle() {
-        
-        style_ = getDefaultInstance().getStyle();
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * engine-specific fields:
-       * OpenArtist:
-       * </pre>
-       *
-       * <code>optional string style = 5;</code>
-       */
-      public Builder setStyleBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-        
-        style_ = value;
-        onChanged();
-        return this;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.Any, com.google.protobuf.Any.Builder, com.google.protobuf.AnyOrBuilder> 
+          getEngineFieldsFieldBuilder() {
+        if (engineFieldsBuilder_ == null) {
+          engineFieldsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.Any, com.google.protobuf.Any.Builder, com.google.protobuf.AnyOrBuilder>(
+                  getEngineFields(),
+                  getParentForChildren(),
+                  isClean());
+          engineFields_ = null;
+        }
+        return engineFieldsBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -1865,13 +1833,13 @@ public final class Protos {
        */
       SUCCESS(0),
       /**
-       * <code>UNSPECIFIED_ERROR = 1;</code>
+       * <code>WELCOME_MESSAGE = 1;</code>
        */
-      UNSPECIFIED_ERROR(1),
+      WELCOME_MESSAGE(1),
       /**
-       * <code>QUEUE_FULL = 2;</code>
+       * <code>UNSPECIFIED_ERROR = 2;</code>
        */
-      QUEUE_FULL(2),
+      UNSPECIFIED_ERROR(2),
       /**
        * <code>WRONG_INPUT_FORMAT = 3;</code>
        */
@@ -1880,6 +1848,14 @@ public final class Protos {
        * <code>REQUESTED_ENGINE_NOT_AVAILABLE = 4;</code>
        */
       REQUESTED_ENGINE_NOT_AVAILABLE(4),
+      /**
+       * <code>NO_TOKENS = 5;</code>
+       */
+      NO_TOKENS(5),
+      /**
+       * <code>QUEUE_FULL = 6;</code>
+       */
+      QUEUE_FULL(6),
       UNRECOGNIZED(-1),
       ;
 
@@ -1888,13 +1864,13 @@ public final class Protos {
        */
       public static final int SUCCESS_VALUE = 0;
       /**
-       * <code>UNSPECIFIED_ERROR = 1;</code>
+       * <code>WELCOME_MESSAGE = 1;</code>
        */
-      public static final int UNSPECIFIED_ERROR_VALUE = 1;
+      public static final int WELCOME_MESSAGE_VALUE = 1;
       /**
-       * <code>QUEUE_FULL = 2;</code>
+       * <code>UNSPECIFIED_ERROR = 2;</code>
        */
-      public static final int QUEUE_FULL_VALUE = 2;
+      public static final int UNSPECIFIED_ERROR_VALUE = 2;
       /**
        * <code>WRONG_INPUT_FORMAT = 3;</code>
        */
@@ -1903,6 +1879,14 @@ public final class Protos {
        * <code>REQUESTED_ENGINE_NOT_AVAILABLE = 4;</code>
        */
       public static final int REQUESTED_ENGINE_NOT_AVAILABLE_VALUE = 4;
+      /**
+       * <code>NO_TOKENS = 5;</code>
+       */
+      public static final int NO_TOKENS_VALUE = 5;
+      /**
+       * <code>QUEUE_FULL = 6;</code>
+       */
+      public static final int QUEUE_FULL_VALUE = 6;
 
 
       public final int getNumber() {
@@ -1924,10 +1908,12 @@ public final class Protos {
       public static Status forNumber(int value) {
         switch (value) {
           case 0: return SUCCESS;
-          case 1: return UNSPECIFIED_ERROR;
-          case 2: return QUEUE_FULL;
+          case 1: return WELCOME_MESSAGE;
+          case 2: return UNSPECIFIED_ERROR;
           case 3: return WRONG_INPUT_FORMAT;
           case 4: return REQUESTED_ENGINE_NOT_AVAILABLE;
+          case 5: return NO_TOKENS;
+          case 6: return QUEUE_FULL;
           default: return null;
         }
       }
@@ -1994,13 +1980,14 @@ public final class Protos {
       edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType getType();
 
       /**
-       * <code>optional .gabriel.Engine engine = 2;</code>
+       * <code>optional string engine_name = 2;</code>
        */
-      int getEngineValue();
+      java.lang.String getEngineName();
       /**
-       * <code>optional .gabriel.Engine engine = 2;</code>
+       * <code>optional string engine_name = 2;</code>
        */
-      edu.cmu.cs.gabriel.network.Protos.Engine getEngine();
+      com.google.protobuf.ByteString
+          getEngineNameBytes();
 
       /**
        * <code>optional bytes payload = 3;</code>
@@ -2020,7 +2007,7 @@ public final class Protos {
       }
       private Result() {
         type_ = 0;
-        engine_ = 0;
+        engineName_ = "";
         payload_ = com.google.protobuf.ByteString.EMPTY;
       }
 
@@ -2055,10 +2042,10 @@ public final class Protos {
                 type_ = rawValue;
                 break;
               }
-              case 16: {
-                int rawValue = input.readEnum();
+              case 18: {
+                java.lang.String s = input.readStringRequireUtf8();
 
-                engine_ = rawValue;
+                engineName_ = s;
                 break;
               }
               case 26: {
@@ -2230,20 +2217,38 @@ public final class Protos {
         return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.UNRECOGNIZED : result;
       }
 
-      public static final int ENGINE_FIELD_NUMBER = 2;
-      private int engine_;
+      public static final int ENGINE_NAME_FIELD_NUMBER = 2;
+      private volatile java.lang.Object engineName_;
       /**
-       * <code>optional .gabriel.Engine engine = 2;</code>
+       * <code>optional string engine_name = 2;</code>
        */
-      public int getEngineValue() {
-        return engine_;
+      public java.lang.String getEngineName() {
+        java.lang.Object ref = engineName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          engineName_ = s;
+          return s;
+        }
       }
       /**
-       * <code>optional .gabriel.Engine engine = 2;</code>
+       * <code>optional string engine_name = 2;</code>
        */
-      public edu.cmu.cs.gabriel.network.Protos.Engine getEngine() {
-        edu.cmu.cs.gabriel.network.Protos.Engine result = edu.cmu.cs.gabriel.network.Protos.Engine.valueOf(engine_);
-        return result == null ? edu.cmu.cs.gabriel.network.Protos.Engine.UNRECOGNIZED : result;
+      public com.google.protobuf.ByteString
+          getEngineNameBytes() {
+        java.lang.Object ref = engineName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          engineName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
       }
 
       public static final int PAYLOAD_FIELD_NUMBER = 3;
@@ -2270,8 +2275,8 @@ public final class Protos {
         if (type_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Result.ResultType.IMAGE.getNumber()) {
           output.writeEnum(1, type_);
         }
-        if (engine_ != edu.cmu.cs.gabriel.network.Protos.Engine.OPENRTIST.getNumber()) {
-          output.writeEnum(2, engine_);
+        if (!getEngineNameBytes().isEmpty()) {
+          com.google.protobuf.GeneratedMessageV3.writeString(output, 2, engineName_);
         }
         if (!payload_.isEmpty()) {
           output.writeBytes(3, payload_);
@@ -2287,9 +2292,8 @@ public final class Protos {
           size += com.google.protobuf.CodedOutputStream
             .computeEnumSize(1, type_);
         }
-        if (engine_ != edu.cmu.cs.gabriel.network.Protos.Engine.OPENRTIST.getNumber()) {
-          size += com.google.protobuf.CodedOutputStream
-            .computeEnumSize(2, engine_);
+        if (!getEngineNameBytes().isEmpty()) {
+          size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, engineName_);
         }
         if (!payload_.isEmpty()) {
           size += com.google.protobuf.CodedOutputStream
@@ -2312,7 +2316,8 @@ public final class Protos {
 
         boolean result = true;
         result = result && type_ == other.type_;
-        result = result && engine_ == other.engine_;
+        result = result && getEngineName()
+            .equals(other.getEngineName());
         result = result && getPayload()
             .equals(other.getPayload());
         return result;
@@ -2327,8 +2332,8 @@ public final class Protos {
         hash = (19 * hash) + getDescriptorForType().hashCode();
         hash = (37 * hash) + TYPE_FIELD_NUMBER;
         hash = (53 * hash) + type_;
-        hash = (37 * hash) + ENGINE_FIELD_NUMBER;
-        hash = (53 * hash) + engine_;
+        hash = (37 * hash) + ENGINE_NAME_FIELD_NUMBER;
+        hash = (53 * hash) + getEngineName().hashCode();
         hash = (37 * hash) + PAYLOAD_FIELD_NUMBER;
         hash = (53 * hash) + getPayload().hashCode();
         hash = (29 * hash) + unknownFields.hashCode();
@@ -2451,7 +2456,7 @@ public final class Protos {
           super.clear();
           type_ = 0;
 
-          engine_ = 0;
+          engineName_ = "";
 
           payload_ = com.google.protobuf.ByteString.EMPTY;
 
@@ -2478,7 +2483,7 @@ public final class Protos {
         public edu.cmu.cs.gabriel.network.Protos.FromServer.Result buildPartial() {
           edu.cmu.cs.gabriel.network.Protos.FromServer.Result result = new edu.cmu.cs.gabriel.network.Protos.FromServer.Result(this);
           result.type_ = type_;
-          result.engine_ = engine_;
+          result.engineName_ = engineName_;
           result.payload_ = payload_;
           onBuilt();
           return result;
@@ -2524,8 +2529,9 @@ public final class Protos {
           if (other.type_ != 0) {
             setTypeValue(other.getTypeValue());
           }
-          if (other.engine_ != 0) {
-            setEngineValue(other.getEngineValue());
+          if (!other.getEngineName().isEmpty()) {
+            engineName_ = other.engineName_;
+            onChanged();
           }
           if (other.getPayload() != com.google.protobuf.ByteString.EMPTY) {
             setPayload(other.getPayload());
@@ -2600,46 +2606,71 @@ public final class Protos {
           return this;
         }
 
-        private int engine_ = 0;
+        private java.lang.Object engineName_ = "";
         /**
-         * <code>optional .gabriel.Engine engine = 2;</code>
+         * <code>optional string engine_name = 2;</code>
          */
-        public int getEngineValue() {
-          return engine_;
-        }
-        /**
-         * <code>optional .gabriel.Engine engine = 2;</code>
-         */
-        public Builder setEngineValue(int value) {
-          engine_ = value;
-          onChanged();
-          return this;
-        }
-        /**
-         * <code>optional .gabriel.Engine engine = 2;</code>
-         */
-        public edu.cmu.cs.gabriel.network.Protos.Engine getEngine() {
-          edu.cmu.cs.gabriel.network.Protos.Engine result = edu.cmu.cs.gabriel.network.Protos.Engine.valueOf(engine_);
-          return result == null ? edu.cmu.cs.gabriel.network.Protos.Engine.UNRECOGNIZED : result;
-        }
-        /**
-         * <code>optional .gabriel.Engine engine = 2;</code>
-         */
-        public Builder setEngine(edu.cmu.cs.gabriel.network.Protos.Engine value) {
-          if (value == null) {
-            throw new NullPointerException();
+        public java.lang.String getEngineName() {
+          java.lang.Object ref = engineName_;
+          if (!(ref instanceof java.lang.String)) {
+            com.google.protobuf.ByteString bs =
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            engineName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
           }
-          
-          engine_ = value.getNumber();
+        }
+        /**
+         * <code>optional string engine_name = 2;</code>
+         */
+        public com.google.protobuf.ByteString
+            getEngineNameBytes() {
+          java.lang.Object ref = engineName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            engineName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string engine_name = 2;</code>
+         */
+        public Builder setEngineName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  
+          engineName_ = value;
           onChanged();
           return this;
         }
         /**
-         * <code>optional .gabriel.Engine engine = 2;</code>
+         * <code>optional string engine_name = 2;</code>
          */
-        public Builder clearEngine() {
+        public Builder clearEngineName() {
           
-          engine_ = 0;
+          engineName_ = getDefaultInstance().getEngineName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string engine_name = 2;</code>
+         */
+        public Builder setEngineNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+          
+          engineName_ = value;
           onChanged();
           return this;
         }
@@ -3518,26 +3549,27 @@ public final class Protos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\rgabriel.proto\022\007gabriel\"\303\001\n\nFromClient\022" +
-      "\020\n\010frame_id\030\001 \001(\004\022&\n\004type\030\002 \001(\0162\030.gabrie" +
-      "l.FromClient.Type\022\037\n\006engine\030\003 \001(\0162\017.gabr" +
-      "iel.Engine\022\017\n\007payload\030\004 \001(\014\022\r\n\005style\030\005 \001" +
-      "(\t\":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDI" +
-      "O\020\002\022\021\n\rACCELEROMETER\020\003\"D\n\014EngineServer\022\014" +
-      "\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\030\n\020serialized" +
-      "_proto\030\003 \001(\014\"\253\003\n\nFromServer\022\020\n\010frame_id\030" +
-      "\001 \001(\004\022*\n\006status\030\002 \001(\0162\032.gabriel.FromServ" +
-      "er.Status\022+\n\007results\030\003 \003(\0132\032.gabriel.Fro",
-      "mServer.Result\032\267\001\n\006Result\0223\n\004type\030\001 \001(\0162" +
-      "%.gabriel.FromServer.Result.ResultType\022\037" +
-      "\n\006engine\030\002 \001(\0162\017.gabriel.Engine\022\017\n\007paylo" +
-      "ad\030\003 \001(\014\"F\n\nResultType\022\t\n\005IMAGE\020\000\022\t\n\005VID" +
-      "EO\020\001\022\t\n\005AUDIO\020\002\022\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004" +
-      "\"x\n\006Status\022\013\n\007SUCCESS\020\000\022\025\n\021UNSPECIFIED_E" +
-      "RROR\020\001\022\016\n\nQUEUE_FULL\020\002\022\026\n\022WRONG_INPUT_FO" +
-      "RMAT\020\003\022\"\n\036REQUESTED_ENGINE_NOT_AVAILABLE" +
-      "\020\004*\027\n\006Engine\022\r\n\tOPENRTIST\020\000B$\n\032edu.cmu.c" +
-      "s.gabriel.networkB\006Protosb\006proto3"
+      "\n\rgabriel.proto\022\007gabriel\032\031google/protobu" +
+      "f/any.proto\"\325\001\n\nFromClient\022\020\n\010frame_id\030\001" +
+      " \001(\004\022&\n\004type\030\002 \001(\0162\030.gabriel.FromClient." +
+      "Type\022\023\n\013engine_name\030\003 \001(\t\022\017\n\007payload\030\004 \001" +
+      "(\014\022+\n\rengine_fields\030\005 \001(\0132\024.google.proto" +
+      "buf.Any\":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n" +
+      "\005AUDIO\020\002\022\021\n\rACCELEROMETER\020\003\"D\n\014EngineSer" +
+      "ver\022\014\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\030\n\020seria" +
+      "lized_proto\030\003 \001(\014\"\304\003\n\nFromServer\022\020\n\010fram" +
+      "e_id\030\001 \001(\004\022*\n\006status\030\002 \001(\0162\032.gabriel.Fro",
+      "mServer.Status\022+\n\007results\030\003 \003(\0132\032.gabrie" +
+      "l.FromServer.Result\032\253\001\n\006Result\0223\n\004type\030\001" +
+      " \001(\0162%.gabriel.FromServer.Result.ResultT" +
+      "ype\022\023\n\013engine_name\030\002 \001(\t\022\017\n\007payload\030\003 \001(" +
+      "\014\"F\n\nResultType\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n" +
+      "\005AUDIO\020\002\022\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004\"\234\001\n\006St" +
+      "atus\022\013\n\007SUCCESS\020\000\022\023\n\017WELCOME_MESSAGE\020\001\022\025" +
+      "\n\021UNSPECIFIED_ERROR\020\002\022\026\n\022WRONG_INPUT_FOR" +
+      "MAT\020\003\022\"\n\036REQUESTED_ENGINE_NOT_AVAILABLE\020" +
+      "\004\022\r\n\tNO_TOKENS\020\005\022\016\n\nQUEUE_FULL\020\006B$\n\032edu.",
+      "cmu.cs.gabriel.networkB\006Protosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3550,13 +3582,14 @@ public final class Protos {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          com.google.protobuf.AnyProto.getDescriptor(),
         }, assigner);
     internal_static_gabriel_FromClient_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_gabriel_FromClient_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromClient_descriptor,
-        new java.lang.String[] { "FrameId", "Type", "Engine", "Payload", "Style", });
+        new java.lang.String[] { "FrameId", "Type", "EngineName", "Payload", "EngineFields", });
     internal_static_gabriel_EngineServer_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_gabriel_EngineServer_fieldAccessorTable = new
@@ -3574,7 +3607,8 @@ public final class Protos {
     internal_static_gabriel_FromServer_Result_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromServer_Result_descriptor,
-        new java.lang.String[] { "Type", "Engine", "Payload", });
+        new java.lang.String[] { "Type", "EngineName", "Payload", });
+    com.google.protobuf.AnyProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
