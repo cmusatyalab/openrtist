@@ -1109,9 +1109,9 @@ public final class Protos {
     int getPort();
 
     /**
-     * <code>optional bytes from_client = 3;</code>
+     * <code>optional bytes serialized_proto = 3;</code>
      */
-    com.google.protobuf.ByteString getFromClient();
+    com.google.protobuf.ByteString getSerializedProto();
   }
   /**
    * Protobuf type {@code gabriel.EngineServer}
@@ -1127,7 +1127,7 @@ public final class Protos {
     private EngineServer() {
       host_ = "";
       port_ = 0;
-      fromClient_ = com.google.protobuf.ByteString.EMPTY;
+      serializedProto_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -1168,7 +1168,7 @@ public final class Protos {
             }
             case 26: {
 
-              fromClient_ = input.readBytes();
+              serializedProto_ = input.readBytes();
               break;
             }
           }
@@ -1237,13 +1237,13 @@ public final class Protos {
       return port_;
     }
 
-    public static final int FROM_CLIENT_FIELD_NUMBER = 3;
-    private com.google.protobuf.ByteString fromClient_;
+    public static final int SERIALIZED_PROTO_FIELD_NUMBER = 3;
+    private com.google.protobuf.ByteString serializedProto_;
     /**
-     * <code>optional bytes from_client = 3;</code>
+     * <code>optional bytes serialized_proto = 3;</code>
      */
-    public com.google.protobuf.ByteString getFromClient() {
-      return fromClient_;
+    public com.google.protobuf.ByteString getSerializedProto() {
+      return serializedProto_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -1264,8 +1264,8 @@ public final class Protos {
       if (port_ != 0) {
         output.writeInt32(2, port_);
       }
-      if (!fromClient_.isEmpty()) {
-        output.writeBytes(3, fromClient_);
+      if (!serializedProto_.isEmpty()) {
+        output.writeBytes(3, serializedProto_);
       }
     }
 
@@ -1281,9 +1281,9 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, port_);
       }
-      if (!fromClient_.isEmpty()) {
+      if (!serializedProto_.isEmpty()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, fromClient_);
+          .computeBytesSize(3, serializedProto_);
       }
       memoizedSize = size;
       return size;
@@ -1305,8 +1305,8 @@ public final class Protos {
           .equals(other.getHost());
       result = result && (getPort()
           == other.getPort());
-      result = result && getFromClient()
-          .equals(other.getFromClient());
+      result = result && getSerializedProto()
+          .equals(other.getSerializedProto());
       return result;
     }
 
@@ -1321,8 +1321,8 @@ public final class Protos {
       hash = (53 * hash) + getHost().hashCode();
       hash = (37 * hash) + PORT_FIELD_NUMBER;
       hash = (53 * hash) + getPort();
-      hash = (37 * hash) + FROM_CLIENT_FIELD_NUMBER;
-      hash = (53 * hash) + getFromClient().hashCode();
+      hash = (37 * hash) + SERIALIZED_PROTO_FIELD_NUMBER;
+      hash = (53 * hash) + getSerializedProto().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -1445,7 +1445,7 @@ public final class Protos {
 
         port_ = 0;
 
-        fromClient_ = com.google.protobuf.ByteString.EMPTY;
+        serializedProto_ = com.google.protobuf.ByteString.EMPTY;
 
         return this;
       }
@@ -1471,7 +1471,7 @@ public final class Protos {
         edu.cmu.cs.gabriel.network.Protos.EngineServer result = new edu.cmu.cs.gabriel.network.Protos.EngineServer(this);
         result.host_ = host_;
         result.port_ = port_;
-        result.fromClient_ = fromClient_;
+        result.serializedProto_ = serializedProto_;
         onBuilt();
         return result;
       }
@@ -1520,8 +1520,8 @@ public final class Protos {
         if (other.getPort() != 0) {
           setPort(other.getPort());
         }
-        if (other.getFromClient() != com.google.protobuf.ByteString.EMPTY) {
-          setFromClient(other.getFromClient());
+        if (other.getSerializedProto() != com.google.protobuf.ByteString.EMPTY) {
+          setSerializedProto(other.getSerializedProto());
         }
         onChanged();
         return this;
@@ -1644,31 +1644,31 @@ public final class Protos {
         return this;
       }
 
-      private com.google.protobuf.ByteString fromClient_ = com.google.protobuf.ByteString.EMPTY;
+      private com.google.protobuf.ByteString serializedProto_ = com.google.protobuf.ByteString.EMPTY;
       /**
-       * <code>optional bytes from_client = 3;</code>
+       * <code>optional bytes serialized_proto = 3;</code>
        */
-      public com.google.protobuf.ByteString getFromClient() {
-        return fromClient_;
+      public com.google.protobuf.ByteString getSerializedProto() {
+        return serializedProto_;
       }
       /**
-       * <code>optional bytes from_client = 3;</code>
+       * <code>optional bytes serialized_proto = 3;</code>
        */
-      public Builder setFromClient(com.google.protobuf.ByteString value) {
+      public Builder setSerializedProto(com.google.protobuf.ByteString value) {
         if (value == null) {
     throw new NullPointerException();
   }
   
-        fromClient_ = value;
+        serializedProto_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional bytes from_client = 3;</code>
+       * <code>optional bytes serialized_proto = 3;</code>
        */
-      public Builder clearFromClient() {
+      public Builder clearSerializedProto() {
         
-        fromClient_ = getDefaultInstance().getFromClient();
+        serializedProto_ = getDefaultInstance().getSerializedProto();
         onChanged();
         return this;
       }
@@ -3523,21 +3523,21 @@ public final class Protos {
       "l.FromClient.Type\022\037\n\006engine\030\003 \001(\0162\017.gabr" +
       "iel.Engine\022\017\n\007payload\030\004 \001(\014\022\r\n\005style\030\005 \001" +
       "(\t\":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDI" +
-      "O\020\002\022\021\n\rACCELEROMETER\020\003\"?\n\014EngineServer\022\014" +
-      "\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\023\n\013from_clien" +
-      "t\030\003 \001(\014\"\253\003\n\nFromServer\022\020\n\010frame_id\030\001 \001(\004" +
-      "\022*\n\006status\030\002 \001(\0162\032.gabriel.FromServer.St" +
-      "atus\022+\n\007results\030\003 \003(\0132\032.gabriel.FromServ",
-      "er.Result\032\267\001\n\006Result\0223\n\004type\030\001 \001(\0162%.gab" +
-      "riel.FromServer.Result.ResultType\022\037\n\006eng" +
-      "ine\030\002 \001(\0162\017.gabriel.Engine\022\017\n\007payload\030\003 " +
-      "\001(\014\"F\n\nResultType\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022" +
-      "\t\n\005AUDIO\020\002\022\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004\"x\n\006S" +
-      "tatus\022\013\n\007SUCCESS\020\000\022\025\n\021UNSPECIFIED_ERROR\020" +
-      "\001\022\016\n\nQUEUE_FULL\020\002\022\026\n\022WRONG_INPUT_FORMAT\020" +
-      "\003\022\"\n\036REQUESTED_ENGINE_NOT_AVAILABLE\020\004*\027\n" +
-      "\006Engine\022\r\n\tOPENRTIST\020\000B$\n\032edu.cmu.cs.gab" +
-      "riel.networkB\006Protosb\006proto3"
+      "O\020\002\022\021\n\rACCELEROMETER\020\003\"D\n\014EngineServer\022\014" +
+      "\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\030\n\020serialized" +
+      "_proto\030\003 \001(\014\"\253\003\n\nFromServer\022\020\n\010frame_id\030" +
+      "\001 \001(\004\022*\n\006status\030\002 \001(\0162\032.gabriel.FromServ" +
+      "er.Status\022+\n\007results\030\003 \003(\0132\032.gabriel.Fro",
+      "mServer.Result\032\267\001\n\006Result\0223\n\004type\030\001 \001(\0162" +
+      "%.gabriel.FromServer.Result.ResultType\022\037" +
+      "\n\006engine\030\002 \001(\0162\017.gabriel.Engine\022\017\n\007paylo" +
+      "ad\030\003 \001(\014\"F\n\nResultType\022\t\n\005IMAGE\020\000\022\t\n\005VID" +
+      "EO\020\001\022\t\n\005AUDIO\020\002\022\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004" +
+      "\"x\n\006Status\022\013\n\007SUCCESS\020\000\022\025\n\021UNSPECIFIED_E" +
+      "RROR\020\001\022\016\n\nQUEUE_FULL\020\002\022\026\n\022WRONG_INPUT_FO" +
+      "RMAT\020\003\022\"\n\036REQUESTED_ENGINE_NOT_AVAILABLE" +
+      "\020\004*\027\n\006Engine\022\r\n\tOPENRTIST\020\000B$\n\032edu.cmu.c" +
+      "s.gabriel.networkB\006Protosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3562,7 +3562,7 @@ public final class Protos {
     internal_static_gabriel_EngineServer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_EngineServer_descriptor,
-        new java.lang.String[] { "Host", "Port", "FromClient", });
+        new java.lang.String[] { "Host", "Port", "SerializedProto", });
     internal_static_gabriel_FromServer_descriptor =
       getDescriptor().getMessageTypes().get(2);
     internal_static_gabriel_FromServer_fieldAccessorTable = new
