@@ -16,6 +16,7 @@ from google.protobuf.any_pb2 import Any
 import openrtist_pb2
 
 
+ENGINE_NAME = 'openrtist'
 DEFAULT_STYLE = 'the_scream'
 COMPRESSION_PARAMS = [cv2.IMWRITE_JPEG_QUALITY, 67]
 
@@ -26,8 +27,8 @@ logger = logging.getLogger(__name__)
 # TODO: support openvino
 class OpenrtistEngine(cognitive_engine.Engine):
     @property
-    def proto_engine(self):
-        return gabriel_pb2.Engine.OPENRTIST
+    def name(self):
+        return ENGINE_NAME
 
     def __init__(self, use_gpu):
         self.dir_path = os.getcwd()
