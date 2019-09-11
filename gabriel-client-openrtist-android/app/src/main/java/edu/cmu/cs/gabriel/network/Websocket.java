@@ -30,6 +30,8 @@ import java.io.ByteArrayOutputStream;
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.network.Protos.FromClient;
 import edu.cmu.cs.gabriel.network.Protos.ToClient;
+import edu.cmu.cs.gabriel.network.Protos.ResultWrapper;
+import edu.cmu.cs.gabriel.network.Protos.PayloadType;
 import edu.cmu.cs.openrtist.Protos.EngineFields;
 import com.google.protobuf.Any;
 
@@ -83,11 +85,11 @@ public class Websocket {
         webSocketInterface.Receive().start(new Stream.Observer<ToClient>() {
             @Override
             public void onNext(ToClient toClient) {
-                ToClient.Content content = toClient.getContent();
-                if (content.getStatus() == ToClient.Content.Status.SUCCESS) {
-                    if (content.getResultsCount() == 1) {
-                        ToClient.Content.Result result = content.getResults(0);
-                        if (result.getType() == ToClient.Content.Result.ResultType.IMAGE) {
+                ResultWrapper resultWrapper = toClient.getResultWrapper();
+                if (resultWrapper.getStatus() == ResultWrapper.Status.SUCCESS) {
+                    if (resultWrapper.getResultsCount() == 1) {
+                        ResultWrapper.Result result = resultWrapper.getResults(0);
+                        if (result.getPayloadType() == PayloadType.IMAGE) {
                             if (result.getEngineName().equals(ENGINE_NAME)) {
                                 ByteString dataString = result.getPayload();
 
@@ -104,14 +106,14 @@ public class Websocket {
                                         "Got result from engine " + result.getEngineName());
                             }
                         } else {
-                            Log.e(TAG, "Got result of type " + result.getType().name());
+                            Log.e(TAG, "Got result of type " + result.getPayloadType().name());
                         }
                     } else {
-                        Log.e(TAG, "Got " + content.getResultsCount() +
+                        Log.e(TAG, "Got " + resultWrapper.getResultsCount() +
                                 " results in output.");
                     }
                 } else {
-                    Log.e(TAG, "Output status was: " + content.getStatus().name());
+                    Log.e(TAG, "Output status was: " + resultWrapper.getStatus().name());
                 }
 
                 // Refill token
@@ -199,7 +201,7 @@ public class Websocket {
 
         FromClient.Builder fromClientBuilder = FromClient.newBuilder();
         fromClientBuilder.setFrameId(this.frameID);
-        fromClientBuilder.setType(FromClient.Type.IMAGE);
+        fromClientBuilder.setPayloadType(PayloadType.IMAGE);
         fromClientBuilder.setEngineName(ENGINE_NAME);
         fromClientBuilder.setPayload(ByteString.copyFrom(data));
 
