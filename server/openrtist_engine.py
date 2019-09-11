@@ -71,13 +71,13 @@ class OpenrtistEngine(cognitive_engine.Engine):
         img_data = jpeg_img.tostring()
 
         result = gabriel_pb2.ToClient.Content.Result()
-        result.type = gabriel_pb2.FromServer.Result.ResultType.IMAGE
+        result.type = gabriel_pb2.ToClient.Content.Result.ResultType.IMAGE
         result.engine_name = ENGINE_NAME
         result.payload = img_data
 
-        content = gabriel_pb2.Content()
+        content = gabriel_pb2.ToClient.Content()
         content.frame_id = from_client.frame_id
-        content.status = gabriel_pb2.FromServer.Status.SUCCESS
+        content.status = gabriel_pb2.ToClient.Content.Status.SUCCESS
         content.results.append(result)
         return content
 
