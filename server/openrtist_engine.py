@@ -12,6 +12,8 @@ from PIL import Image
 from transformer_net import TransformerNet
 from gabriel_server import cognitive_engine
 from gabriel_server import gabriel_pb2
+from google.protobuf.any_pb2 import Any
+import openrtist_pb2
 
 
 DEFAULT_STYLE = 'the_scream'
@@ -51,12 +53,15 @@ class OpenrtistEngine(cognitive_engine.Engine):
         logger.info('FINISHED INITIALISATION')
 
     def handle(self, from_client):
-        if from_client.style != self.style:
-            self.model = self.path + from_client.style + ".model"
+        engine_fields = openrtist_pb2.EngineFields()
+        from_client.engine_fields.Unpack(engine_fields)
+
+        if engine_fields.style != self.style:
+            self.model = self.path + engine_fields.style + ".model"
             self.style_model.load_state_dict(torch.load(self.model))
             if (self.use_gpu):
                 self.style_model.cuda()
-            self.style = from_client.style
+            self.style = engine_fields.style
             logger.info('New Style: %s', self.style)
 
         if (from_client.type != gabriel_pb2.FromClient.Type.IMAGE):
@@ -70,7 +75,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         result = gabriel_pb2.FromServer.Result()
         result.type = gabriel_pb2.FromServer.Result.ResultType.IMAGE
-        result.engine = self.proto_engine
+        result.engine_name = self.name
         result.payload = img_data
 
         from_server = gabriel_pb2.FromServer()

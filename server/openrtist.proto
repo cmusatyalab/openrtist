@@ -1,0 +1,13 @@
+// After making changes, compile with the following two lines:
+// /path/to/protoc --java_out=../gabriel-client-openrtist-android/app/src/main/java/ openrtist.proto
+// /path/to/protoc --python_out=. openrtist.proto
+syntax = "proto3";
+
+package openrtist;
+
+option java_package = "edu.cmu.cs.openrtist";
+option java_outer_classname = "Protos";
+
+message EngineFields {
+    string style = 1;
+}
