@@ -118,9 +118,9 @@ public class Websocket {
                     }
                 }
 
-                // Make tokenController match what client told us
-                Websocket.this.tokenController.reset();
-                Websocket.this.tokenController.increaseTokens(toClient.getNumTokens());
+                // Refill Tokens
+                // TODO: Ensure the number of tokens we have match toClient.getNumTokens()
+                Websocket.this.tokenController.increaseTokens(1);
             }
 
             @Override
