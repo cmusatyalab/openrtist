@@ -70,16 +70,16 @@ class OpenrtistEngine(cognitive_engine.Engine):
         _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
         img_data = jpeg_img.tostring()
 
-        result = gabriel_pb2.ToClient.Content.Result()
-        result.type = gabriel_pb2.ToClient.Content.Result.ResultType.IMAGE
+        result = gabriel_pb2.ResultWrapper.Result()
+        result.payload_type = gabriel_pb2.PayloadType.IMAGE
         result.engine_name = ENGINE_NAME
         result.payload = img_data
 
-        content = gabriel_pb2.ToClient.Content()
-        content.frame_id = from_client.frame_id
-        content.status = gabriel_pb2.ToClient.Content.Status.SUCCESS
-        content.results.append(result)
-        return content
+        result_wrapper = gabriel_pb2.ResultWrapper()
+        result_wrapper.frame_id = from_client.frame_id
+        result_wrapper.status = gabriel_pb2.ResultWrapper.Status.SUCCESS
+        result_wrapper.results.append(result)
+        return result_wrapper
 
     def _process_image(self, image):
         np_data=np.fromstring(image, dtype=np.uint8)
