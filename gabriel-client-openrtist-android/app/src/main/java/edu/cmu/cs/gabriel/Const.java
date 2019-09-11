@@ -109,7 +109,7 @@ public class Const {
     public static String SERVER_IP = "128.2.208.111";  // Cloudlet
 
     // token size
-    public static int TOKEN_SIZE = 2;
+    public static int TOKEN_SIZE = 0;  // Tokens will come from client
 
     /************************ Experiment mode only *******************************/
     // server IP list
