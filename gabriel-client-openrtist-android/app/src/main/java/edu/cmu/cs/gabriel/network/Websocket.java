@@ -87,7 +87,7 @@ public class Websocket {
                     if (fromServer.getResultsCount() == 1) {
                         FromServer.Result result = fromServer.getResults(0);
                         if (result.getType() == FromServer.Result.ResultType.IMAGE) {
-                            if (result.getEngineName() == ENGINE_NAME) {
+                            if (result.getEngineName().equals(ENGINE_NAME)) {
                                 ByteString dataString = result.getPayload();
 
                                 Bitmap imageFeedback = BitmapFactory.decodeByteArray(
@@ -100,7 +100,7 @@ public class Websocket {
                             } else {
                                 Log.e(
                                         TAG,
-                                        "Got result from engine" + result.getEngineName());
+                                        "Got result from engine " + result.getEngineName());
                             }
                         } else {
                             Log.e(TAG, "Got result of type " + result.getType().name());
@@ -199,6 +199,7 @@ public class Websocket {
         FromClient.Builder fromClientBuilder = FromClient.newBuilder();
         fromClientBuilder.setFrameId(this.frameID);
         fromClientBuilder.setType(FromClient.Type.IMAGE);
+        fromClientBuilder.setEngineName(ENGINE_NAME);
         fromClientBuilder.setPayload(ByteString.copyFrom(data));
 
         EngineFields.Builder engineFieldsBuilder = EngineFields.newBuilder();
