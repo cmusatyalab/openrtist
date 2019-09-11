@@ -19,7 +19,7 @@ RUN apt-get install -y \
 RUN git clone -b new-gabriel https://github.com/cmusatyalab/openrtist.git
 WORKDIR openrtist/server
 RUN git submodule update --init --recursive
-RUN pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt
 
 #Install PyTorch
 

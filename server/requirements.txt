@@ -3,7 +3,6 @@ Cython==0.29.13
 kiwisolver==1.1.0
 matplotlib==3.1.1
 numpy==1.17.1
-object-detection==0.1
 opencv-python==4.1.1.26
 Pillow==6.1.0
 protobuf==3.9.1
