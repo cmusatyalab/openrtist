@@ -85,39 +85,42 @@ public class Websocket {
         webSocketInterface.Receive().start(new Stream.Observer<ToClient>() {
             @Override
             public void onNext(ToClient toClient) {
-                ResultWrapper resultWrapper = toClient.getResultWrapper();
-                if (resultWrapper.getStatus() == ResultWrapper.Status.SUCCESS) {
-                    if (resultWrapper.getResultsCount() == 1) {
-                        ResultWrapper.Result result = resultWrapper.getResults(0);
-                        if (result.getPayloadType() == PayloadType.IMAGE) {
-                            if (result.getEngineName().equals(ENGINE_NAME)) {
-                                ByteString dataString = result.getPayload();
+                if (toClient.hasResultWrapper()) {
+                    ResultWrapper resultWrapper = toClient.getResultWrapper();
+                    if (resultWrapper.getStatus() == ResultWrapper.Status.SUCCESS) {
+                        if (resultWrapper.getResultsCount() == 1) {
+                            ResultWrapper.Result result = resultWrapper.getResults(0);
+                            if (result.getPayloadType() == PayloadType.IMAGE) {
+                                if (result.getEngineName().equals(ENGINE_NAME)) {
+                                    ByteString dataString = result.getPayload();
 
-                                Bitmap imageFeedback = BitmapFactory.decodeByteArray(
-                                        dataString.toByteArray(), 0, dataString.size());
+                                    Bitmap imageFeedback = BitmapFactory.decodeByteArray(
+                                            dataString.toByteArray(), 0, dataString.size());
 
-                                Message msg = Message.obtain();
-                                msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                                msg.obj = imageFeedback;
-                                Websocket.this.returnMsgHandler.sendMessage(msg);
+                                    Message msg = Message.obtain();
+                                    msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+                                    msg.obj = imageFeedback;
+                                    Websocket.this.returnMsgHandler.sendMessage(msg);
+                                } else {
+                                    Log.e(
+                                            TAG,
+                                            "Got result from engine " + result.getEngineName());
+                                }
                             } else {
-                                Log.e(
-                                        TAG,
-                                        "Got result from engine " + result.getEngineName());
+                                Log.e(TAG, "Got result of type " + result.getPayloadType().name());
                             }
                         } else {
-                            Log.e(TAG, "Got result of type " + result.getPayloadType().name());
+                            Log.e(TAG, "Got " + resultWrapper.getResultsCount() +
+                                    " results in output.");
                         }
                     } else {
-                        Log.e(TAG, "Got " + resultWrapper.getResultsCount() +
-                                " results in output.");
+                        Log.e(TAG, "Output status was: " + resultWrapper.getStatus().name());
                     }
-                } else {
-                    Log.e(TAG, "Output status was: " + resultWrapper.getStatus().name());
                 }
 
-                // Refill token
-                Websocket.this.tokenController.increaseTokens(1);
+                // Make tokenController match what client told us
+                Websocket.this.tokenController.reset();
+                Websocket.this.tokenController.increaseTokens(toClient.getNumTokens());
             }
 
             @Override
