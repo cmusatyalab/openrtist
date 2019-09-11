@@ -30,7 +30,8 @@ import java.io.ByteArrayOutputStream;
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.network.Protos.FromClient;
 import edu.cmu.cs.gabriel.network.Protos.FromServer;
-import edu.cmu.cs.gabriel.network.Protos.Engine;
+import edu.cmu.cs.openrtist.Protos.EngineFields;
+import com.google.protobuf.Any;
 
 import edu.cmu.cs.gabriel.token.TokenController;
 import okhttp3.OkHttpClient;
@@ -38,6 +39,7 @@ import okhttp3.OkHttpClient;
 public class Websocket {
 
     private static String TAG = "Websocket";
+    private static String ENGINE_NAME = "openrtist";
 
     private interface GabrielSocket {
         @Send
@@ -85,7 +87,7 @@ public class Websocket {
                     if (fromServer.getResultsCount() == 1) {
                         FromServer.Result result = fromServer.getResults(0);
                         if (result.getType() == FromServer.Result.ResultType.IMAGE) {
-                            if (result.getEngine() == Engine.OPENRTIST) {
+                            if (result.getEngineName() == ENGINE_NAME) {
                                 ByteString dataString = result.getPayload();
 
                                 Bitmap imageFeedback = BitmapFactory.decodeByteArray(
@@ -98,7 +100,7 @@ public class Websocket {
                             } else {
                                 Log.e(
                                         TAG,
-                                        "Got result from engine" + result.getEngine().name());
+                                        "Got result from engine" + result.getEngineName());
                             }
                         } else {
                             Log.e(TAG, "Got result of type " + result.getType().name());
@@ -198,7 +200,12 @@ public class Websocket {
         fromClientBuilder.setFrameId(this.frameID);
         fromClientBuilder.setType(FromClient.Type.IMAGE);
         fromClientBuilder.setPayload(ByteString.copyFrom(data));
-        fromClientBuilder.setStyle(style);
+
+        EngineFields.Builder engineFieldsBuilder = EngineFields.newBuilder();
+        engineFieldsBuilder.setStyle(style);
+        EngineFields engineFields = engineFieldsBuilder.build();
+
+        fromClientBuilder.setEngineFields(Any.pack(engineFields));
 
         FromClient fromClient = fromClientBuilder.build();
 
