@@ -19,7 +19,7 @@ public final class Protos {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional uint64 frame_id = 1;</code>
+     * <code>optional int64 frame_id = 1;</code>
      */
     long getFrameId();
 
@@ -109,7 +109,7 @@ public final class Protos {
             }
             case 8: {
 
-              frameId_ = input.readUInt64();
+              frameId_ = input.readInt64();
               break;
             }
             case 16: {
@@ -284,7 +284,7 @@ public final class Protos {
     public static final int FRAME_ID_FIELD_NUMBER = 1;
     private long frameId_;
     /**
-     * <code>optional uint64 frame_id = 1;</code>
+     * <code>optional int64 frame_id = 1;</code>
      */
     public long getFrameId() {
       return frameId_;
@@ -383,7 +383,7 @@ public final class Protos {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (frameId_ != 0L) {
-        output.writeUInt64(1, frameId_);
+        output.writeInt64(1, frameId_);
       }
       if (type_ != edu.cmu.cs.gabriel.network.Protos.FromClient.Type.IMAGE.getNumber()) {
         output.writeEnum(2, type_);
@@ -406,7 +406,7 @@ public final class Protos {
       size = 0;
       if (frameId_ != 0L) {
         size += com.google.protobuf.CodedOutputStream
-          .computeUInt64Size(1, frameId_);
+          .computeInt64Size(1, frameId_);
       }
       if (type_ != edu.cmu.cs.gabriel.network.Protos.FromClient.Type.IMAGE.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
@@ -726,13 +726,13 @@ public final class Protos {
 
       private long frameId_ ;
       /**
-       * <code>optional uint64 frame_id = 1;</code>
+       * <code>optional int64 frame_id = 1;</code>
        */
       public long getFrameId() {
         return frameId_;
       }
       /**
-       * <code>optional uint64 frame_id = 1;</code>
+       * <code>optional int64 frame_id = 1;</code>
        */
       public Builder setFrameId(long value) {
         
@@ -741,7 +741,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>optional uint64 frame_id = 1;</code>
+       * <code>optional int64 frame_id = 1;</code>
        */
       public Builder clearFrameId() {
         
@@ -1708,25 +1708,30 @@ public final class Protos {
     edu.cmu.cs.gabriel.network.Protos.FromServer.Status getStatus();
 
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>optional int32 num_tokens = 3;</code>
+     */
+    int getNumTokens();
+
+    /**
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> 
         getResultsList();
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index);
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     int getResultsCount();
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
         getResultsOrBuilderList();
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index);
@@ -1749,6 +1754,7 @@ public final class Protos {
     private FromServer() {
       frameId_ = 0L;
       status_ = 0;
+      numTokens_ = 0;
       results_ = java.util.Collections.emptyList();
     }
 
@@ -1788,10 +1794,15 @@ public final class Protos {
               status_ = rawValue;
               break;
             }
-            case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+            case 24: {
+
+              numTokens_ = input.readInt32();
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
                 results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.FromServer.Result>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000008;
               }
               results_.add(
                   input.readMessage(edu.cmu.cs.gabriel.network.Protos.FromServer.Result.parser(), extensionRegistry));
@@ -1805,7 +1816,7 @@ public final class Protos {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           results_ = java.util.Collections.unmodifiableList(results_);
         }
         makeExtensionsImmutable();
@@ -2778,35 +2789,44 @@ public final class Protos {
       return result == null ? edu.cmu.cs.gabriel.network.Protos.FromServer.Status.UNRECOGNIZED : result;
     }
 
-    public static final int RESULTS_FIELD_NUMBER = 3;
+    public static final int NUM_TOKENS_FIELD_NUMBER = 3;
+    private int numTokens_;
+    /**
+     * <code>optional int32 num_tokens = 3;</code>
+     */
+    public int getNumTokens() {
+      return numTokens_;
+    }
+
+    public static final int RESULTS_FIELD_NUMBER = 4;
     private java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> results_;
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> getResultsList() {
       return results_;
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
         getResultsOrBuilderList() {
       return results_;
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public int getResultsCount() {
       return results_.size();
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index) {
       return results_.get(index);
     }
     /**
-     * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+     * <code>repeated .gabriel.FromServer.Result results = 4;</code>
      */
     public edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
         int index) {
@@ -2831,8 +2851,11 @@ public final class Protos {
       if (status_ != edu.cmu.cs.gabriel.network.Protos.FromServer.Status.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
+      if (numTokens_ != 0) {
+        output.writeInt32(3, numTokens_);
+      }
       for (int i = 0; i < results_.size(); i++) {
-        output.writeMessage(3, results_.get(i));
+        output.writeMessage(4, results_.get(i));
       }
     }
 
@@ -2849,9 +2872,13 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
+      if (numTokens_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, numTokens_);
+      }
       for (int i = 0; i < results_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(3, results_.get(i));
+          .computeMessageSize(4, results_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -2872,6 +2899,8 @@ public final class Protos {
       result = result && (getFrameId()
           == other.getFrameId());
       result = result && status_ == other.status_;
+      result = result && (getNumTokens()
+          == other.getNumTokens());
       result = result && getResultsList()
           .equals(other.getResultsList());
       return result;
@@ -2889,6 +2918,8 @@ public final class Protos {
           getFrameId());
       hash = (37 * hash) + STATUS_FIELD_NUMBER;
       hash = (53 * hash) + status_;
+      hash = (37 * hash) + NUM_TOKENS_FIELD_NUMBER;
+      hash = (53 * hash) + getNumTokens();
       if (getResultsCount() > 0) {
         hash = (37 * hash) + RESULTS_FIELD_NUMBER;
         hash = (53 * hash) + getResultsList().hashCode();
@@ -3020,9 +3051,11 @@ public final class Protos {
 
         status_ = 0;
 
+        numTokens_ = 0;
+
         if (resultsBuilder_ == null) {
           results_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         } else {
           resultsBuilder_.clear();
         }
@@ -3052,10 +3085,11 @@ public final class Protos {
         int to_bitField0_ = 0;
         result.frameId_ = frameId_;
         result.status_ = status_;
+        result.numTokens_ = numTokens_;
         if (resultsBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
             results_ = java.util.Collections.unmodifiableList(results_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           }
           result.results_ = results_;
         } else {
@@ -3109,11 +3143,14 @@ public final class Protos {
         if (other.status_ != 0) {
           setStatusValue(other.getStatusValue());
         }
+        if (other.getNumTokens() != 0) {
+          setNumTokens(other.getNumTokens());
+        }
         if (resultsBuilder_ == null) {
           if (!other.results_.isEmpty()) {
             if (results_.isEmpty()) {
               results_ = other.results_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000008);
             } else {
               ensureResultsIsMutable();
               results_.addAll(other.results_);
@@ -3126,7 +3163,7 @@ public final class Protos {
               resultsBuilder_.dispose();
               resultsBuilder_ = null;
               results_ = other.results_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000008);
               resultsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getResultsFieldBuilder() : null;
@@ -3232,12 +3269,38 @@ public final class Protos {
         return this;
       }
 
+      private int numTokens_ ;
+      /**
+       * <code>optional int32 num_tokens = 3;</code>
+       */
+      public int getNumTokens() {
+        return numTokens_;
+      }
+      /**
+       * <code>optional int32 num_tokens = 3;</code>
+       */
+      public Builder setNumTokens(int value) {
+        
+        numTokens_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 num_tokens = 3;</code>
+       */
+      public Builder clearNumTokens() {
+        
+        numTokens_ = 0;
+        onChanged();
+        return this;
+      }
+
       private java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> results_ =
         java.util.Collections.emptyList();
       private void ensureResultsIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
           results_ = new java.util.ArrayList<edu.cmu.cs.gabriel.network.Protos.FromServer.Result>(results_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000008;
          }
       }
 
@@ -3245,7 +3308,7 @@ public final class Protos {
           edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> resultsBuilder_;
 
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result> getResultsList() {
         if (resultsBuilder_ == null) {
@@ -3255,7 +3318,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public int getResultsCount() {
         if (resultsBuilder_ == null) {
@@ -3265,7 +3328,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result getResults(int index) {
         if (resultsBuilder_ == null) {
@@ -3275,7 +3338,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder setResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
@@ -3292,7 +3355,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder setResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
@@ -3306,7 +3369,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
         if (resultsBuilder_ == null) {
@@ -3322,7 +3385,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result value) {
@@ -3339,7 +3402,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(
           edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
@@ -3353,7 +3416,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addResults(
           int index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder builderForValue) {
@@ -3367,7 +3430,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder addAllResults(
           java.lang.Iterable<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.Result> values) {
@@ -3382,12 +3445,12 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder clearResults() {
         if (resultsBuilder_ == null) {
           results_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
           onChanged();
         } else {
           resultsBuilder_.clear();
@@ -3395,7 +3458,7 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public Builder removeResults(int index) {
         if (resultsBuilder_ == null) {
@@ -3408,14 +3471,14 @@ public final class Protos {
         return this;
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder getResultsBuilder(
           int index) {
         return getResultsFieldBuilder().getBuilder(index);
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder getResultsOrBuilder(
           int index) {
@@ -3425,7 +3488,7 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public java.util.List<? extends edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder> 
            getResultsOrBuilderList() {
@@ -3436,14 +3499,14 @@ public final class Protos {
         }
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder addResultsBuilder() {
         return getResultsFieldBuilder().addBuilder(
             edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance());
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder addResultsBuilder(
           int index) {
@@ -3451,7 +3514,7 @@ public final class Protos {
             index, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.getDefaultInstance());
       }
       /**
-       * <code>repeated .gabriel.FromServer.Result results = 3;</code>
+       * <code>repeated .gabriel.FromServer.Result results = 4;</code>
        */
       public java.util.List<edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder> 
            getResultsBuilderList() {
@@ -3464,7 +3527,7 @@ public final class Protos {
           resultsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               edu.cmu.cs.gabriel.network.Protos.FromServer.Result, edu.cmu.cs.gabriel.network.Protos.FromServer.Result.Builder, edu.cmu.cs.gabriel.network.Protos.FromServer.ResultOrBuilder>(
                   results_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000008) == 0x00000008),
                   getParentForChildren(),
                   isClean());
           results_ = null;
@@ -3551,25 +3614,26 @@ public final class Protos {
     java.lang.String[] descriptorData = {
       "\n\rgabriel.proto\022\007gabriel\032\031google/protobu" +
       "f/any.proto\"\325\001\n\nFromClient\022\020\n\010frame_id\030\001" +
-      " \001(\004\022&\n\004type\030\002 \001(\0162\030.gabriel.FromClient." +
+      " \001(\003\022&\n\004type\030\002 \001(\0162\030.gabriel.FromClient." +
       "Type\022\023\n\013engine_name\030\003 \001(\t\022\017\n\007payload\030\004 \001" +
       "(\014\022+\n\rengine_fields\030\005 \001(\0132\024.google.proto" +
       "buf.Any\":\n\004Type\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n" +
       "\005AUDIO\020\002\022\021\n\rACCELEROMETER\020\003\"D\n\014EngineSer" +
       "ver\022\014\n\004host\030\001 \001(\t\022\014\n\004port\030\002 \001(\005\022\030\n\020seria" +
-      "lized_proto\030\003 \001(\014\"\304\003\n\nFromServer\022\020\n\010fram" +
+      "lized_proto\030\003 \001(\014\"\330\003\n\nFromServer\022\020\n\010fram" +
       "e_id\030\001 \001(\004\022*\n\006status\030\002 \001(\0162\032.gabriel.Fro",
-      "mServer.Status\022+\n\007results\030\003 \003(\0132\032.gabrie" +
-      "l.FromServer.Result\032\253\001\n\006Result\0223\n\004type\030\001" +
-      " \001(\0162%.gabriel.FromServer.Result.ResultT" +
-      "ype\022\023\n\013engine_name\030\002 \001(\t\022\017\n\007payload\030\003 \001(" +
-      "\014\"F\n\nResultType\022\t\n\005IMAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n" +
-      "\005AUDIO\020\002\022\010\n\004TEXT\020\003\022\r\n\tANIMATION\020\004\"\234\001\n\006St" +
-      "atus\022\013\n\007SUCCESS\020\000\022\023\n\017WELCOME_MESSAGE\020\001\022\025" +
-      "\n\021UNSPECIFIED_ERROR\020\002\022\026\n\022WRONG_INPUT_FOR" +
-      "MAT\020\003\022\"\n\036REQUESTED_ENGINE_NOT_AVAILABLE\020" +
-      "\004\022\r\n\tNO_TOKENS\020\005\022\016\n\nQUEUE_FULL\020\006B$\n\032edu.",
-      "cmu.cs.gabriel.networkB\006Protosb\006proto3"
+      "mServer.Status\022\022\n\nnum_tokens\030\003 \001(\005\022+\n\007re" +
+      "sults\030\004 \003(\0132\032.gabriel.FromServer.Result\032" +
+      "\253\001\n\006Result\0223\n\004type\030\001 \001(\0162%.gabriel.FromS" +
+      "erver.Result.ResultType\022\023\n\013engine_name\030\002" +
+      " \001(\t\022\017\n\007payload\030\003 \001(\014\"F\n\nResultType\022\t\n\005I" +
+      "MAGE\020\000\022\t\n\005VIDEO\020\001\022\t\n\005AUDIO\020\002\022\010\n\004TEXT\020\003\022\r" +
+      "\n\tANIMATION\020\004\"\234\001\n\006Status\022\013\n\007SUCCESS\020\000\022\023\n" +
+      "\017WELCOME_MESSAGE\020\001\022\025\n\021UNSPECIFIED_ERROR\020" +
+      "\002\022\026\n\022WRONG_INPUT_FORMAT\020\003\022\"\n\036REQUESTED_E" +
+      "NGINE_NOT_AVAILABLE\020\004\022\r\n\tNO_TOKENS\020\005\022\016\n\n",
+      "QUEUE_FULL\020\006B$\n\032edu.cmu.cs.gabriel.netwo" +
+      "rkB\006Protosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -3601,7 +3665,7 @@ public final class Protos {
     internal_static_gabriel_FromServer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_gabriel_FromServer_descriptor,
-        new java.lang.String[] { "FrameId", "Status", "Results", });
+        new java.lang.String[] { "FrameId", "Status", "NumTokens", "Results", });
     internal_static_gabriel_FromServer_Result_descriptor =
       internal_static_gabriel_FromServer_descriptor.getNestedTypes().get(0);
     internal_static_gabriel_FromServer_Result_fieldAccessorTable = new
