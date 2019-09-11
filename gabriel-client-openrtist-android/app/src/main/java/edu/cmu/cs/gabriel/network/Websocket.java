@@ -29,7 +29,7 @@ import java.io.ByteArrayOutputStream;
 
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.network.Protos.FromClient;
-import edu.cmu.cs.gabriel.network.Protos.FromServer;
+import edu.cmu.cs.gabriel.network.Protos.ToClient;
 import edu.cmu.cs.openrtist.Protos.EngineFields;
 import com.google.protobuf.Any;
 
@@ -46,7 +46,7 @@ public class Websocket {
         void Send(FromClient fromClient);
 
         @Receive
-        Stream<FromServer> Receive();
+        Stream<ToClient> Receive();
 
         @Receive
         Stream<WebSocket.Event> observeWebSocketEvent();
@@ -80,13 +80,14 @@ public class Websocket {
                 .lifecycle(androidLifecycle.combineWith(lifecycleRegistry))
                 .build().create(GabrielSocket.class);
 
-        webSocketInterface.Receive().start(new Stream.Observer<FromServer>() {
+        webSocketInterface.Receive().start(new Stream.Observer<ToClient>() {
             @Override
-            public void onNext(FromServer fromServer) {
-                if (fromServer.getStatus() == FromServer.Status.SUCCESS) {
-                    if (fromServer.getResultsCount() == 1) {
-                        FromServer.Result result = fromServer.getResults(0);
-                        if (result.getType() == FromServer.Result.ResultType.IMAGE) {
+            public void onNext(ToClient toClient) {
+                ToClient.Content content = toClient.getContent();
+                if (content.getStatus() == ToClient.Content.Status.SUCCESS) {
+                    if (content.getResultsCount() == 1) {
+                        ToClient.Content.Result result = content.getResults(0);
+                        if (result.getType() == ToClient.Content.Result.ResultType.IMAGE) {
                             if (result.getEngineName().equals(ENGINE_NAME)) {
                                 ByteString dataString = result.getPayload();
 
@@ -106,11 +107,11 @@ public class Websocket {
                             Log.e(TAG, "Got result of type " + result.getType().name());
                         }
                     } else {
-                        Log.e(TAG, "Got " + fromServer.getResultsCount() +
+                        Log.e(TAG, "Got " + content.getResultsCount() +
                                 " results in output.");
                     }
                 } else {
-                    Log.e(TAG, "Output status was: " + fromServer.getStatus().name());
+                    Log.e(TAG, "Output status was: " + content.getStatus().name());
                 }
 
                 // Refill token
