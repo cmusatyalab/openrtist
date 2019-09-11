@@ -14,6 +14,8 @@ RUN apt-get install -y \
     python3 \
     python3-pip \
     git \
+    libsm6 \
+    libxrender1 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN git clone -b new-gabriel https://github.com/cmusatyalab/openrtist.git
@@ -21,11 +23,5 @@ WORKDIR openrtist/server
 RUN git submodule update --init --recursive
 RUN python3 -m pip install -r requirements.txt
 
-#Install PyTorch
-
-RUN pip install --upgrade pip && pip install --upgrade numpy && pip install \
-    http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp27-cp27mu-linux_x86_64.whl \
-    torchvision==0.2.2 
-
 EXPOSE 5555 9098
-CMD ["bash"]
+CMD ["python3", "main.py"]
