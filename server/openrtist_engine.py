@@ -26,10 +26,6 @@ logger = logging.getLogger(__name__)
 
 # TODO: support openvino
 class OpenrtistEngine(cognitive_engine.Engine):
-    @property
-    def name(self):
-        return ENGINE_NAME
-
     def __init__(self, use_gpu):
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
@@ -54,8 +50,8 @@ class OpenrtistEngine(cognitive_engine.Engine):
         logger.info('FINISHED INITIALISATION')
 
     def handle(self, from_client):
-        engine_fields = openrtist_pb2.EngineFields()
-        from_client.engine_fields.Unpack(engine_fields)
+        engine_fields = cognitive_engine.unpack_engine_fields(
+            openrtist_pb2.EngineFields, from_client)
 
         if engine_fields.style != self.style:
             self.model = self.path + engine_fields.style + ".model"
@@ -68,24 +64,24 @@ class OpenrtistEngine(cognitive_engine.Engine):
         if (from_client.type != gabriel_pb2.FromClient.Type.IMAGE):
             return cognitive_engine.wrong_input_format_error(from_client.frame_id)
 
-        image = self.process_image(from_client.payload)
-        image = self.apply_watermark(image)
+        image = self._process_image(from_client.payload)
+        image = self._apply_watermark(image)
 
         _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
         img_data = jpeg_img.tostring()
 
-        result = gabriel_pb2.FromServer.Result()
+        result = gabriel_pb2.ToClient.Content.Result()
         result.type = gabriel_pb2.FromServer.Result.ResultType.IMAGE
-        result.engine_name = self.name
+        result.engine_name = ENGINE_NAME
         result.payload = img_data
 
-        from_server = gabriel_pb2.FromServer()
-        from_server.frame_id = from_client.frame_id
-        from_server.status = gabriel_pb2.FromServer.Status.SUCCESS
-        from_server.results.append(result)
-        return from_server
+        content = gabriel_pb2.Content()
+        content.frame_id = from_client.frame_id
+        content.status = gabriel_pb2.FromServer.Status.SUCCESS
+        content.results.append(result)
+        return content
 
-    def process_image(self, image):
+    def _process_image(self, image):
         np_data=np.fromstring(image, dtype=np.uint8)
         img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
@@ -101,7 +97,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         return img_out
 
-    def apply_watermark(self, image):
+    def _apply_watermark(self, image):
         img_mrk = image[-30:,-120:] # The waterMark is of dimension 30x120
         img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
         img_mrk[:,:,1] = (1-self.alpha)*img_mrk[:,:,1] + self.alpha*self.mrk
