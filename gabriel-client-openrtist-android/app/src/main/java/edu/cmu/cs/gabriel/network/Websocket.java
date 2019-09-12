@@ -116,11 +116,11 @@ public class Websocket {
                     } else {
                         Log.e(TAG, "Output status was: " + resultWrapper.getStatus().name());
                     }
+                    
+                    // Refill Tokens
+                    Websocket.this.tokenController.increaseTokens(1);
                 }
-
-                // Refill Tokens
                 // TODO: Ensure the number of tokens we have match toClient.getNumTokens()
-                Websocket.this.tokenController.increaseTokens(1);
             }
 
             @Override
