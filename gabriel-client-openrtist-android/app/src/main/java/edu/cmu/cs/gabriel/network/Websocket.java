@@ -137,25 +137,27 @@ public class Websocket {
         webSocketInterface.observeWebSocketEvent().start(new Stream.Observer<WebSocket.Event>() {
             @Override
             public void onNext(WebSocket.Event receivedUpdate) {
-                Log.i(TAG, receivedUpdate.toString());
+                if (!(receivedUpdate instanceof WebSocket.Event.OnMessageReceived)) {
+                    Log.i(TAG, receivedUpdate.toString());
 
-                if (receivedUpdate instanceof WebSocket.Event.OnConnectionOpened) {
-                    Websocket.this.connected = true;
-                } else if (receivedUpdate instanceof WebSocket.Event.OnConnectionClosing ||
-                        receivedUpdate instanceof WebSocket.Event.OnConnectionFailed) {
-                    if (Websocket.this.tokenController != null) {
-                        Websocket.this.tokenController.reset();
-                    }
+                    if (receivedUpdate instanceof WebSocket.Event.OnConnectionOpened) {
+                        Websocket.this.connected = true;
+                    } else if (receivedUpdate instanceof WebSocket.Event.OnConnectionClosing ||
+                            receivedUpdate instanceof WebSocket.Event.OnConnectionFailed) {
+                        if (Websocket.this.tokenController != null) {
+                            Websocket.this.tokenController.reset();
+                        }
 
-                    if (Websocket.this.connected) {
-                        Message msg = Message.obtain();
-                        msg.what = NetworkProtocol.NETWORK_RET_FAILED;
-                        Bundle data = new Bundle();
-                        data.putString("message", "Connection Error");
-                        msg.setData(data);
-                        Websocket.this.returnMsgHandler.sendMessage(msg);
+                        if (Websocket.this.connected) {
+                            Message msg = Message.obtain();
+                            msg.what = NetworkProtocol.NETWORK_RET_FAILED;
+                            Bundle data = new Bundle();
+                            data.putString("message", "Connection Error");
+                            msg.setData(data);
+                            Websocket.this.returnMsgHandler.sendMessage(msg);
+                        }
+                        Websocket.this.connected = false;
                     }
-                    Websocket.this.connected = false;
                 }
             }
 
