@@ -60,6 +60,7 @@ public class Websocket {
     private TokenController tokenController;
     private LifecycleRegistry lifecycleRegistry;
     private boolean connected;
+    private boolean shownError;
 
     public Websocket(String serverIP, int port, Handler returnMsgHandler, Activity activity,
                      TokenController tokenController) {
@@ -68,6 +69,7 @@ public class Websocket {
         frameID = 0;
         this.tokenController = tokenController;
         this.connected = false;
+        this.shownError = false;
 
         OkHttpClient okClient = new OkHttpClient();
 
@@ -149,13 +151,11 @@ public class Websocket {
                         }
 
                         if (Websocket.this.connected) {
-                            Message msg = Message.obtain();
-                            msg.what = NetworkProtocol.NETWORK_RET_FAILED;
-                            Bundle data = new Bundle();
-                            data.putString("message", "Connection Error");
-                            msg.setData(data);
-                            Websocket.this.returnMsgHandler.sendMessage(msg);
+                            notifyError("Server Disconnecting");
+                        } else {
+                            notifyError("Could not connect");
                         }
+
                         Websocket.this.connected = false;
                     }
                 }
@@ -227,5 +227,18 @@ public class Websocket {
 
     public boolean isConnected() {
         return connected;
+    }
+
+    private void notifyError(String messsage) {
+        if (!shownError) {
+            shownError = true;
+
+            Message msg = Message.obtain();
+            msg.what = NetworkProtocol.NETWORK_RET_FAILED;
+            Bundle data = new Bundle();
+            data.putString("message", messsage);
+            msg.setData(data);
+            Websocket.this.returnMsgHandler.sendMessage(msg);
+        }
     }
 }
