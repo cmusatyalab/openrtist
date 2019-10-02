@@ -34,6 +34,7 @@
     <string name="back_button">Go Back</string>
     <string name="demo_server">cmu-demo-server</string>
     <string name="demo_dns">openrtist-demo.cmusatyalab.org</string>
+    <string name="mex_server">MobiledgeX</string>
 
     <string name="about_menu">About&#8230;</string>
     <string name="settings_menu">Settings&#8230;</string>
@@ -67,6 +68,13 @@
     </string-array>
 
     <string name="pref_header_experimental">Experimental</string>
+    <string name="pref_header_mex">MobiledgeX</string>
+    <string name="pref_mex_dme">DME URL</string>
+    <string name="pref_mex_carrier">Carrier Name</string>
+    <string name="pref_mex_dev">Developer Name</string>
+    <string name="pref_mex_app">Application Name</string>
+    <string name="pref_mex_tag">Container Tag</string>
+
 
     <string name="pref_title_resolution">Image Resolution</string>
     <string-array name="pref_resolution_titles">

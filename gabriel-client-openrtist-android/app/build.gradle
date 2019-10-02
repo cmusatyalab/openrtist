@@ -1,11 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.jfrog.artifactory'
+
+def grpcVersion = '1.20.0'
 
 android {
     compileSdkVersion 26
 
     defaultConfig {
         applicationId "edu.cmu.cs.openrtist"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 26
     }
 
@@ -18,8 +21,16 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:appcompat-v7:23.2.0'
-    implementation 'com.android.support:support-v4:23.2.0'
-    implementation 'com.android.support:support-v13:23.2.0'
-    implementation 'com.android.support:design:23.2.0'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:support-v13:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
+    // Matching Engine SDK
+    implementation 'com.mobiledgex:matchingengine:1.4.11'
+    implementation "io.grpc:grpc-okhttp:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
+    // MobiledgeX Computer Vision library
+    //implementation 'com.mobiledgex:computervision:1.0.6'
+    //implementation 'com.android.volley:volley:1.1.1'
 }
