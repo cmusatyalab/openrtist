@@ -27,6 +27,7 @@ public class OpenrtistComm extends ServerComm {
                          Handler returnMsgHandler) {
         super(serverIP, port, gabrielClientActivity.getApplication());
         this.returnMsgHandler = returnMsgHandler;
+        this.gabrielClientActivity = gabrielClientActivity;
         this.shownError = false;
 
     }
@@ -60,6 +61,7 @@ public class OpenrtistComm extends ServerComm {
     }
 
     protected void handleDisconnect() {
+        Log.i(TAG, "Disconnected");
         String message = this.isConnected()
                 ? this.gabrielClientActivity.getResources().getString(R.string.server_disconnected)
                 : this.gabrielClientActivity.getResources().getString(R.string.could_not_connect);
