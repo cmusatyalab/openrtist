@@ -68,11 +68,11 @@ import android.media.MediaActionSound;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.cmu.cs.gabriel.network.ControlThread;
+import edu.cmu.cs.gabriel.network.EngineInput;
+import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.LogicalTime;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
-import edu.cmu.cs.gabriel.network.Websocket;
-import edu.cmu.cs.gabriel.util.PingThread;
+import edu.cmu.cs.gabriel.network.OpenrtistComm;
 import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
 import edu.cmu.cs.gabriel.token.TokenController;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
@@ -95,7 +95,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private String prev_style_type = "udnie";
     private TokenController tokenController = null;
 
-    private Websocket websocket;
+    private OpenrtistComm openrtistComm;
 
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
@@ -143,9 +143,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private TextView fpsLabel = null;
 
     private int framesProcessed = 0;
-    private byte[] frameToSend;
-    Camera.Parameters parameters;
-    Object frameToSendLock = new Object();
+    private EngineInput engineInput;
+    private Object engineInputLock = new Object();
+    private FrameSupplier frameSupplier = new FrameSupplier(this);
 
     // Background threads based on
     // https://github.com/googlesamples/android-Camera2Basic/blob/master/Application/src/main/java/com/example/android/camera2basic/Camera2BasicFragment.java#L652
@@ -183,23 +183,18 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
     }
 
+    public EngineInput getEngineInput() {
+        EngineInput engineInput;
+        synchronized (engineInputLock) {
+            engineInput = this.engineInput;
+        }
+        return engineInput;
+    }
+
     private Runnable imageUpload = new Runnable() {
         @Override
         public void run() {
-            if (tokenController != null) {
-                tokenController.getCurrentToken();  // Wait until we have a token
-
-                synchronized (frameToSendLock) {
-                    if (frameToSend != null && parameters != null && websocket != null
-                            && websocket.isConnected() && !style_type.equals("none")) {
-                        websocket.sendFrame(frameToSend, parameters, style_type);
-                        if (tokenController != null) {
-                            tokenController.decreaseToken();
-                        }
-                    }
-                }
-                backgroundHandler.post(imageUpload);
-            }
+            openrtistComm.sendSupplier(GabrielClientActivity.this.frameSupplier);
         }
     };
 
@@ -742,7 +737,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             }
         }
 
-        websocket = new Websocket(serverIP, 9098, returnMsgHandler, this, tokenController);
+        this.openrtistComm = new OpenrtistComm(serverIP, 9098, this,
+                returnMsgHandler);
     }
 
     /**
@@ -801,11 +797,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
-                parameters = mCamera.getParameters();
+                Camera.Parameters parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
-                    synchronized (frameToSendLock) {
-                        frameToSend = frame;
+                    synchronized (engineInputLock) {
+                        engineInput = new EngineInput(frame, parameters, style_type);
                     }
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
@@ -1017,9 +1013,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         isRunning = false;
 
-        if (websocket != null) {
-            websocket.stop();
-            websocket = null;
+        if (this.openrtistComm != null) {
+            this.openrtistComm.stop();
+            this.openrtistComm = null;
         }
         if (tokenController != null){
             tokenController.close();
