@@ -77,12 +77,7 @@ public class Const {
             "network connections first.";
 
 
-    // port protocol to the server
-    public static final int VIDEO_STREAM_PORT = 9098;
-    public static final int ACC_STREAM_PORT = 9099;
-    public static final int AUDIO_STREAM_PORT = 9100;
-    public static final int RESULT_RECEIVING_PORT = 9111;
-    public static final int CONTROL_PORT = 22222;
+    public static final int PORT = 9098;
 
     // the app name
     public static final String APP_NAME = "style_transfer";
