@@ -167,8 +167,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
-                || ExperimentalPreferenceFragment.class.getName().equals(fragmentName)
-                || MEXPreferenceFragment.class.getName().equals(fragmentName);
+                || ExperimentalPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     /**
@@ -224,35 +223,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("experimental_token_size"));
             bindPreferenceSummaryToValue(findPreference("experimental_resolution"));
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    public static class MEXPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_mex);
-            setHasOptionsMenu(true);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("mex_dme_url"));
-            bindPreferenceSummaryToValue(findPreference("mex_app"));
-            bindPreferenceSummaryToValue(findPreference("mex_dev"));
-            bindPreferenceSummaryToValue(findPreference("mex_carrier"));
-            bindPreferenceSummaryToValue(findPreference("mex_tag"));
         }
 
         @Override
