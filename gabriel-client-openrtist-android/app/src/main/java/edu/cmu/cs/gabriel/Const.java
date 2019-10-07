@@ -48,12 +48,6 @@ public class Const {
     public static int ITERATE_INTERVAL = 2;
     public static boolean SHOW_RECORDER = false;
     public static boolean SHOW_FPS = false;
-    //These MEX DME parameters are case-sensitive
-    public static String MEX_APP = "openrtist";
-    public static String MEX_DEV = "CMU";
-    public static String MEX_CARRIER = "CMU";
-    public static String MEX_TAG = "sepia";
-    public static String MEX_DME_URL = "us-mexdemo.dme.mobiledgex.net";
 
     // high level sensor control (on/off)
     public static boolean SENSOR_VIDEO = true;
@@ -151,21 +145,6 @@ public class Const {
 
             case "general_recording":
                 Const.SHOW_RECORDER = new Boolean(value.toString());
-                break;
-            case "mex_app":
-                Const.MEX_APP = value.toString();
-                break;
-            case "mex_dev":
-                Const.MEX_DEV = value.toString();
-                break;
-            case "mex_tag":
-                Const.MEX_TAG = value.toString();
-                break;
-            case "mex_carrier":
-                Const.MEX_CARRIER = value.toString();
-                break;
-            case "mex_dme_url":
-                Const.MEX_DME_URL = value.toString();
                 break;
             case "general_show_fps":
                 b = new Boolean(value.toString());
