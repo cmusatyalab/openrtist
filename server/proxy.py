@@ -45,6 +45,7 @@ import time
 import threading
 import cv2
 import config
+from distutils.version import LooseVersion
 
 if not hasattr(config, 'USE_OPENVINO'):
     try:
@@ -68,6 +69,10 @@ if config.USE_OPENVINO==False:
     import utils
     from transformer_net import TransformerNet
     config.USE_OPENVINO = False
+    oldversion = LooseVersion(torch.__version__) < LooseVersion("1.0")
+else:
+    import openvino.inference_engine
+    oldversion = LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0")
 
 if os.path.isdir("../.."):
     sys.path.insert(0, "../..")
@@ -84,8 +89,8 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.log_flag = log_flag
         self.is_first_image = True
         self.dir_path = os.getcwd()
-        self.model = self.dir_path+'/../models/the_scream.model'
-        self.path = self.dir_path+'/../models/'
+	self.path = self.dir_path+'/../models/' if oldversion else self.dir_path+'/../models_1p0/'
+        self.model = self.path+'the_scream.model'
 
         # initialize model
         if (config.USE_OPENVINO):
@@ -96,17 +101,23 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
                 self.device = "CPU"
             self.plugin = IEPlugin(device=self.device, plugin_dirs=None)
             if self.device == "CPU":
-                #plugin.add_cpu_extension(args.cpu_extension)
-                model_xml = self.path+"32.xml"
-                model_bin_suff = "-32.bin"
+                if oldversion:
+                    model_xml = self.path+"32.xml"
+                    model_bin_suff = "-32.bin"
+                else:
+                    model_xml = self.path+"16.xml"
+                    model_bin_suff = ".bin"
                 self.plugin.add_cpu_extension("libcpu_extension_sse4.so")  # also avx2, but probably not a significant difference for the MVN layer needed here
             else:
-                model_xml = self.path+"16v2.xml"
-                model_bin_suff = "-16.bin"
-                self.plugin.set_config({'CONFIG_FILE' : self.dir_path+"/../clkernels/mvn_custom_layer.xml"})
-
+                if oldversion:
+                    self.plugin.set_config({'CONFIG_FILE' : self.dir_path+"/../clkernels/mvn_custom_layer.xml"})
+                    model_xml = self.path+"16v2.xml"
+                    model_bin_suff = "-16.bin"
+                else:
+                    model_xml = self.path+"16.xml"
+                    model_bin_suff = ".bin"
             self.exec_nets = {}
-            for name in [ n[:-7] for n in os.listdir(self.path) if n.endswith(model_bin_suff)]:
+            for name in [ n[:-len(model_bin_suff)] for n in os.listdir(self.path) if n.endswith(model_bin_suff)]:
                 model_bin = self.path+name+model_bin_suff;
                 # Read IR
                 print("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
