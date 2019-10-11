@@ -18,8 +18,12 @@ import signal
 import socket
 import struct
 import threading
-import Queue
-import StringIO
+try:
+	import Queue
+	import StringIO
+except ImportError:
+	import queue as Queue
+	from io import StringIO as StringIO
 import cv2
 import json
 import time
@@ -36,6 +40,21 @@ from socketLib import ClientCommand, ClientReply, SocketClientThread
 import errno
 import posix
 import random
+try:
+	bytes('\0x01','ascii')
+	def mystr(b):
+		return str(b, 'ascii')
+	def bts(s):
+		return bytes(s, 'ascii')
+	def emptydata():
+		return b''
+except:
+	def mystr(b):
+		return str(b)
+	def bts(s):
+		return bytes(s)
+	def emptydata():
+		return ''
 
 class GabrielSocketCommand(ClientCommand):
     STREAM=len(ClientCommand.ACTIONS)
@@ -102,7 +121,7 @@ class VideoStreamingThread(SocketClientThread):
             header_json=json.dumps(header)
             send_time = time.time()
             # print("Send Time: {}".format(send_time))
-            self._handle_SEND(ClientCommand(ClientCommand.SEND, header_json))
+            self._handle_SEND(ClientCommand(ClientCommand.SEND, bts(header_json)))
             self._handle_SEND(ClientCommand(ClientCommand.SEND, jpeg_frame.tostring()))
             id+=1
 
@@ -134,7 +153,7 @@ class ResultReceivingThread(SocketClientThread):
                         if self.reply_q.full():
                             _ = self.reply_q.get_nowait()
                         try:
-                            self.reply_q.put_nowait(self._success_reply((header, data)))
+                            self.reply_q.put_nowait(self._success_reply((mystr(header), data)))
                         except Queue.Full:
                             print("Something went wrong. The reply_q becomes full although ResultReceivingThread "
                                   "should be the only thread writing to it.")
@@ -147,7 +166,7 @@ class ResultReceivingThread(SocketClientThread):
         #pdb.set_trace()
         header_size = struct.unpack("!I", self._recv_n_bytes(4))[0]
         header = self._recv_n_bytes(header_size)
-        header_json = json.loads(header)
+        header_json = json.loads(mystr(header))
         data_size = header_json['data_size']
         data = self._recv_n_bytes(data_size)
 
