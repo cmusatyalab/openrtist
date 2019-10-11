@@ -17,13 +17,33 @@
 import socket
 import struct
 import threading
-import Queue
-import StringIO
+try:
+	import Queue
+	import StringIO
+except ImportError:
+	import queue as Queue
+	from io import StringIO as StringIO
 import json
 from time import sleep
 import pdb
 import sys
 import select
+
+try:
+	bytes('\0x01','ascii')
+	def mystr(b):
+		return str(b, 'ascii')
+	def bts(s):
+		return bytes(s, 'ascii')
+	def emptydata():
+		return b''
+except:
+	def mystr(b):
+		return str(b)
+	def bts(s):
+		return bytes(s)
+	def emptydata():
+		return ''
 
 class ClientCommand(object):
     """ A command to the client thread.
@@ -89,11 +109,11 @@ class SocketClientThread(threading.Thread):
     def join(self, timeout=None):
         self.alive.clear()
         threading.Thread.join(self, timeout)
-        print '{} exit'.format(self.__class__.__name__)
+        print ('{} exit'.format(self.__class__.__name__))
 
     def _handle_CONNECT(self, cmd):
         try:
-            print 'connect called\n'
+            print ('connect called\n')
             self.socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((cmd.data[0], cmd.data[1]))
@@ -113,29 +133,29 @@ class SocketClientThread(threading.Thread):
             self.socket.sendall(cmd.data)
             self.reply_q.put(self._success_reply())
         except IOError as e:
-            self.reply_q.put(self._error_reply(str(e)))
+            self.reply_q.put(self._error_reply(mystr(e)))
 
     def _handle_RECEIVE(self, cmd):
         try:
             header_data = self._recv_n_bytes(4)
             if len(header_data) == 4:
                 msg_len = struct.unpack('<L', header_data)[0]
-                data = self._recv_n_bytes(msg_len)
+                data = mystr(self._recv_n_bytes(msg_len))
                 if len(data) == msg_len:
                     self.reply_q.put(self._success_reply(data))
                     return
             self.reply_q.put(self._error_reply('Socket closed prematurely'))
         except IOError as e:
-            self.reply_q.put(self._error_reply(str(e)))
+            self.reply_q.put(self._error_reply(mystr(e)))
 
     def _recv_n_bytes(self, n):
         """ Convenience method for receiving exactly n bytes from
             self.socket (assuming it's open and connected).
         """
-        data = ''
+        data = emptydata()
         while len(data) < n:
             chunk = self.socket.recv(n - len(data))
-            if chunk == '':
+            if chunk == emptydata():
                 break
             data += chunk
         return data
