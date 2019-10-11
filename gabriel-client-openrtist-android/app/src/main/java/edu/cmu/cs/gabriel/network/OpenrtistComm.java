@@ -10,9 +10,9 @@ import android.util.Log;
 import com.google.protobuf.ByteString;
 
 import edu.cmu.cs.gabriel.GabrielClientActivity;
-import edu.cmu.cs.gabrielclient.Protos.PayloadType;
-import edu.cmu.cs.gabrielclient.Protos.ResultWrapper;
-import edu.cmu.cs.gabrielclient.ServerComm;
+import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
+import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
+import edu.cmu.cs.gabriel.client.ServerComm;
 import edu.cmu.cs.openrtist.R;
 
 public class OpenrtistComm extends ServerComm {
