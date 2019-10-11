@@ -35,7 +35,10 @@ import multiprocessing
 import numpy as np
 import os
 import pprint
-import Queue
+try:
+	import Queue
+except ImportError:
+	import queue as Queue
 import random
 import string
 import struct
@@ -51,10 +54,10 @@ if not hasattr(config, 'USE_OPENVINO'):
     try:
         from openvino.inference_engine import IENetwork, IEPlugin
         config.USE_OPENVINO = True
-        print "Autodetect:  Loaded OpenVINO"
+        print ("Autodetect:  Loaded OpenVINO")
     except ImportError:
         config.USE_OPENVINO = False
-        print "Autodetect:  failed to load OpenVINO; fallback to pyTorch"
+        print ("Autodetect:  failed to load OpenVINO; fallback to pyTorch")
 elif config.USE_OPENVINO:
     from openvino.inference_engine import IENetwork, IEPlugin
 
@@ -89,7 +92,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.log_flag = log_flag
         self.is_first_image = True
         self.dir_path = os.getcwd()
-	self.path = self.dir_path+'/../models/' if oldversion else self.dir_path+'/../models_1p0/'
+        self.path = self.dir_path+'/../models/' if oldversion else self.dir_path+'/../models_1p0/'
         self.model = self.path+'the_scream.model'
 
         # initialize model
@@ -263,7 +266,7 @@ if __name__ == "__main__":
 
     # Image receiving thread
     image_queue = Queue.Queue(gabriel.Const.APP_LEVEL_TOKEN_SIZE)
-    print "TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel.Const.APP_LEVEL_TOKEN_SIZE
+    print ("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel.Const.APP_LEVEL_TOKEN_SIZE)
     video_streaming = gabriel.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
     video_streaming.start()
     video_streaming.isDaemon = True
