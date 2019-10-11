@@ -14,10 +14,10 @@ import java.io.ByteArrayOutputStream;
 
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.GabrielClientActivity;
-import edu.cmu.cs.gabrielclient.Protos.FromClient;
-import edu.cmu.cs.gabrielclient.Protos.PayloadType;
+import edu.cmu.cs.gabriel.protocol.Protos.FromClient;
+import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.openrtist.Protos.EngineFields;
-import edu.cmu.cs.gabrielclient.Supplier;
+import edu.cmu.cs.gabriel.client.Supplier;
 
 public class FrameSupplier implements Supplier<FromClient.Builder> {
 
