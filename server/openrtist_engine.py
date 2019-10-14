@@ -11,7 +11,7 @@ from torchvision import transforms
 from PIL import Image
 from transformer_net import TransformerNet
 from gabriel_server import cognitive_engine
-from gabriel_server import gabriel_pb2
+from gabriel_protocol import gabriel_pb2
 from google.protobuf.any_pb2 import Any
 import openrtist_pb2
 
