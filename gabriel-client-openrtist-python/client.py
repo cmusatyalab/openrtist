@@ -12,14 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import print_function
 import argparse
 import signal
 import socket
 import struct
 import threading
-import Queue
-import StringIO
+import queue as Queue
+from io import StringIO
 import cv2
 import json
 import time
@@ -42,7 +41,7 @@ class GabrielSocketCommand(ClientCommand):
     ACTIONS=ClientCommand.ACTIONS + [STREAM]
     LISTEN=len(ACTIONS)
     ACTIONS.append(LISTEN)
-    
+
     def __init__(self, type, data=None):
         super(self.__class__.__name__, self).__init__()
 
@@ -58,7 +57,7 @@ class VideoStreamingThread(SocketClientThread):
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
         self.video_capture = cv2.VideoCapture(-1)
-        self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+        self.video_capture.set(cv2.CAP_PROP_FPS, self.FPS)
         self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
 
         #print(self.style_array)
@@ -102,7 +101,7 @@ class VideoStreamingThread(SocketClientThread):
             header_json=json.dumps(header)
             send_time = time.time()
             # print("Send Time: {}".format(send_time))
-            self._handle_SEND(ClientCommand(ClientCommand.SEND, header_json))
+            self._handle_SEND(ClientCommand(ClientCommand.SEND, header_json.encode()))
             self._handle_SEND(ClientCommand(ClientCommand.SEND, jpeg_frame.tostring()))
             id+=1
 
@@ -111,7 +110,7 @@ class ResultReceivingThread(SocketClientThread):
         super(self.__class__, self).__init__(cmd_q, reply_q)
         self.handlers[GabrielSocketCommand.LISTEN] =  self._handle_LISTEN
         self.is_listening=False
-        
+
     def run(self):
         while self.alive.isSet():
             try:
@@ -126,9 +125,9 @@ class ResultReceivingThread(SocketClientThread):
         while self.alive.isSet() and self.is_listening:
             if self.socket:
                 input=[self.socket]
-                inputready,outputready,exceptready = select.select(input,[],[]) 
-                for s in inputready: 
-                    if s == self.socket: 
+                inputready,outputready,exceptready = select.select(input,[],[])
+                for s in inputready:
+                    if s == self.socket:
                         # handle the server socket
                         header, data = self._recv_gabriel_data()
                         if self.reply_q.full():
@@ -141,7 +140,7 @@ class ResultReceivingThread(SocketClientThread):
                         recv_time = time.time()
                         # print("Recv Time: {}".format(recv_time))
                         tokenm.putToken()
-        
+
     def _recv_gabriel_data(self):
         #import pdb
         #pdb.set_trace()
@@ -152,11 +151,11 @@ class ResultReceivingThread(SocketClientThread):
         data = self._recv_n_bytes(data_size)
 
         return (header, data)
-        
+
 # token manager implementing gabriel's token mechanism
 class tokenManager(object):
     def __init__(self, token_num):
-        super(self.__class__, self).__init__()        
+        super(self.__class__, self).__init__()
         self.token_num=token_num
         # token val is [0..token_num)
         self.token_val=token_num -1
@@ -180,7 +179,7 @@ class tokenManager(object):
 
     def putToken(self):
         with self.has_token_cv:
-            self._inc()                    
+            self._inc()
             if self.token_val >= 0:
                 self.has_token_cv.notifyAll()
 

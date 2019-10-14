@@ -17,8 +17,8 @@
 import socket
 import struct
 import threading
-import Queue
-import StringIO
+import queue as Queue
+from io import StringIO
 import json
 from time import sleep
 import pdb
@@ -36,7 +36,7 @@ class ClientCommand(object):
     """
     CONNECT, SEND, RECEIVE, CLOSE = range(4)
     ACTIONS=[CONNECT, SEND, RECEIVE, CLOSE]
-    
+
     def __init__(self, type, data=None):
         self.type = type
         self.data = data
@@ -67,7 +67,7 @@ class SocketClientThread(threading.Thread):
         self.cmd_q = cmd_q or Queue.Queue()
         self.reply_q = reply_q or Queue.Queue()
         self.alive = threading.Event()
-        self.alive.set() 
+        self.alive.set()
         self.socket = None
 
         self.handlers = {
@@ -89,11 +89,11 @@ class SocketClientThread(threading.Thread):
     def join(self, timeout=None):
         self.alive.clear()
         threading.Thread.join(self, timeout)
-        print '{} exit'.format(self.__class__.__name__)
+        print('{} exit'.format(self.__class__.__name__))
 
     def _handle_CONNECT(self, cmd):
         try:
-            print 'connect called\n'
+            print('connect called\n')
             self.socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((cmd.data[0], cmd.data[1]))
@@ -110,6 +110,7 @@ class SocketClientThread(threading.Thread):
         try:
             data_size = struct.pack("!I", len(cmd.data))
             self.socket.send(data_size)
+
             self.socket.sendall(cmd.data)
             self.reply_q.put(self._success_reply())
         except IOError as e:
@@ -132,10 +133,10 @@ class SocketClientThread(threading.Thread):
         """ Convenience method for receiving exactly n bytes from
             self.socket (assuming it's open and connected).
         """
-        data = ''
+        data = b''
         while len(data) < n:
             chunk = self.socket.recv(n - len(data))
-            if chunk == '':
+            if chunk == b'':
                 break
             data += chunk
         return data

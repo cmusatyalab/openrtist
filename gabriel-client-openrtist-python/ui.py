@@ -14,10 +14,10 @@
 # limitations under the License.
 
 import argparse
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import Qt, QThread, SIGNAL, pyqtSignal, QSize
-from PyQt4.QtGui import *
-#from PyQt4.QtGui import QPainter, QPixmap, QImage, QMessageBox, QVBoxLayout
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize
+from PyQt5.QtGui import *
+#from PyQt5.QtGui import QPainter, QPixmap, QImage, QMessageBox, QVBoxLayout
 import threading
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
@@ -27,7 +27,7 @@ import numpy as np
 import re
 import pdb
 
-class UI(QtGui.QMainWindow, design.Ui_MainWindow):
+class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
@@ -51,12 +51,12 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
         painter.setPen(Qt.red)
         painter.drawRect(0,0,pixmap.width(),pixmap.height());
         painter.end()
-        self.label_image.setPixmap(pix) 
-        self.label_image.setScaledContents(True);          
+        self.label_image.setPixmap(pix)
+        self.label_image.setScaledContents(True);
 
 class ClientThread(QThread):
     sig_frame_available = pyqtSignal(object,str)
-    
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__()
         self._stop = threading.Event()
@@ -70,17 +70,17 @@ class ClientThread(QThread):
         self._gabriel_client.cleanup()
 
 def main(inputs):
-    app = QtGui.QApplication(sys.argv)
-    ui = UI()        
+    app = QtWidgets.QApplication(sys.argv)
+    ui = UI()
     ui.show()
     clientThread = ClientThread(inputs.server_ip)
     clientThread.sig_frame_available.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
-    
+
     sys.exit(app.exec_())  # and execute the app
 
-    
+
 if __name__ == '__main__':  # if we're running file directly and not importing it
     parser = argparse.ArgumentParser()
     parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
