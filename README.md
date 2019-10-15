@@ -239,11 +239,11 @@ We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubun
 
 Setup environment variables and paths to use OpenVINO:
 ```
-$ source /opt/intel/computer_vision_sdk/bin/setupvars.sh
+$ source /opt/intel/openvino/bin/setupvars.sh
 ```
 Note: although OpenVINO lists Python 3.5 as a prerequisite, it supports Python 2.7 as well.  To setup environment variables and paths for Python 2.7:
 ```
-$ source /opt/intel/computer_vision_sdk/bin/setupvars.sh -pyver 2.7
+$ source /opt/intel/openvino/bin/setupvars.sh -pyver 2.7
 ```
 
 ### 2. Setup Gabriel 
