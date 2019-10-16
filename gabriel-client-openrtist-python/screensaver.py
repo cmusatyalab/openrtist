@@ -1,32 +1,66 @@
+#! /usr/bin/env python3
 
-            if not os.path.exists(self._rgbpipe_path):
-                os.mkfifo(self._rgbpipe_path)
-            print("Opening fifo {} for writing... Block waiting for reader...".format(self._rgbpipe_path))
-            self._rgbpipe = open(self._rgbpipe_path, 'w')
-            print("Fifo opened.")
+# Copyright 2018 Carnegie Mellon University
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import argparse
+import os
+import cv2
+from client import OpenrtistClient
 
-while True:
-    # get frame
-                        style_image = style_name_to_image[resp_header['style']]
-                    style_im_h, style_im_w, _ = style_image.shape
-                    rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
-                    cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
-                    rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
-                    self._rgbpipe.write(rgb_frame_enlarged.tostring())
+
+STYLE_DIR_PATH = 'style-image'
+
+
+class ScreensaverClient(OpenrtistClient):
+    def __init__(self, server_ip, rgbpipe, style_name_to_image):
+        super().__init__(server_ip)
+        self.server_ip = server_ip
+        self._rgbpipe = rgbpipe
+        self._style_name_to_image = style_name_to_image
+
+    def consume_update(self, rgb_frame, style):
+        style_image = self._style_name_to_image[style]
+        style_im_h, style_im_w, _ = style_image.shape
+        rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
+        cv2.rectangle(
+            rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
+        rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
+        self._rgbpipe.write(rgb_frame_enlarged.tostring())
 
 
 def main():
-    """Setup for GHC 9th project room screen saver.
-
-    When launched directly, this script sends style-transferred video stream to xscreensaver through a named FIFO.
-    """
     parser = argparse.ArgumentParser()
-    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
-    parser.add_argument("output_pipe_path", action="store", help="The linux pipe the style-transferred images will be streamed to")
+    parser.add_argument("server_ip", action="store",
+                        help="IP address for Openrtist Server")
+    parser.add_argument("output_pipe_path", action="store",
+                        help="The linux pipe the style-transferred images will "
+                        "be streamed to")
     inputs = parser.parse_args()
-    style_name_to_image = _load_style_images('style-image')
-    gabriel_client = GabrielClient(inputs.server_ip, recv_pipe_path=inputs.output_pipe_path)
-    gabriel_client.start()
+
+    style_name_to_image = {}
+    for image_name in os.listdir(STYLE_DIR_PATH):
+        im = cv2.imread(os.path.join(STYLE_DIR_PATH, image_name))
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        style_name_to_image[os.path.splitext(image_name)[0]] = im
+
+    if not os.path.exists(inputs.output_pipe_path):
+        os.mkfifo(inputs.output_pipe_path)
+
+    with open(inputs.output_pipe_path, 'wb') as rgbpipe:
+        screensaver_client = ScreensaverClient(
+            inputs.server_ip, rgbpipe, style_name_to_image)
+        screensaver_client.launch()
 
 
 if __name__ == '__main__':

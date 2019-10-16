@@ -40,6 +40,7 @@ class WebsocketClient(ABC):
         return self._frame_id
 
     def stop(self):
+        self._running = False
         logger.info('stopping server')
 
     async def _consumer_handler(self):

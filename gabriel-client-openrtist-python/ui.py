@@ -15,21 +15,33 @@
 # limitations under the License.
 
 import argparse
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QSize
-from PyQt5.QtGui import *
-#from PyQt5.QtGui import QPainter, QPixmap, QImage, QMessageBox, QVBoxLayout
-import threading
+from PyQt5 import QtWidgets
+from PyQt5 import QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QThread
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QImage
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
 import client
-import numpy as np
-import re
-import pdb
+import logging
+
+
+class UiClient(client.OpenrtistClient):
+    def __init__(self, server_ip, pyqt_signal):
+        super().__init__(server_ip)
+        self.pyqt_signal = pyqt_signal
+
+    def consume_update(self, rgb_frame, style):
+        self.pyqt_signal.emit(rgb_frame, style)
+
 
 class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super().__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
 
     def set_image(self, frame,str_name):
@@ -51,23 +63,27 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.label_image.setPixmap(pix)
         self.label_image.setScaledContents(True);
 
+
 class ClientThread(QThread):
     pyqt_signal = pyqtSignal(object, str)
 
     def __init__(self, server_ip):
-        super(self.__class__, self).__init__()
-        self._stop = threading.Event()
-        self._openrtist_client = client.OpenrtistClient(server_ip,
-                                                        self.pyqt_signal)
-
+        super().__init__()
+        self._openrtist_client = UiClient(server_ip, self.pyqt_signal)
     def run(self):
         self._openrtist_client.launch()
 
     def stop(self):
-        self._stop.set()
         self._openrtist_client.stop()
 
-def main(inputs):
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
+    inputs = parser.parse_args()
+
     app = QtWidgets.QApplication(sys.argv)
     ui = UI()
     ui.show()
@@ -76,11 +92,8 @@ def main(inputs):
     clientThread.finished.connect(app.exit)
     clientThread.start()
 
-    sys.exit(app.exec_())  # and execute the app
+    sys.exit(app.exec())  # return Dialog Code
 
 
-if __name__ == '__main__':  # if we're running file directly and not importing it
-    parser = argparse.ArgumentParser()
-    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
-    inputs = parser.parse_args()
-    main(inputs)
+if __name__ == '__main__':
+    main()
