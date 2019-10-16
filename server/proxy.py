@@ -47,8 +47,17 @@ import sys
 import time
 import threading
 import cv2
+import base64
 import config
 from distutils.version import LooseVersion
+
+try:
+    str(b'a','ascii')
+    def mystr(s):
+        return str(s, 'ascii')
+except:
+    def mystr(s):
+        return str(s)
 
 if not hasattr(config, 'USE_OPENVINO'):
     try:
@@ -86,6 +95,20 @@ LOG = gabriel.logging.getLogger(__name__)
 config.setup(is_streaming = True)
 LOG_TAG = "Style Transfer Proxy: "
 
+def read_text(n, s):
+    try:
+        with open(n,"r") as f:
+            return f.read()
+    except:
+        return s
+
+def read_file(n, s):
+    try:
+        with open(n,"br") as f:
+            return f.read()
+    except:
+        return s
+
 class StyleServer(gabriel.proxy.CognitiveProcessThread):
     def __init__(self, image_queue, output_queue, engine_id, log_flag = True):
         super(StyleServer, self).__init__(image_queue, output_queue, engine_id)
@@ -93,7 +116,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         self.is_first_image = True
         self.dir_path = os.getcwd()
         self.path = self.dir_path+'/../models/' if oldversion else self.dir_path+'/../models_1p0/'
-        self.model = self.path+'the_scream.model'
+        self.all_styles = {}
 
         # initialize model
         if (config.USE_OPENVINO):
@@ -146,14 +169,21 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
                 self.exec_nets[ name ] = self.plugin.load(network=net)
                 self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
                 del net
+                self.all_styles[name] = read_text( self.path+name+".txt", name+" -- Unknown")
+                self.style_type = list(self.all_styles)[0]
         else:
+            for name in [ n[:-6] for n in os.listdir(self.path) if n.endswith('.model')]:
+                self.all_styles[name] = read_text( self.path+name+".txt", name+" -- Unknown")
+            self.style_type = list(self.all_styles)[0]
+            self.model = self.path+self.style_type+'.model'
             self.style_model = TransformerNet()
             self.style_model.load_state_dict(torch.load(self.model))
             if (config.USE_GPU):
                 self.style_model.cuda()
             self.content_transform = transforms.Compose([
             transforms.ToTensor()])
-        self.style_type = "the_scream"
+        self.new_style = True
+        print ("styles available: "+(", ".join(self.all_styles)))
         
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
@@ -175,13 +205,17 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
         header['status'] = "nothing"
         result = {}
         if header.get('style',None) is not None:
-            if header['style'] != self.style_type:
+            if header['style'] == '?':
+                header['all_styles'] = json.dumps(self.all_styles)
+                self.new_style=True
+            if header['style'] != self.style_type and header['style'] in self.all_styles:
                 if (config.USE_OPENVINO == False):
                     self.model = self.path + header['style'] + ".model"
                     self.style_model.load_state_dict(torch.load(self.model))
                     if (config.USE_GPU):
                         self.style_model.cuda()
                 self.style_type = header['style']
+                self.new_style = True
                 print('NEW STYLE {}'.format(self.style_type))
 
         # Preprocessing of input image
@@ -202,6 +236,10 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             content_image = Variable(content_image, volatile=True)
 
         header['status'] =  'success'
+        header['style'] = self.style_type
+        if self.new_style:
+            self.new_style = False
+            header['style_image'] = mystr(base64.b64encode(read_file(self.path+self.style_type+".jpg",b'')))
         t1 = time.time()
         if (config.USE_OPENVINO):
             data = self.exec_nets[ self.style_type ].infer(inputs={self.input_blob: imgs})
