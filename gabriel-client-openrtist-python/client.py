@@ -97,32 +97,3 @@ class OpenrtistClient(WebsocketClient):
         else:
             logger.error('Got %d results in output',
                          len(result_wrapper.results))
-
-
-    def start(self, sig_frame_available=None):
-        self._result_receiving_thread.start()
-        sleep(0.1)
-        self._video_streaming_thread.start()
-
-        if sig_frame_available is None:
-
-        while True:
-            resp = self._result_reply_q.get()
-            # connect and send also send reply to reply queue without any data attached
-            if resp.type == ClientReply.SUCCESS and resp.data is not None:
-                tkn_time = time.time()
-                #print(tkn_time)
-                (resp_header, resp_data) =resp.data
-                resp_header=json.loads(resp_header)
-
-    def cleanup(self):
-        if self._rgbpipe is not None:
-            self._rgbpipe.close()
-
-def _load_style_images(style_dir_path='style-image'):
-    style_name_to_image = {}
-    for image_name in os.listdir(style_dir_path):
-        im = cv2.imread(os.path.join(style_dir_path, image_name))
-        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-        style_name_to_image[os.path.splitext(image_name)[0]] = im
-    return style_name_to_image
