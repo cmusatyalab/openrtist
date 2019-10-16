@@ -15,18 +15,12 @@ from gabriel_protocol import gabriel_pb2
 from google.protobuf.any_pb2 import Any
 from openrtist_protocol import openrtist_pb2
 
-
-ENGINE_NAME = 'openrtist'
-DEFAULT_STYLE = 'the_scream'
-COMPRESSION_PARAMS = [cv2.IMWRITE_JPEG_QUALITY, 67]
-
-
 logger = logging.getLogger(__name__)
 
 
 # TODO: support openvino
 class OpenrtistEngine(cognitive_engine.Engine):
-    def __init__(self, use_gpu):
+    def __init__(self, use_gpu, engine_name, default_style, compression_params):
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
         self.path = self.dir_path+'/../models/'
@@ -39,11 +33,14 @@ class OpenrtistEngine(cognitive_engine.Engine):
             self.style_model.cuda()
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
-        self.style = DEFAULT_STYLE
+        self.style = default_style
 
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
         self.alpha = mrk_alpha.astype(float)/255
+
+        self.engine_name = engine_name
+        self.compression_params = compression_params
 
         # TODO support server display
 
@@ -68,12 +65,12 @@ class OpenrtistEngine(cognitive_engine.Engine):
         image = self._process_image(from_client.payload)
         image = self._apply_watermark(image)
 
-        _, jpeg_img=cv2.imencode('.jpg', image, COMPRESSION_PARAMS)
+        _, jpeg_img=cv2.imencode('.jpg', image, self.compression_params)
         img_data = jpeg_img.tostring()
 
         result = gabriel_pb2.ResultWrapper.Result()
         result.payload_type = gabriel_pb2.PayloadType.IMAGE
-        result.engine_name = ENGINE_NAME
+        result.engine_name = self.engine_name
         result.payload = img_data
 
         result_wrapper = gabriel_pb2.ResultWrapper()
