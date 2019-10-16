@@ -14,11 +14,8 @@
 
 class Config(object):
     RECEIVE_FRAME=True
-    VIDEO_STREAM_PORT = 9098
-    RESULT_RECEIVING_PORT = 9111
-    TOKEN=2
+    PORT = 9098
     TIME_SEC = 30
     CAM_FPS = 10
     IMG_WIDTH = 320
     IMG_HEIGHT = 240
-

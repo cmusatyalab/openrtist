@@ -2,6 +2,7 @@ import asyncio
 import logging
 import websockets
 from gabriel_protocol import gabriel_pb2
+from abc import ABC
 
 
 URI_FORMAT = 'ws://{host}:{port}'
@@ -14,19 +15,38 @@ websockets_logger = logging.getLogger('websockets')
 websockets_logger.setLevel(logging.INFO)
 
 
-class WebsocketClient:
-    def __init__(self, host, port, results_handler):
-        self.num_tokens = 0
-        self.token_cond = asyncio.Condition()
-        self.frame_id = 0
-        self.uri = URI_FORMAT.format(host=host, port=port)
-        self.event_loop = asyncio.get_event_loop()
-        self.results_handler = results_handler
+class WebsocketClient(ABC):
+    def __init__(self, host, port):
+        self._num_tokens = 0
+        self._frame_id = 0
+        self._running = True
+        self._token_cond = asyncio.Condition()
+        self._uri = URI_FORMAT.format(host=host, port=port)
+        self._event_loop = asyncio.get_event_loop()
 
-    async def consumer_handler(self):
+    @abstractmethod
+    def consumer(self, result_wrapper):
+        pass
+
+    @abstractmethod
+    def producer(self):
+        pass
+
+    def launch(self):
+        asyncio.ensure_future(self._handler())
+
+    def get_frame_id(self):
+        return self._frame_id
+
+    def stop(self):
+        logger.info('stopping server')
+
+    async def _consumer_handler(self):
         try:
-            async for raw_input in self.websocket:
+            while self._running:
+                raw_input = self._websocket.recv()
                 logger.debug('Recieved input from server')
+
                 to_client = gabriel_pb2.ToClient()
                 to_client.ParseFromString(raw_input)
 
@@ -34,49 +54,58 @@ class WebsocketClient:
                     result_wrapper = to_client.result_wrapper
                     if (result_wrapper.status ==
                         gabriel_pb2.ResultWrapper.SUCCESS):
-                        self.results_handler(result_wrapper)
+                        self.consumer(result_wrapper)
                     else:
                         logger.error('Output status was: %s',
                                      result_wrapper.status.name)
 
-                        await token_cond.acquire()
-                        self.num_tokens += 1
+                        await self._token_cond.acquire()
+                        self._num_tokens += 1
                     else:
-                        await token_cond.acquire()
-                        self.num_tokens = to_client.num_tokens
+                        await self._token_cond.acquire()
+                        self._num_tokens = to_client.num_tokens
 
-                    token_cond.notify()
-                    token_cond.release()
+                    self._token_cond.notify()
+                    self._token_cond.release()
         except websockets.exceptions.ConnectionClosed:
             return  # stop the handler
 
-    async def launch(self):
-        self.websocket = await websockets.connect(self.uri)
-        await self.consumer_handler()
-
-    async def get_token(self):
-        async with token_cond:
-            while self.num_tokens < 1:
-                logger.info('Took few tokens. Waiting.')
-                await cond.wait()
-            self.num_tokens -= 1
+    async def _get_token(self):
+        async with self._token_cond:
+            while self._num_tokens < 1:
+                logger.info('Too few tokens. Waiting.')
+                await self._token_cond.wait()
+            self._num_tokens -= 1
 
     async def _send_helper(self, from_client):
-        from_client.frame_id = self.frame_id
-        await self.websocket.send(from_client.SerializeToString())
-        self.frame_id += 1
-        logger.info('num_tokens is now %d', self.num_tokens)
+        from_client.frame_id = self._frame_id
+        await self._websocket.send(from_client.SerializeToString())
+        self._frame_id += 1
+        logger.info('num_tokens is now %d', self._num_tokens)
 
-    async def send_supplier(self, supplier):
+    async def _producer_handler(self):
         '''
-        Wait until there is a token available. Then call supplier to get the
-        partially built romClientBuilder to send.
+        Loop waiting until there is a token available. Then call supplier to get
+        the partially built FromClient to send.
         '''
-        await self.get_token()
+        try:
+            while self._running:
+                await self._get_token()
 
-        from_client = supplier()
-        await self._send_helper(from_client)
+                from_client = self.producer()
+                await self._send_helper(from_client)
+        except websockets.exceptions.ConnectionClosed:
+            return  # stop the handler
 
-
-client = WebsocketClient('172.16.0.30', 9098)
-asyncio.get_event_loop().run_until_complete(client.launch())
+    async def _handler(self):
+        try:
+            self._websocket = await websockets.connect(self._uri)
+            consumer_task = asyncio.ensure_future(self._consumer_handler())
+            producer_task = asyncio.ensure_future(self._producer_handler())
+            done, pending = await asyncio.wait(
+                [consumer_task, producer_task],
+                return_when=asyncio.FIRST_COMPLETED)
+            for task in pending:
+                task.cancel()
+        finally:
+            logger.info('Server disconnected')

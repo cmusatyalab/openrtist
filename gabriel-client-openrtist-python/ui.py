@@ -22,7 +22,6 @@ from PyQt5.QtGui import *
 import threading
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
-import os  # For listing directory methods
 import client
 import numpy as np
 import re
@@ -39,9 +38,6 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
 
-        #w = self.label_image.maximumWidth();
-        #h = self.label_image.maximumHeight();
-        #pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
         pixmap = QPixmap()
         pixmap.load('style-image/'+str_name)
         print("UI STYLE {}".format('style-image/'+str_name))
@@ -56,19 +52,20 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.label_image.setScaledContents(True);
 
 class ClientThread(QThread):
-    sig_frame_available = pyqtSignal(object,str)
+    pyqt_signal = pyqtSignal(object, str)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, server_ip):
         super(self.__class__, self).__init__()
         self._stop = threading.Event()
-        self._gabriel_client = client.GabrielClient(*args, **kwargs)
+        self._openrtist_client = client.OpenrtistClient(server_ip,
+                                                        self.pyqt_signal)
 
     def run(self):
-        self._gabriel_client.start(self.sig_frame_available)
+        self._openrtist_client.launch()
 
     def stop(self):
         self._stop.set()
-        self._gabriel_client.cleanup()
+        self._openrtist_client.stop()
 
 def main(inputs):
     app = QtWidgets.QApplication(sys.argv)
