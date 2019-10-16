@@ -33,6 +33,7 @@ import random
 from gabriel_protocol import gabriel_pb2
 from openrtist_protocol import openrtist_pb2
 from gabriel_client.server_comm import WebsocketClient
+from abc import abstractmethod
 
 
 START_STYLE_STRING = 'udnie'
@@ -40,7 +41,11 @@ ENGINE_NAME = 'openrtist'
 
 
 class OpenrtistClient(WebsocketClient):
-    def __init__(self, server_ip, pyqt_signal):
+    @abstractmethod
+    def consume_update(self, rgb_frame, style):
+        pass
+
+    def __init__(self, server_ip):
         super().__init__(server_ip, Config.PORT)
 
         self.style_string = START_STYLE_STRING
@@ -54,7 +59,6 @@ class OpenrtistClient(WebsocketClient):
         self.video_capture.set(cv2.CAP_PROP_FPS, self.FPS)
 
         self.style_num = 0
-        self.pyqt_signal = pyqt_signal
 
     def producer(self):
         if (self.get_frame_id() % self.INTERVAL) == 0:
@@ -91,7 +95,7 @@ class OpenrtistClient(WebsocketClient):
                     engine_fields = openrtist_pb2.EngineFields()
                     result_wrapper.engine_fields.Unpack(engine_fields)
 
-                    self.pyqt_signal.emit(rgb_frame, engine_fields.style)
+                    self.consume_update(rgb_frame, engine_fields.style)
                 else:
                     logger.error('Got result from engine %s',
                                  result.engine_name)
