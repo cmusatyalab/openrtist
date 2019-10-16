@@ -27,7 +27,7 @@ __The pre-built OpenRTiST server Docker image requires a GPU for image processin
 
 OpenRTiST using PyTorch (including the pre-built image) has been tested on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). 
 
-Alternatively, OpenRTiST can also use the [Intel&reg; OpenVINO toolkit](https://software.intel.com/en-us/openvino-toolkit) for accelerated processing on CPU and processor graphics on many Intel processors.  We have tested OpenVINO support using __Ubuntu 18.04 LTS (Bionic)__ and OpenVINO release 2018.5 on an Intel&reg; Core&trade; i7-6770HQ processor.  OpenVINO is supported when installed from source only. 
+Alternatively, OpenRTiST can also use the [Intel&reg; OpenVINO toolkit](https://software.intel.com/en-us/openvino-toolkit) for accelerated processing on CPU and processor graphics on many Intel processors.  We have tested OpenVINO support using __Ubuntu 18.04 LTS (Bionic)__ and OpenVINO releases 2018.5 and 2019.3 on an Intel&reg; Core&trade; i7-6770HQ processor.  OpenVINO is supported when installed from source only. 
 
 The OpenRTiST server can run on CPU alone.  See below on installing from source for details.
 
@@ -200,34 +200,56 @@ You can toggle whether or not to use the front-facing camera on the main screen.
 The OpenRTiST server can use PyTorch or OpenVINO to execute style transfer networks.  Please install PyTorch or OpenVINO (or both).
 
 #### Option A. Install torchvision and pytorch
-OpenRTiST has been tested with pytorch versions 0.2.0 and 0.3.1 with CUDA support.  As the APIs and layer names have been changed in newer releases, please select an appropriate version from [here](https://pytorch.org/get-started/previous-versions/). __NOTE: Even if you do not have a CUDA-capable GPU, you can install pytorch with CUDA support and run OpenRTiST on CPU only.__
+OpenRTiST has been tested with pytorch versions 0.2.0, 0.3.1, 1.0, and 1.2 with CUDA support.  As the APIs and layer names have been changed in newer releases, model files for both pre-1.0 and post-1.0 versions have been provided. __NOTE: Even if you do not have a CUDA-capable GPU, you can install pytorch with CUDA support and run OpenRTiST on CPU only.__
 
-First install torchvision:
+OpenRTiST should work with Python 2.7 as well as Python 3.x.  We recommend using virtualenv/venv to better control the Python environment and keep your distribution defaults clean.  
+
+To install PyTorch, simply install torchvision:
 ```
 pip install torchvision
 ```
-This will usually install a new version of pytorch.  Uninstall and replace this with the older pytorch version (e.g.):
+This will usually install the latest version of PyTorch.  If you need a different / older version (e.g., to support a particular CUDA version), you can find alternative versions [here](https://pytorch.org/get-started/previous-versions/). Uninstall and replace the auto-installed one with the desired PyTorch version (e.g.):
 ```
 pip uninstall torch
 pip install https://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp27-cp27m-manylinux1_x86_64.whl
 ```
 
 #### Option B. Install OpenVINO
-Download the latest OpenVINO release from https://software.intel.com/en-us/openvino-toolkit.  Full installation instructions are available at https://software.intel.com/en-us/articles/OpenVINO-Install-Linux. 
+You can find and download the latest OpenVINO release from https://software.intel.com/en-us/openvino-toolkit.  Full installation instructions are available at https://software.intel.com/en-us/articles/OpenVINO-Install-Linux. 
+
+For Ubuntu 16.04 / 18.04, you can install using `apt` by adding the custom repository as follows:
+```
+wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
+echo "deb https://apt.repos.intel.com/openvino/2019/ all main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2019.list
+sudo apt update
+```
+and then search for available packages using:
+```
+apt-cache search openvino-dev
+```
+Finally, install a version matching your distro (ubuntu16 or ubuntu18, e.g.):
+```
+sudo apt install intel-openvino-dev-ubuntu18-2019.3.344
+```
 
 Be sure to install the Intel&reg; Graphics Compute Runtime for OpenCL&trade; Driver components (under Optional Steps) to enable the use of the integrated GPU.  
 
-We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubuntu 18.10 and Ubuntu 16.04, but `setupvars.sh` may not set up the environment correctly, and on the older distro, a new Linux kernel will be needed.  
+We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubuntu 18.10 and Ubuntu 16.04, but `setupvars.sh` may not set up the environment correctly, and on the older distro, a new Linux kernel will be needed to use the integrated GPU.  
 
-Note: although OpenVINO lists Python 3.5 as a prerequisite, it supports Python 2.7 as well.  
-
-Setup environment variables and paths to use OpenVINO with Python 2.7:
+Setup environment variables and paths to use OpenVINO:
 ```
-$ source /opt/intel/computer_vision_sdk/bin/setupvars.sh -pyver 2.7
+$ source /opt/intel/openvino/bin/setupvars.sh
+```
+Note: although OpenVINO lists Python 3.5 as a prerequisite, it supports Python 2.7 as well.  To setup environment variables and paths for Python 2.7:
+```
+$ source /opt/intel/openvino/bin/setupvars.sh -pyver 2.7
 ```
 
 ### 2. Setup Gabriel 
-Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to install and run the `control server` and `ucomm server`.  E.g., after installing gabriel, run:
+Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to download and install the Gabriel framework.  Note: although the full Gabriel framework needs Python 2, the server components used for OpenRTiST should work with Python 3.  
+
+Run the `control server` and `ucomm server`, e.g.:
 ```
 $ cd $HOME/gabriel/server/bin
 $ ./gabriel-control -n eth0 &
@@ -238,7 +260,6 @@ Add the path to gabriel/server to your `PYTHONPATH` environment variable, e.g.:
 ```
 $ export PYTHONPATH=$HOME/gabriel/server/:$PYTHONPATH
 ```
-Note: Gabriel may require Python 2.7.  
 
 
 ### 3. Run the server
