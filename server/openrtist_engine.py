@@ -13,7 +13,7 @@ from transformer_net import TransformerNet
 from gabriel_server import cognitive_engine
 from gabriel_protocol import gabriel_pb2
 from google.protobuf.any_pb2 import Any
-import openrtist_pb2
+from openrtist_protocol import openrtist_pb2
 
 
 ENGINE_NAME = 'openrtist'
@@ -80,6 +80,8 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result_wrapper.frame_id = from_client.frame_id
         result_wrapper.status = gabriel_pb2.ResultWrapper.Status.SUCCESS
         result_wrapper.results.append(result)
+        result_wrapper.engine_fields.Pack(engine_fields)
+
         return result_wrapper
 
     def _process_image(self, image):
