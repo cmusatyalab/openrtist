@@ -31,7 +31,7 @@ import os
 from socketLib import ClientCommand, ClientReply, SocketClientThread
 import random
 from gabriel_protocol import gabriel_pb2
-import openrtist_pb2
+from openrtist_protocol import openrtist_pb2
 from gabriel_client.server_comm import WebsocketClient
 
 
@@ -88,8 +88,10 @@ class OpenrtistClient(WebsocketClient):
                     frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
                     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-                    # TODO send style_string from server
-                    self.pyqt_signal.emit(rgb_frame, self.style_string)
+                    engine_fields = openrtist_pb2.EngineFields()
+                    result_wrapper.engine_fields.Unpack(engine_fields)
+
+                    self.pyqt_signal.emit(rgb_frame, engine_fields.style)
                 else:
                     logger.error('Got result from engine %s',
                                  result.engine_name)

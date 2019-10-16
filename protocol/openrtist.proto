@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package openrtist;
+
+option java_package = "edu.cmu.cs.openrtist";
+option java_outer_classname = "Protos";
+
+message EngineFields {
+    string style = 1;
+}
