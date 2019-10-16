@@ -58,8 +58,8 @@ class WebsocketClient(ABC):
                         gabriel_pb2.ResultWrapper.SUCCESS):
                         self.consumer(result_wrapper)
                     else:
-                        logger.error('Output status was: %s',
-                                     result_wrapper.status.name)
+                        logger.error('Output status was: %d',
+                                     result_wrapper.status)
 
                     await self._token_cond.acquire()
                     self._num_tokens += 1
@@ -92,6 +92,7 @@ class WebsocketClient(ABC):
         '''
         try:
             while self._running:
+                await asyncio.sleep(0)  # Allow consumer to be scheduled
                 await self._get_token()
 
                 from_client = self.producer()
