@@ -20,7 +20,9 @@ logger = logging.getLogger(__name__)
 
 # TODO: support openvino
 class OpenrtistEngine(cognitive_engine.Engine):
-    def __init__(self, use_gpu, engine_name, default_style, compression_params):
+    ENGINE_NAME = 'openrtist'
+    
+    def __init__(self, use_gpu, default_style, compression_params):
         self.dir_path = os.getcwd()
         self.model = self.dir_path+'/../models/the_scream.model'
         self.path = self.dir_path+'/../models/'
@@ -39,7 +41,6 @@ class OpenrtistEngine(cognitive_engine.Engine):
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
         self.alpha = mrk_alpha.astype(float)/255
 
-        self.engine_name = engine_name
         self.compression_params = compression_params
 
         # TODO support server display
@@ -70,7 +71,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         result = gabriel_pb2.ResultWrapper.Result()
         result.payload_type = gabriel_pb2.PayloadType.IMAGE
-        result.engine_name = self.engine_name
+        result.engine_name = self.ENGINE_NAME
         result.payload = img_data
 
         result_wrapper = gabriel_pb2.ResultWrapper()
