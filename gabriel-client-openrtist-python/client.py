@@ -59,7 +59,7 @@ class OpenrtistClient(WebsocketClient):
     def producer(self):
         if (self.get_frame_id() % self.INTERVAL) == 0:
             self.style_string = (
-                self.style_array[style_num%self.length].split(".")[0])
+                self.style_array[self.style_num % self.length].split(".")[0])
             self.style_num += 1
 
         ret, frame = self.video_capture.read()
@@ -80,7 +80,7 @@ class OpenrtistClient(WebsocketClient):
 
     def consumer(self, result_wrapper):
         if len(result_wrapper.results) == 1:
-            result = result_wrapper[0]
+            result = result_wrapper.results[0]
             if result.payload_type == gabriel_pb2.PayloadType.IMAGE:
                 if result.engine_name == ENGINE_NAME:
                     img = result.payload
@@ -88,7 +88,8 @@ class OpenrtistClient(WebsocketClient):
                     frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
                     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-                    self.pyqt_signal.emit(rgb_frame, resp_header['style'])
+                    # TODO send style_string from server
+                    self.pyqt_signal.emit(rgb_frame, self.style_string)
                 else:
                     logger.error('Got result from engine %s',
                                  result.engine_name)

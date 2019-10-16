@@ -3,6 +3,7 @@ import logging
 import websockets
 from gabriel_protocol import gabriel_pb2
 from abc import ABC
+from abc import abstractmethod
 
 
 URI_FORMAT = 'ws://{host}:{port}'
@@ -33,7 +34,7 @@ class WebsocketClient(ABC):
         pass
 
     def launch(self):
-        asyncio.ensure_future(self._handler())
+        self._event_loop.run_until_complete(self._handler())
 
     def get_frame_id(self):
         return self._frame_id
@@ -44,7 +45,7 @@ class WebsocketClient(ABC):
     async def _consumer_handler(self):
         try:
             while self._running:
-                raw_input = self._websocket.recv()
+                raw_input = await self._websocket.recv()
                 logger.debug('Recieved input from server')
 
                 to_client = gabriel_pb2.ToClient()
@@ -59,14 +60,14 @@ class WebsocketClient(ABC):
                         logger.error('Output status was: %s',
                                      result_wrapper.status.name)
 
-                        await self._token_cond.acquire()
-                        self._num_tokens += 1
-                    else:
-                        await self._token_cond.acquire()
-                        self._num_tokens = to_client.num_tokens
+                    await self._token_cond.acquire()
+                    self._num_tokens += 1
+                else:
+                    await self._token_cond.acquire()
+                    self._num_tokens = to_client.num_tokens
 
-                    self._token_cond.notify()
-                    self._token_cond.release()
+                self._token_cond.notify()
+                self._token_cond.release()
         except websockets.exceptions.ConnectionClosed:
             return  # stop the handler
 

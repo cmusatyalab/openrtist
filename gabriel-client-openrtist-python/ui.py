@@ -72,7 +72,7 @@ def main(inputs):
     ui = UI()
     ui.show()
     clientThread = ClientThread(inputs.server_ip)
-    clientThread.sig_frame_available.connect(ui.set_image)
+    clientThread.pyqt_signal.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
 
