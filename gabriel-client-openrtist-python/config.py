@@ -13,7 +13,6 @@
 # limitations under the License.
 
 class Config(object):
-    RECEIVE_FRAME=True
     PORT = 9098
     TIME_SEC = 30
     CAM_FPS = 10
