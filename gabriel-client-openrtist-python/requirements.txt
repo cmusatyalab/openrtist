@@ -1,4 +1,3 @@
-gabriel-protocol==0.0.2
+gabriel-client==0.0.1
 opencv-python==4.1.1.26
 PyQt5==5.13.1
-websockets==8.0.2
