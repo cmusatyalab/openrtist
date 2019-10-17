@@ -6,7 +6,7 @@ import torch
 
 
 class TorchEngine(OpenrtistEngine):
-    def __init__(use_gpu, default_style, compression_params):
+    def __init__(self, use_gpu, default_style, compression_params):
         super().__init__(default_style, compression_params)
 
         self.use_gpu = use_gpu
