@@ -72,10 +72,10 @@ class VideoStreamingThread(SocketClientThread):
     def __init__(self, cmd_q=None, reply_q=None):
         super(self.__class__, self).__init__(cmd_q, reply_q)
         self.is_streaming=False
-        self.style_array = os.listdir('./style-image')
-        random.shuffle(self.style_array)
+        #self.style_array = os.listdir('./style-image')
+        #random.shuffle(self.style_array)
         #self.style_array = self.style_array[1:]
-        self.length = len(self.style_array)
+        #self.length = len(self.style_array)
         self.SEC = Config.TIME_SEC
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
@@ -106,13 +106,13 @@ class VideoStreamingThread(SocketClientThread):
         self.is_streaming=True
         b_time = time.time()
         e_time = time.time()
-        id=0
+        id=-1
         style_num = 0
-        style_string = 'udnie'
+        style_string = '?'
         while self.alive.isSet() and self.is_streaming:
             # will be put into sleep if token is not available
             if id%self.INTERVAL==0:
-                style_string = self.style_array[style_num%self.length].split(".")[0]
+                style_string = style_array[style_num%len(style_array)] if len(style_array)>0 else '?'
                 style_num+=1
             tokenm.getToken()
             ret, frame = self.video_capture.read()
@@ -168,6 +168,7 @@ class ResultReceivingThread(SocketClientThread):
                         tokenm.putToken()
         
     def _recv_gabriel_data(self):
+        global style_array
         #import pdb
         #pdb.set_trace()
         header_size = struct.unpack("!I", self._recv_n_bytes(4))[0]
@@ -175,6 +176,10 @@ class ResultReceivingThread(SocketClientThread):
         header_json = json.loads(mystr(header))
         data_size = header_json['data_size']
         data = self._recv_n_bytes(data_size)
+        if header_json.get('all_styles',None) is not None:
+            style_array = list( json.loads(header_json['all_styles']).keys())
+            random.shuffle( style_array )
+            #print(style_array)
 
         return (header, data)
         
@@ -234,6 +239,7 @@ class GabrielClient(object):
         result_cmd_q.put(ClientCommand(GabrielSocketCommand.LISTEN, self._tokenm))
         self._rgbpipe_path = recv_pipe_path
         self._rgbpipe = None
+        self.style_image = None
         _setup_exit_handler(self.cleanup)
 
     def start(self, sig_frame_available=None):
@@ -261,18 +267,27 @@ class GabrielClient(object):
                 np_data=np.fromstring(data, dtype=np.uint8)
                 frame=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                if resp_header.get("style_image",None) is not None:
+                    data = base64.b64decode(resp_header["style_image"])
+                    if len(data)>0:
+                        self.style_image = cv2.imdecode(np.fromstring(data, dtype=np.uint8), cv2.IMREAD_COLOR)
+                        self.style_image = cv2.cvtColor(self.style_image, cv2.COLOR_BGR2RGB)
+                    else:
+                        self.style_image = None
                 if sig_frame_available is None:
-                    style_image = style_name_to_image[resp_header['style']]
-                    style_im_h, style_im_w, _ = style_image.shape
-                    rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
-                    cv2.rectangle(rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
                     rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
+                    if (self.style_image is not None) or (resp_header['style'] in style_name_to_image):
+                        style_im = style_name_to_image[resp_header['style']] if self.style_image is None else self.style_image
+                        style_im_h, style_im_w, _ = style_im.shape
+                        rgb_frame_enlarged[0:style_im_h, 0:style_im_w, :] = style_im
+                        cv2.rectangle(rgb_frame_enlarged, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
                     self._rgbpipe.write(rgb_frame_enlarged.tostring())
                 else:
                     # display received image on the pyqt ui
                     #rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
                     #print("HEADER STYLE {}".format(resp_header['style']))
-                    sig_frame_available.emit(rgb_frame,resp_header['style'])
+                    sig_frame_available.emit(rgb_frame,resp_header['style'],self.style_image)
+                    #sig_frame_available.emit(rgb_frame_enlarged,"")
 
     def cleanup(self):
         if self._rgbpipe is not None:
@@ -291,6 +306,10 @@ def _load_style_images(style_dir_path='style-image'):
         style_name_to_image[os.path.splitext(image_name)[0]] = im
     return style_name_to_image
 
+style_name_to_image = _load_style_images('style-image')
+style_array  = list( style_name_to_image.keys() )
+random.shuffle(style_array)
+print (style_array)
 
 if __name__ == '__main__':
     """Setup for GHC 9th project room screen saver.
