@@ -104,7 +104,7 @@ def read_text(n, s):
 
 def read_file(n, s):
     try:
-        with open(n,"br") as f:
+        with open(n,"rb") as f:
             return f.read()
     except:
         return s
