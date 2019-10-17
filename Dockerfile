@@ -18,9 +18,8 @@ RUN apt-get install -y \
     libxrender1 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN git clone -b new-gabriel https://github.com/cmusatyalab/openrtist.git
+RUN git clone -b New-Gabriel-Module https://github.com/cmusatyalab/openrtist.git
 WORKDIR openrtist/server
-RUN git submodule update --init --recursive
 RUN python3 -m pip install -r requirements.txt
 
 EXPOSE 5555 9098
