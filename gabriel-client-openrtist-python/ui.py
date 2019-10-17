@@ -32,8 +32,8 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
         super(self.__class__, self).__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
 
-    def set_image(self, frame,str_name):
-        img = QImage(frame, frame.shape[1], frame.shape[0], QtGui.QImage.Format_RGB888)
+    def set_image(self, frame, str_name, style_image):
+        img = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QtGui.QImage.Format_RGB888)
 
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
@@ -41,9 +41,13 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
         #w = self.label_image.maximumWidth();
         #h = self.label_image.maximumHeight();
         #pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
-        pixmap = QPixmap()
-        pixmap.load('style-image/'+str_name)
-        print("UI STYLE {}".format('style-image/'+str_name))
+        if style_image is not None:
+            img = QImage(style_image, style_image.shape[1], style_image.shape[0], style_image.strides[0], QtGui.QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(img)
+        else:
+            pixmap = QPixmap()
+            pixmap.load('style-image/'+str_name)
+        #print("UI STYLE {}".format('style-image/'+str_name))
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix);
@@ -55,7 +59,7 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
         self.label_image.setScaledContents(True);          
 
 class ClientThread(QThread):
-    sig_frame_available = pyqtSignal(object,str)
+    sig_frame_available = pyqtSignal(object,str,object)
     
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__()
