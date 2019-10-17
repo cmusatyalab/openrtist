@@ -1,5 +1,5 @@
 from gabriel_server.local_engine import runner
-from openrtist_engine import OpenrtistEngine
+from torch_engine import TorchEngine
 import logging
 import cv2
 
@@ -15,10 +15,9 @@ INPUT_QUEUE_MAXSIZE = 2
 
 def main():
     def engine_setup():
-        return OpenrtistEngine(USE_GPU, DEFAULT_STYLE,
-                               COMPRESSION_PARAMS)
-    runner.run(engine_setup, OpenrtistEngine.ENGINE_NAME,
-               INPUT_QUEUE_MAXSIZE, PORT, NUM_TOKENS)
+        return TorchEngine(USE_GPU, DEFAULT_STYLE, COMPRESSION_PARAMS)
+    runner.run(engine_setup, OpenrtistEngine.ENGINE_NAME, INPUT_QUEUE_MAXSIZE,
+               PORT, NUM_TOKENS)
 
 
 if __name__ == '__main__':
