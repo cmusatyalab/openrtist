@@ -215,6 +215,9 @@ pip install https://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp27-cp27m-m
 ```
 
 #### Option B. Install OpenVINO
+We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubuntu 18.10 and Ubuntu 16.04, but `setupvars.sh` may not set up the environment correctly, and on the older distro, a new Linux kernel will be needed to use the integrated GPU.  
+
+##### Install the latest OpenVINO
 You can find and download the latest OpenVINO release from https://software.intel.com/en-us/openvino-toolkit.  Full installation instructions are available at https://software.intel.com/en-us/articles/OpenVINO-Install-Linux. 
 
 For Ubuntu 16.04 / 18.04, you can install using `apt` by adding the custom repository as follows:
@@ -222,7 +225,7 @@ For Ubuntu 16.04 / 18.04, you can install using `apt` by adding the custom repos
 wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
 sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB
 echo "deb https://apt.repos.intel.com/openvino/2019/ all main" | sudo tee /etc/apt/sources.list.d/intel-openvino-2019.list
-sudo apt update
+sudo apt-get update
 ```
 and then search for available packages using:
 ```
@@ -230,14 +233,26 @@ apt-cache search openvino-dev
 ```
 Finally, install a version matching your distro (ubuntu16 or ubuntu18, e.g.):
 ```
-sudo apt install intel-openvino-dev-ubuntu18-2019.3.344
+sudo apt-get install intel-openvino-dev-ubuntu18-2019.3.344
 ```
 
-Be sure to install the Intel&reg; Graphics Compute Runtime for OpenCL&trade; Driver components (under Optional Steps) to enable the use of the integrated GPU.  
+##### Setup OpenCL to use Processor Graphics (Optional)
+To utilize integrated Processor Graphics on Intel processors, the following are required:
+- An Intel processor with Gen 8 or later graphics (Broadwell and later)
+- A recent kernel release (4.14 or later).  This should already be the case for Ubuntu 18.04, but a new kernel will need to be installed for 16.04.
+- Generic OpenCL runtime support.  Can be installed by:
+```
+sudo apt install ocl-icd-libopencl1
+```
+- The Intel&reg; Graphics Compute Runtime for OpenCL&trade; Driver components. Installation instructions for various systems are found [here](https://github.com/intel/compute-runtime/blob/master/documentation/Neo_in_distributions.md).  For Ubuntu 16.04 and 18.04:
+```
+sudo add-apt-repository ppa:intel-opencl/intel-opencl
+sudo apt-get update
+sudo apt-get install intel-opencl-icd
+```
 
-We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubuntu 18.10 and Ubuntu 16.04, but `setupvars.sh` may not set up the environment correctly, and on the older distro, a new Linux kernel will be needed to use the integrated GPU.  
-
-Setup environment variables and paths to use OpenVINO:
+##### Setup Environment
+Setup environment variables and paths to use OpenVINO in the current shell:
 ```
 $ source /opt/intel/openvino/bin/setupvars.sh
 ```
