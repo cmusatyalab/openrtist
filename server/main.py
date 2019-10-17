@@ -16,7 +16,7 @@ INPUT_QUEUE_MAXSIZE = 2
 def main():
     def engine_setup():
         return TorchEngine(USE_GPU, DEFAULT_STYLE, COMPRESSION_PARAMS)
-    runner.run(engine_setup, OpenrtistEngine.ENGINE_NAME, INPUT_QUEUE_MAXSIZE,
+    runner.run(engine_setup, TorchEngine.ENGINE_NAME, INPUT_QUEUE_MAXSIZE,
                PORT, NUM_TOKENS)
 
 
