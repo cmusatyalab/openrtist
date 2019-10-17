@@ -56,6 +56,9 @@ except:
 	def emptydata():
 		return ''
 
+def cv_ver(v):
+    return cv2.__version__.startswith(v)
+
 class GabrielSocketCommand(ClientCommand):
     STREAM=len(ClientCommand.ACTIONS)
     ACTIONS=ClientCommand.ACTIONS + [STREAM]
@@ -77,7 +80,10 @@ class VideoStreamingThread(SocketClientThread):
         self.FPS = Config.CAM_FPS
         self.INTERVAL = self.SEC*self.FPS
         self.video_capture = cv2.VideoCapture(-1)
-        self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+        if cv_ver('2'):
+            self.video_capture.set(cv2.cv.CV_CAP_PROP_FPS, self.FPS)
+        else:
+            self.video_capture.set(cv2.CAP_PROP_FPS, self.FPS)
         self.handlers[GabrielSocketCommand.STREAM] = self._handle_STREAM
 
         #print(self.style_array)
