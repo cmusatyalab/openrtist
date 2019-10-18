@@ -1,13 +1,15 @@
 from openvino.inference_engine import IENetwork
 from openvino.inference_engine import IEPlugin
 from openrtist_engine import OpenrtistEngine
+import numpy as np
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
 
 class OpenvinoEngine(OpenrtistEngine):
-    def __init__(self, use_gpu, default_Style, compression_params):
+    def __init__(self, use_gpu, default_style, compression_params):
         super().__init__(default_style, compression_params)
         device = 'GPU' if use_gpu else 'CPU'
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
@@ -70,7 +72,7 @@ class OpenvinoEngine(OpenrtistEngine):
             img = cv2.resize(img, (self.w, self.h))
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
         imgs = [ img ]
-        data = self.exec_nets[ self.style_type ].infer(
+        data = self.exec_nets[ self.style ].infer(
             inputs={self.input_blob: imgs})
 
         img_out = data[self.out_blob][0]
