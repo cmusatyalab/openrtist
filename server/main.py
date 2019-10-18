@@ -27,8 +27,6 @@ def main():
     parser.add_argument('--timing', action='store_true', help='Print timing information')
     args = parser.parse_args()
 
-    print(args)
-
     if args.openvino:
         from openvino_engine import OpenvinoEngine
         engine = OpenvinoEngine
