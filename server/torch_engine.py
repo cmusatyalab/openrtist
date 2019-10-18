@@ -25,15 +25,17 @@ class TorchEngine(OpenrtistEngine):
         if (self.use_gpu):
             self.style_model.cuda()
 
-    def run_model(self, img):
+    def preprocessing(self, img):
         content_image = self.content_transform(img)
         if (self.use_gpu):
             content_image = content_image.cuda()
         content_image = content_image.unsqueeze(0)
-        content_image = Variable(content_image, volatile=True)
+        return Variable(content_image, volatile=True)
 
-        output = self.style_model(content_image)
-        img_out = output.data[0].clamp(0, 255).cpu().numpy()
-        img_out = img_out.transpose(1, 2, 0)
 
-        return img_out
+    def inference(self, preprocessed):
+        output = self.style_model(preprocessed)
+        return output.data[0].clamp(0, 255).cpu().numpy()
+
+    def postprocessing(self, post_inference):
+        return post_inference.transpose(1, 2, 0)

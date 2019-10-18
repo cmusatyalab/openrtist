@@ -35,8 +35,19 @@ class OpenrtistEngine(cognitive_engine.Engine):
         pass
 
     @abstractmethod
-    def run_model(self, img):
+    def preprocessing(self, img):
+        '''Model-specific preprocessing'''
         pass
+
+    @abstractmethod
+    def inference(self, preprocessed):
+        pass
+
+    @abstractmethod
+    def postprocessing(self, post_inference):
+        '''Model-specific postprocessing'''
+        pass
+
 
     def handle(self, from_client):
         if (from_client.payload_type != gabriel_pb2.PayloadType.IMAGE):
@@ -71,11 +82,16 @@ class OpenrtistEngine(cognitive_engine.Engine):
         return result_wrapper
 
     def _process_image(self, image):
+
+        # Preprocessing steps used by both engines
         np_data=np.fromstring(image, dtype=np.uint8)
         img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
 
-        return self.run_model(img)
+        preprocessed = self.preprocessing(img)
+        post_inference = self.inference(preprocessed)
+        img_out = self.postprocessing(post_inference)
+        return img_out
 
     def _apply_watermark(self, image):
         img_mrk = image[-30:,-120:] # The waterMark is of dimension 30x120
