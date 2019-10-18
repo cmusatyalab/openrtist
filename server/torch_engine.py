@@ -34,12 +34,14 @@ from torch.autograd import Variable
 from transformer_net import TransformerNet
 from torchvision import transforms
 import torch
-
+from distutils.version import LooseVersion
 
 class TorchEngine(OpenrtistEngine):
     def __init__(self, use_gpu, default_style, compression_params):
-        super().__init__(default_style, compression_params)
+        super().__init__(default_style, compression_params, 
+            LooseVersion(torch.__version__) >= LooseVersion("1.0") )
 
+        self.model = self.path+self.style+'.model'
         self.use_gpu = use_gpu
 
         self.style_model = TransformerNet()
@@ -51,10 +53,16 @@ class TorchEngine(OpenrtistEngine):
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
     def change_style(self, new_style):
-        self.model = self.path + new_style + ".model"
-        self.style_model.load_state_dict(torch.load(self.model))
+        filename = self.path + new_style + ".model"
+        try:
+            self.style_model.load_state_dict(torch.load(filename))
+            self.model = filename
+        except:
+            self.style_model.load_state_dict(torch.load(self.model))
+            new_style = self.style
         if (self.use_gpu):
             self.style_model.cuda()
+        return new_style
 
     def preprocessing(self, img):
         content_image = self.content_transform(img)

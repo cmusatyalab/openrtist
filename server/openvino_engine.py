@@ -93,8 +93,9 @@ class OpenvinoEngine(OpenrtistEngine):
             del net
 
     def change_style(self, new_style):
+        return new_style if new_style in self.exec_nets else self.style
         # We already loaded all of the models so we do not have to do anything
-        pass
+        #pass
 
     def preprocessing(self, img):
         if img.shape[:-1] != (self.h, self.w):
