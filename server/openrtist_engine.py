@@ -45,13 +45,12 @@ logger = logging.getLogger(__name__)
 class OpenrtistEngine(cognitive_engine.Engine):
     ENGINE_NAME = 'openrtist'
 
-    def __init__(self, default_style, compression_params):
+    def __init__(self, default_style, compression_params, use_new_models=False):
         self.style = default_style
         self.compression_params = compression_params
 
         self.dir_path = os.getcwd()
-        self.model = self.dir_path+'/../models/the_scream.model'
-        self.path = self.dir_path+'/../models/'
+        self.path = self.dir_path+('/../models_1p0/' if use_new_models else '/../models/')
 
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
         self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent

@@ -34,12 +34,14 @@ from torch.autograd import Variable
 from transformer_net import TransformerNet
 from torchvision import transforms
 import torch
-
+from distutils.version import LooseVersion
 
 class TorchEngine(OpenrtistEngine):
     def __init__(self, use_gpu, default_style, compression_params):
-        super().__init__(default_style, compression_params)
+        super().__init__(default_style, compression_params, 
+            LooseVersion(torch.__version__) >= LooseVersion("1.0") )
 
+        self.model = self.path+self.style+'.model'
         self.use_gpu = use_gpu
 
         self.style_model = TransformerNet()
