@@ -16,7 +16,7 @@ def factory(super_class):
             self.t3 = time.time()
 
             self.count += 1
-            if (self.t3 - self.lastprint > 5) == 0:
+            if (self.t3 - self.lastprint > 5):
                 print('pre {0:.1f} ms, '.format(
                     (self.t1-self.t0)*1000), end='')
                 print('infer {0:.1f} ms, '.format(
