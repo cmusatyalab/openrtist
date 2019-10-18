@@ -28,6 +28,7 @@
 # the fast_neural_style example that is part of the pytorch repository and is
 # distributed under the BSD 3-Clause License.
 # https://github.com/pytorch/examples/blob/master/LICENSE
+
 import os
 import cv2
 import numpy as np
