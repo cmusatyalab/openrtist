@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from gabriel_server.local_engine import runner
 from torch_engine import TorchEngine
 # from openvino_engine import OpenvinoEngine
