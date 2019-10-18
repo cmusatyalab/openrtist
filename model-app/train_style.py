@@ -28,12 +28,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import torch
 import argparse
 import os
 import sys
 import time
-import re
 import random
 import torch
 from torch.autograd import Variable
@@ -42,7 +40,6 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 from torchvision import models
-import cv2
 from server import utils
 from server.transformer_net import TransformerNet
 import numpy as np
@@ -92,7 +89,48 @@ def check_paths(args):
         sys.exit(1)
 
 
-def train(args):
+def get_args(args):
+    parser = argparse.ArgumentParser(description="parser for fast-neural-style")
+    parser.add_argument("--epochs", type=int, default=2,
+                        help="number of training epochs, default is 2")
+    parser.add_argument("--batch-size", type=int, default=2,
+                        help="batch size for training, default is 2")
+    parser.add_argument("--dataset", type=str, default='/home/ubuntu/COCO/data/',
+                        help="path to training dataset, the path should point to a folder "
+                             "containing another folder with all the training images")
+    parser.add_argument("--style-image", type=str, default="images/style-images/david_vaughan.jpg",
+                        help="path to style-image")
+    parser.add_argument("--save-model-dir", type=str, default='./',
+                        help="path to folder where trained model will be saved.")
+    parser.add_argument("--checkpoint-model-dir", type=str, default=None,
+                        help="path to folder where checkpoints of trained models will be saved")
+    parser.add_argument("--image-size", type=int, default=512,
+                        help="size of training images, default is 512 X 512")
+    parser.add_argument("--style-size", type=int, default=None,
+                        help="size of style-image, default is the original size of style image")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="random seed for training")
+    parser.add_argument("--content-weight", type=float, default=1e5,
+                        help="weight for content-loss, default is 1e5")
+    parser.add_argument("--style-weight", type=float, default=5e10,
+                        help="weight for style-loss, default is 1e10")
+    parser.add_argument("--noise-weight", type=float, default=1000*1e5,
+                        help="weight for noise-weight, default is 1000*1e5")
+    parser.add_argument("--noise-count", type=int, default=1000,
+                        help="weight for noise-count, default is 1000")
+    parser.add_argument("--noise-range", type=int, default=30,
+                        help="weight for noise-range, default is 30")
+    parser.add_argument("--lr", type=float, default=1e-3,
+                        help="learning rate, default is 1e-3")
+    parser.add_argument("--log-interval", type=int, default=500,
+                        help="number of images after which the training loss is logged, default is 500")
+    parser.add_argument("--checkpoint-interval", type=int, default=2000,
+                                  help="number of batches after which a checkpoint of the trained model will be created")
+
+    return parser.parse_args(args)
+
+
+def train(style, args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -114,7 +152,6 @@ def train(args):
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
-    style = utils.load_image(args.style_image, size=args.style_size)
     style = style_transform(style)
     style = style.repeat(args.batch_size, 1, 1, 1).cuda()
     style_v = Variable(style)
@@ -212,53 +249,16 @@ def train(args):
 
     print("\nDone, trained model saved at", save_model_path)
 
-
 def main():
-    parser = argparse.ArgumentParser(description="parser for fast-neural-style")
-    parser.add_argument("--epochs", type=int, default=2,
-                        help="number of training epochs, default is 2")
-    parser.add_argument("--batch-size", type=int, default=2,
-                        help="batch size for training, default is 2")
-    parser.add_argument("--dataset", type=str, default='/home/ubuntu/COCO/data/',
-                        help="path to training dataset, the path should point to a folder "
-                             "containing another folder with all the training images")
-    parser.add_argument("--style-image", type=str, default="images/style-images/david_vaughan.jpg",
-                        help="path to style-image")
-    parser.add_argument("--save-model-dir", type=str, default='./',
-                        help="path to folder where trained model will be saved.")
-    parser.add_argument("--checkpoint-model-dir", type=str, default=None,
-                        help="path to folder where checkpoints of trained models will be saved")
-    parser.add_argument("--image-size", type=int, default=512,
-                        help="size of training images, default is 512 X 512")
-    parser.add_argument("--style-size", type=int, default=None,
-                        help="size of style-image, default is the original size of style image")
-    parser.add_argument("--seed", type=int, default=42,
-                        help="random seed for training")
-    parser.add_argument("--content-weight", type=float, default=1e5,
-                        help="weight for content-loss, default is 1e5")
-    parser.add_argument("--style-weight", type=float, default=5e10,
-                        help="weight for style-loss, default is 1e10")
-    parser.add_argument("--noise-weight", type=float, default=1000*1e5,
-                        help="weight for noise-weight, default is 1000*1e5")
-    parser.add_argument("--noise-count", type=int, default=1000,
-                        help="weight for noise-count, default is 1000")
-    parser.add_argument("--noise-range", type=int, default=30,
-                        help="weight for noise-range, default is 30")
-    parser.add_argument("--lr", type=float, default=1e-3,
-                        help="learning rate, default is 1e-3")
-    parser.add_argument("--log-interval", type=int, default=500,
-                        help="number of images after which the training loss is logged, default is 500")
-    parser.add_argument("--checkpoint-interval", type=int, default=2000,
-                                  help="number of batches after which a checkpoint of the trained model will be created")
-
-    args = parser.parse_args()
-
     if not torch.cuda.is_available():
         print("ERROR: cuda is not available")
         sys.exit(1)
 
+    args = get_args(sys.argv[1:])
     check_paths(args)
-    train(args)
+
+    style = utils.load_image(args.style_image, size=args.style_size)
+    train(style, args)
 
 
 if __name__ == "__main__":
