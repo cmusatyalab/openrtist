@@ -1,6 +1,6 @@
 from gabriel_server.local_engine import runner
 from torch_engine import TorchEngine
-from openvino_engine import OpenvinoEngine
+# from openvino_engine import OpenvinoEngine
 import timing_engine
 import logging
 import cv2
