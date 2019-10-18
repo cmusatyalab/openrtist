@@ -37,9 +37,9 @@ def factory(super_class):
 
             return result
 
-        def run_model(self, img):
+        def inference(self, preprocessed):
             self.t1 = time.time()
-            result = super().run_model(img)
+            result = super().inference(preprocessed)
             self.t2 = time.time()
 
             return result

@@ -65,17 +65,20 @@ class OpenvinoEngine(OpenrtistEngine):
         # We already loaded all of the models so we do not have to do anything
         pass
 
-    def run_model(self, img):
+    def preprocessing(self, img):
         if img.shape[:-1] != (self.h, self.w):
             logger.warning('Image is resized from', shape[:-1], 'to',
                            (self.h, self.w))
             img = cv2.resize(img, (self.w, self.h))
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
-        imgs = [ img ]
-        data = self.exec_nets[ self.style ].infer(
-            inputs={self.input_blob: imgs})
+        return [ img ]
 
-        img_out = data[self.out_blob][0]
+    def inference(self, preprocessed):
+        return self.exec_nets[ self.style ].infer(
+            inputs={self.input_blob: preprocessed})
+
+    def postprocessing(self, post_inference):
+        img_out = post_inference[self.out_blob][0]
         img_out = np.swapaxes(img_out, 0, 2)
         img_out = np.swapaxes(img_out, 0, 1)
         img_out[img_out < 0] = 0
