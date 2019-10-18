@@ -145,9 +145,12 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             self.exec_nets = {}
             for name in [ n[:-len(model_bin_suff)] for n in os.listdir(self.path) if n.endswith(model_bin_suff)]:
                 model_bin = self.path+name+model_bin_suff;
+                m_xml = self.path+name+".xml"
+                if not os.path.isfile(m_xml):
+                    m_xml = model_xml
                 # Read IR
-                print("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
-                net = IENetwork(model=model_xml, weights=model_bin)
+                print("Loading network files:\n\t{}\n\t{}".format(m_xml, model_bin))
+                net = IENetwork(model=m_xml, weights=model_bin)
             
                 if self.plugin.device == "CPU":
                     supported_layers = self.plugin.get_supported_layers(net)
