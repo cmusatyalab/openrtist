@@ -23,4 +23,4 @@ WORKDIR openrtist/server
 RUN python3 -m pip install -r requirements.txt
 
 EXPOSE 5555 9098
-ENTRYPOINT ["./run_engine.sh"]
+ENTRYPOINT ["/usr/bin/python3", "main.py"]
