@@ -89,8 +89,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             openrtist_pb2.EngineFields, from_client)
 
         if engine_fields.style != self.style:
-            self.change_style(engine_fields.style)
-            self.style = engine_fields.style
+            self.style = self.change_style(engine_fields.style)
             logger.info('New Style: %s', self.style)
 
         image = self._process_image(from_client.payload)

@@ -51,10 +51,16 @@ class TorchEngine(OpenrtistEngine):
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
     def change_style(self, new_style):
-        self.model = self.path + new_style + ".model"
-        self.style_model.load_state_dict(torch.load(self.model))
+        filename = self.path + new_style + ".model"
+        try:
+            self.style_model.load_state_dict(torch.load(filename))
+            self.model = filename
+        except:
+            self.style_model.load_state_dict(torch.load(self.model))
+            new_style = self.style
         if (self.use_gpu):
             self.style_model.cuda()
+        return new_style
 
     def preprocessing(self, img):
         content_image = self.content_transform(img)
