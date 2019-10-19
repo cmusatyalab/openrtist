@@ -15,6 +15,6 @@
 class Config(object):
     PORT = 9098
     TIME_SEC = 30
-    CAM_FPS = 10
+    CAM_FPS = 30
     IMG_WIDTH = 320
     IMG_HEIGHT = 240
