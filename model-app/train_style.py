@@ -130,7 +130,7 @@ def get_args(args):
     return parser.parse_args(args)
 
 
-def train(style, args):
+def train(args, progress_callback):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -152,6 +152,7 @@ def train(style, args):
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
+    style = utils.load_image(args.style_image, size=args.style_size)
     style = style_transform(style)
     style = style.repeat(args.batch_size, 1, 1, 1).cuda()
     style_v = Variable(style)
@@ -225,14 +226,12 @@ def train(style, args):
             agg_style_loss += style_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}".format(
-                    time.ctime(), e + 1, count, len(train_dataset),
-                                  agg_content_loss / (batch_id + 1),
-                                  agg_style_loss / (batch_id + 1),
-                                  agg_flicker_loss / (batch_id + 1),
-                                  (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
+                progress_callback(e, args.epochs, count, len(train_dataset),
+                             agg_content_loss / (batch_id + 1),
+                             agg_style_loss / (batch_id + 1),
+                             agg_flicker_loss / (batch_id + 1),
+                             (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
                 )
-                print(mesg)
 
             if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
                 transformer.eval().cpu()
@@ -248,6 +247,13 @@ def train(style, args):
     torch.save(transformer.state_dict(), save_model_path)
 
     print("\nDone, trained model saved at", save_model_path)
+    return save_model_filename
+
+def log_progress(epoch, num_epochs, count, num_images, content, style, flicker, total):
+    mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}".format(
+        time.ctime(), epoch + 1, count, num_images, content, style, flicker, total
+    )
+    print(mesg)
 
 def main():
     if not torch.cuda.is_available():
@@ -256,9 +262,7 @@ def main():
 
     args = get_args(sys.argv[1:])
     check_paths(args)
-
-    style = utils.load_image(args.style_image, size=args.style_size)
-    train(style, args)
+    train(args, log_progress)
 
 
 if __name__ == "__main__":
