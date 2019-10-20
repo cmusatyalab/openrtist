@@ -17,27 +17,10 @@
 import argparse
 import os
 import cv2
-from capture_client import CaptureClient
+import capture_adapter
 
 
 STYLE_DIR_PATH = 'style-image'
-
-
-class ScreensaverClient(CaptureClient):
-    def __init__(self, server_ip, rgbpipe, style_name_to_image):
-        super().__init__(server_ip)
-        self.server_ip = server_ip
-        self._rgbpipe = rgbpipe
-        self._style_name_to_image = style_name_to_image
-
-    def consume_rgb_frame_style(self, rgb_frame, style):
-        style_image = self._style_name_to_image[style]
-        style_im_h, style_im_w, _ = style_image.shape
-        rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
-        cv2.rectangle(
-            rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0), 3)
-        rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
-        self._rgbpipe.write(rgb_frame_enlarged.tostring())
 
 
 def main():
@@ -59,9 +42,19 @@ def main():
         os.mkfifo(inputs.output_pipe_path)
 
     with open(inputs.output_pipe_path, 'wb') as rgbpipe:
-        screensaver_client = ScreensaverClient(
-            inputs.server_ip, rgbpipe, style_name_to_image)
-        screensaver_client.launch()
+        def consume_rgb_frame_style(rgb_frame, style):
+            style_image = style_name_to_image[style]
+            style_im_h, style_im_w, _ = style_image.shape
+            rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
+            cv2.rectangle(
+                rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0),
+                3)
+            rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
+            rgbpipe.write(rgb_frame_enlarged.tostring())
+
+        client = capture_adapter.create_client(
+            inputs.server_ip, consume_rgb_frame_style)
+        client.launch()
 
 
 if __name__ == '__main__':
