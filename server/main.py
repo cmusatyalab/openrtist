@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 from gabriel_server.local_engine import runner
+from openrtist_engine import OpenrtistEngine
+from timing_engine import TimingEngine
 import timing_engine
 import logging
 import cv2
@@ -20,26 +22,36 @@ def main():
     parser.add_argument('-t', '--tokens', type=int, default=DEFAULT_NUM_TOKENS,
                         help='number of tokens')
     parser.add_argument('-o', '--openvino', action='store_true',
-                        help='Pass this flag to use OpenVINO. Otherwise Torch will be'
-                        'used')
-    parser.add_argument('-g', '--gpu', action='store_true',
-                        help='Pass this flag to use the GPU instead of the CPU')
-    parser.add_argument('--timing', action='store_true', help='Print timing information')
+                        help='Pass this flag to use OpenVINO. Otherwise Torch'
+                        'will be used')
+    parser.add_argument('-c', '--cpu-only', action='store_true',
+                        help='Pass this flag to prevent use of the GPU')
+    parser.add_argument('--timing', action='store_true',
+                        help='Print timing information')
     args = parser.parse_args()
 
-    if args.openvino:
-        from openvino_engine import OpenvinoEngine
-        engine = OpenvinoEngine
-    else:
-        from torch_engine import TorchEngine
-        engine = TorchEngine
-
-    if args.timing:
-        engine = timing_engine.factory(engine)
-
     def engine_setup():
-        return engine(args.gpu, DEFAULT_STYLE, COMPRESSION_PARAMS)
-    runner.run(engine_setup, engine.ENGINE_NAME, INPUT_QUEUE_MAXSIZE,
+        if args.openvino:
+            # Prevent ImportError when user wants to use torch and does not
+            # have openvino
+            from openvino_adapter import OpenvinoAdapter
+
+            adapter = OpenvinoAdapter(args.cpu_only, DEFAULT_STYLE)
+        else:
+            # Prevent ImportError when user wants to use openvino and does not
+            # have Torch
+            from torch_adapter import TorchAdapter
+
+            adapter = TorchAdapter(args.cpu_only, DEFAULT_STYLE)
+
+        if args.timing:
+            engine = TimingEngine(COMPRESSION_PARAMS, adapter)
+        else:
+            engine = OpenrtistEngine(COMPRESSION_PARAMS, adapter)
+
+        return engine
+
+    runner.run(engine_setup, OpenrtistEngine.ENGINE_NAME, INPUT_QUEUE_MAXSIZE,
                PORT, args.tokens)
 
 

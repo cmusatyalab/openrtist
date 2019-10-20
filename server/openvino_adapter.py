@@ -21,9 +21,9 @@
 #   limitations under the License.
 #
 #
-# Portions of this code borrow from sample code distributed as part of 
+# Portions of this code borrow from sample code distributed as part of
 # Intel OpenVino, which is also distributed under the Apache License.
-# 
+#
 # Portions of this code were modified from sampled code distributed as part of
 # the fast_neural_style example that is part of the pytorch repository and is
 # distributed under the BSD 3-Clause License.
@@ -31,46 +31,49 @@
 
 from openvino.inference_engine import IENetwork
 from openvino.inference_engine import IEPlugin
-from openrtist_engine import OpenrtistEngine
+from openrtist_adapter import OpenrtistAdapter
 import numpy as np
 import logging
 import os
+import sys
 
 logger = logging.getLogger(__name__)
 
 
-class OpenvinoEngine(OpenrtistEngine):
-    def __init__(self, use_gpu, default_style, compression_params):
-        super().__init__(default_style, compression_params)
-        device = 'GPU' if use_gpu else 'CPU'
+class OpenvinoAdapter(OpenrtistAdapter):
+    def __init__(self, cpu_only, default_style):
+        super().__init__(default_style)
+        device = 'CPU' if cpu_only else 'GPU'
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
-        if use_gpu:
-            model_xml = self.path+"16v2.xml"
-            model_bin_suff = "-16.bin"
+        path = os.path.join(os.getcwd(), '..', 'models')
 
-            config_file = self.dir_path+"/../clkernels/mvn_custom_layer.xml"
-            self.plugin.set_config({'CONFIG_FILE' : config_file})
-        else:
-            model_xml = self.path+"32.xml"
-            model_bin_suff = "-32.bin"
+        model_xml_num = '32' if cpu_only else '16v2'
+        model_bin_num = '32' if cpu_only else '16'
+        model_xml = os.path.join(path, '{}.xml'.format(model_xml_num))
+        model_bin_suff = '-{}.bin'.format(model_bin_num)
 
+        if cpu_only:
             # also avx2, but probably not a significant difference for the MVN
             # layer needed here
             self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
+        else:
+            config_file = os.path.join(
+                os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
+            self.plugin.set_config({'CONFIG_FILE' : config_file})
 
         self.exec_nets = {}
         names = [
-            n[:-7] for n in os.listdir(self.path) if n.endswith(model_bin_suff)
+            n[:-7] for n in os.listdir(path) if n.endswith(model_bin_suff)
         ]
         for name in names:
-            model_bin = self.path+name+model_bin_suff;
+            model_bin = os.path.join(path, name + model_bin_suff)
 
             # Read IR
             print('Loading network files:\n\t', model_xml, '\n\t', model_bin)
             net = IENetwork(model=model_xml, weights=model_bin)
 
-            if not use_gpu:
+            if cpu_only:
                 supported_layers = self.plugin.get_supported_layers(net)
                 not_supported_layers = [
                     l for l in net.layers.keys() if l not in supported_layers
@@ -88,14 +91,16 @@ class OpenvinoEngine(OpenrtistEngine):
 
             # Loading model to the plugin
             print("Loading model to the plugin")
-            self.exec_nets[ name ] = self.plugin.load(network=net)
+            self.exec_nets[name] = self.plugin.load(network=net)
             self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
             del net
 
-    def change_style(self, new_style):
-        return new_style if new_style in self.exec_nets else self.style
-        # We already loaded all of the models so we do not have to do anything
-        #pass
+    def set_style(self, new_style):
+        if new_style in self.exec_nets:
+            super().set_style(new_style)
+        else:
+            logger.error('Got style %s that we do not have. Ignoring',
+                         new_style)
 
     def preprocessing(self, img):
         if img.shape[:-1] != (self.h, self.w):
@@ -106,7 +111,7 @@ class OpenvinoEngine(OpenrtistEngine):
         return [ img ]
 
     def inference(self, preprocessed):
-        return self.exec_nets[ self.style ].infer(
+        return self.exec_nets[self.get_style()].infer(
             inputs={self.input_blob: preprocessed})
 
     def postprocessing(self, post_inference):
