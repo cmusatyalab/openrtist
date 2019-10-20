@@ -45,12 +45,9 @@ logger = logging.getLogger(__name__)
 class OpenrtistEngine(cognitive_engine.Engine):
     ENGINE_NAME = 'openrtist'
 
-    def __init__(self, default_style, compression_params, use_new_models=False):
-        self.style = default_style
+    def __init__(self, compression_params, adapter):
         self.compression_params = compression_params
-
-        self.dir_path = os.getcwd()
-        self.path = self.dir_path+('/../models_1p0/' if use_new_models else '/../models/')
+        self.adapter = adapter
 
         # The waterMark is of dimension 30x120
         wtr_mrk4 = cv2.imread('../wtrMrk.png',-1)
@@ -64,25 +61,6 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         logger.info('FINISHED INITIALISATION')
 
-    @abstractmethod
-    def change_style(self, new_style):
-        pass
-
-    @abstractmethod
-    def preprocessing(self, img):
-        '''Model-specific preprocessing'''
-        pass
-
-    @abstractmethod
-    def inference(self, preprocessed):
-        pass
-
-    @abstractmethod
-    def postprocessing(self, post_inference):
-        '''Model-specific postprocessing'''
-        pass
-
-
     def handle(self, from_client):
         if (from_client.payload_type != gabriel_pb2.PayloadType.IMAGE):
             return cognitive_engine.wrong_input_format_error(
@@ -91,9 +69,9 @@ class OpenrtistEngine(cognitive_engine.Engine):
         engine_fields = cognitive_engine.unpack_engine_fields(
             openrtist_pb2.EngineFields, from_client)
 
-        if engine_fields.style != self.style:
-            self.style = self.change_style(engine_fields.style)
-            logger.info('New Style: %s', self.style)
+        if engine_fields.style != self.adapter.get_style():
+            self.adapter.set_style(engine_fields.style)
+            logger.info('New Style: %s', engine_fields.style)
 
         image = self.process_image(from_client.payload)
         image = self._apply_watermark(image)
@@ -121,10 +99,14 @@ class OpenrtistEngine(cognitive_engine.Engine):
         img=cv2.imdecode(np_data, cv2.IMREAD_COLOR)
         img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        preprocessed = self.preprocessing(img)
+        preprocessed = self.adapter.preprocessing(img)
         post_inference = self.inference(preprocessed)
-        img_out = self.postprocessing(post_inference)
+        img_out = self.adapter.postprocessing(post_inference)
         return img_out
+
+    def inference(self, preprocessed):
+        '''Allow timing engine to override this'''
+        return self.adapter.inference(preprocessed)
 
     def _apply_watermark(self, image):
         img_mrk = image[-30:,-120:] # The waterMark is of dimension 30x120

@@ -29,31 +29,39 @@
 # distributed under the BSD 3-Clause License.
 # https://github.com/pytorch/examples/blob/master/LICENSE
 
-from openrtist_engine import OpenrtistEngine
+from openrtist_adapter import OpenrtistAdapter
 from torch.autograd import Variable
 from transformer_net import TransformerNet
 from torchvision import transforms
 from distutils.version import LooseVersion
-import torch
 import numpy as np
+import torch
+import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 RANDOM_IMAGE_SIZE = (240, 320, 3)
 
 
-class TorchEngine(OpenrtistEngine):
-    def __init__(self, use_gpu, default_style, compression_params):
-        super().__init__(default_style, compression_params,
-            LooseVersion(torch.__version__) >= LooseVersion("1.0") )
+class TorchAdapter(OpenrtistAdapter):
+    def __init__(self, cpu_only, default_style):
+        super().__init__(default_style)
 
-        self.model = self.path+self.style+'.model'
-        self.use_gpu = use_gpu
+        self.cpu_only = cpu_only
+
+        # We do not need to compute gradients. This saves memory.
+        torch.set_grad_enabled(False)
 
         self.style_model = TransformerNet()
-        self.style_model.load_state_dict(torch.load(self.model))
 
-        if (self.use_gpu):
-            self.style_model.cuda()
+        if LooseVersion(torch.__version__) >= LooseVersion("1.0"):
+            models_dir = 'models_1p0'
+        else:
+            models_dir = 'models'
+        self.path = os.path.join(os.getcwd(), '..', models_dir)
+        self._update_model_style(default_style)
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
@@ -63,30 +71,26 @@ class TorchEngine(OpenrtistEngine):
         preprocessed = self.preprocessing(img)
         post_inference = self.inference(preprocessed)
 
+        self.supported_styles = set()
+        for name in os.listdir(self.path):
+            if name.endswith('.model'):
+                self.supported_styles.add(name[:-6])
 
-    def process_image(self, image):
-        with torch.no_grad():
-            return super().process_image(image)
+    def set_style(self, new_style):
+        if new_style not in self.supported_styles:
+            logger.error('Got style %s that we do not have. Ignoring',
+                         new_style)
+            return
 
-    def change_style(self, new_style):
-        filename = self.path + new_style + ".model"
-        try:
-            self.style_model.load_state_dict(torch.load(filename))
-            self.model = filename
-        except:
-            self.style_model.load_state_dict(torch.load(self.model))
-            new_style = self.style
-        if (self.use_gpu):
-            self.style_model.cuda()
-        return new_style
+        super().set_style(new_style)
+        self._update_model_style(new_style)
 
     def preprocessing(self, img):
         content_image = self.content_transform(img)
-        if (self.use_gpu):
+        if not self.cpu_only:
             content_image = content_image.cuda()
         content_image = content_image.unsqueeze(0)
         return Variable(content_image)
-
 
     def inference(self, preprocessed):
         output = self.style_model(preprocessed)
@@ -94,3 +98,9 @@ class TorchEngine(OpenrtistEngine):
 
     def postprocessing(self, post_inference):
         return post_inference.transpose(1, 2, 0)
+
+    def _update_model_style(self, new_style):
+        model = os.path.join(self.path, '{}.model'.format(new_style))
+        self.style_model.load_state_dict(torch.load(model))
+        if not self.cpu_only:
+            self.style_model.cuda()
