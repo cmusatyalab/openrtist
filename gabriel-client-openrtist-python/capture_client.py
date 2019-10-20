@@ -1,8 +1,9 @@
 from client import Client
+from abc import abstractmethod
 import config
 import cv2
+import os
 import random
-from abc import abstractmethod
 
 
 class CaptureClient(Client):
@@ -12,7 +13,7 @@ class CaptureClient(Client):
 
     def preprocess(self, frame):
         if (self.get_frame_id() % self.style_interval) == 0:
-            self.style_index = (self.style_index + 1) % len(self.style_array)
+            self.style_num = (self.style_num + 1) % len(self.style_array)
             self.style = self.style_array[self.style_num].split(".")[0]
 
         frame = cv2.flip(frame, 1)

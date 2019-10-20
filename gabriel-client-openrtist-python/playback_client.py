@@ -14,6 +14,7 @@ class PlaybackClient(Client):
 
     def __init__(self, server_ip, video, display):
         super().__init__(server_ip, cv2.VideoCapture(video))
+        self.display = display
 
 
 def main():

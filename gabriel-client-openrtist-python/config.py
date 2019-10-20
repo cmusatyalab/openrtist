@@ -13,7 +13,7 @@
 # limitations under the License.
 
 PORT = 9098
-STYLE_DISPLAY_INTERVAL = 30  # Number of frames
+STYLE_DISPLAY_INTERVAL = 300  # Number of frames
 CAM_FPS = 30
 IMG_WIDTH = 320
 IMG_HEIGHT = 240
