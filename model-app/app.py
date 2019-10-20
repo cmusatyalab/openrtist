@@ -46,7 +46,7 @@ def upload_file(task_id=None):
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
-    task = run_training.delay(app.config['DATASET'], filepath, app.config['DOWNLOAD_FOLDER'])
+    task = run_training.delay(app.config['DATASET'], filepath, app.config['DOWNLOAD_FOLDER'], filename)
     return redirect(url_for('index', task_id=task.id))
 
 
@@ -67,7 +67,8 @@ def train_status(task_id):
             'current': task.info.get('current', 0),
             'total': task.info.get('total', 1),
             'status': task.info.get('status', ''),
-            'start_time': task.info.get('start_time', '')
+            'start_time': task.info.get('start_time', ''),
+            'style': task.info.get('style', ''),
         }
         if 'model' in task.info:
             response['model'] = task.info['model']
@@ -79,6 +80,9 @@ def train_status(task_id):
 def get_model(filename):
     return send_from_directory(app.config['DOWNLOAD_FOLDER'], filename)
 
+@app.route('/styles/<filename>')
+def get_style(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/cancel', methods=['POST'])
 def cancel_train():
@@ -87,16 +91,16 @@ def cancel_train():
     return redirect(url_for('index', task_id=task_id))
 
 @celery.task(bind=True)
-def run_training(self, dataset, filepath, model_dir):
+def run_training(self, dataset, filepath, model_dir, image):
     start_time = int(round(time.time() * 1000))
-    self.update_state(meta={'start_time': start_time})
+    self.update_state(meta={'start_time': start_time, 'style': image})
 
     def log_progress(epoch, num_epochs, count, num_images, content, style, flicker, total):
         message = "Epoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}\n".format(
             epoch + 1, count, num_images, content, style, flicker, total
         )
-        self.update_state(meta={'current': count + epoch * num_epochs, 'total': num_images * num_epochs,
-                                'status': message, 'start_time': start_time})
+        self.update_state(meta={'current': count + epoch * num_images, 'total': num_images * num_epochs,
+                                'status': message, 'start_time': start_time, 'style': image})
     model = train(get_args([
         '--dataset', dataset,
         '--style-image', filepath,
@@ -105,4 +109,4 @@ def run_training(self, dataset, filepath, model_dir):
         '--style-size', '512'
     ]), log_progress)
 
-    return {'current': 100, 'total': 100, 'start_time': start_time, 'model': model}
+    return {'current': 100, 'total': 100, 'start_time': start_time, 'model': model, 'style': image}

@@ -23,10 +23,15 @@
                 $(status_div.childNodes[1]).text(percent + '%');
                 $(status_div.childNodes[2]).text(data['status']);
 
-                var start_time = data['start_time'];
+                const start_time = data['start_time'];
                 if (start_time) {
                     $(status_div.childNodes[3]).text("Start time: " + new Date(data['start_time']));
                     $(status_div.childNodes[4]).text("Elapsed time: " + moment.duration(new Date().getTime() - data['start_time']).humanize());
+                }
+
+                const style = data['style'];
+                if (style) {
+                    $('#style').attr("src", '/styles/'+style);
                 }
 
                 if (data['state'] === 'FAILURE' || data['state'] === 'REVOKED' || data['state'] === 'SUCCESS') {
@@ -50,11 +55,15 @@
         }
         $(function() {
             // add task status elements
-            div = $('<div class="progress"><div></div><div>0%</div><div>...</div><div></div><div></div><div>&nbsp;</div></div>');
-            cancel = $('<form action="/cancel" method="post"><button id="cancel" name="task_id" type="submit" value="{{task_id}}">Cancel</button></form>');
+            div = $('<div class="progress"><div/><div>0%</div><div>...</div><div/><div/><div>&nbsp;</div></div>');
             $('#progress').append(div);
+
+            cancel = $('<form action="/cancel" method="post"><button id="cancel" name="task_id" type="submit" value="{{task_id}}">Cancel</button></form>');
             $('#progress').append(cancel);
             $('#cancel').attr("disabled", true);
+
+            img = $('<img id="style" style="width:520px;height:520px;"}/>');
+            $('#progress').append(img);
 
             // create a progress bar
             var nanobar = new Nanobar({
