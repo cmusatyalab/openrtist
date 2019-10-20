@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class Config(object):
-    PORT = 9098
-    TIME_SEC = 30
-    CAM_FPS = 30
-    IMG_WIDTH = 320
-    IMG_HEIGHT = 240
+PORT = 9098
+STYLE_DISPLAY_INTERVAL = 30  # Number of frames
+CAM_FPS = 30
+IMG_WIDTH = 320
+IMG_HEIGHT = 240
+START_STYLE_STRING = 'udnie'
+ENGINE_NAME = 'openrtist'

@@ -21,9 +21,9 @@
 #   limitations under the License.
 #
 #
-# Portions of this code borrow from sample code distributed as part of 
+# Portions of this code borrow from sample code distributed as part of
 # Intel OpenVino, which is also distributed under the Apache License.
-# 
+#
 # Portions of this code were modified from sampled code distributed as part of
 # the fast_neural_style example that is part of the pytorch repository and is
 # distributed under the BSD 3-Clause License.
@@ -40,6 +40,7 @@ from openrtist_protocol import openrtist_pb2
 from abc import abstractmethod
 
 logger = logging.getLogger(__name__)
+RANDOM_IMAGE_SIZE = (240, 320, 3)
 
 
 class OpenrtistEngine(cognitive_engine.Engine):
@@ -52,9 +53,19 @@ class OpenrtistEngine(cognitive_engine.Engine):
         self.dir_path = os.getcwd()
         self.path = self.dir_path+('/../models_1p0/' if use_new_models else '/../models/')
 
-        wtr_mrk4 = cv2.imread('../wtrMrk.png',-1) # The waterMark is of dimension 30x120
-        self.mrk,_,_,mrk_alpha = cv2.split(wtr_mrk4) # The RGB channels are equivalent
-        self.alpha = mrk_alpha.astype(float)/255
+        # The waterMark is of dimension 30x120
+        wtr_mrk4 = cv2.imread('../wtrMrk.png',-1)
+
+         # The RGB channels are equivalent
+        self.mrk, _, _, mrk_alpha = cv2.split(wtr_mrk4)
+
+        self.alpha = mrk_alpha.astype(float) / 255
+
+        # Run inference on randomly generated image to slow inference time for
+        # first real image
+        img = np.random.randint(0, 255, RANDOM_SIZE, np.uint8)
+        preprocessed = self.preprocessing(img)
+        post_inference = self.inference(preprocessed)
 
         # TODO support server display
 
@@ -91,7 +102,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             self.style = self.change_style(engine_fields.style)
             logger.info('New Style: %s', self.style)
 
-        image = self._process_image(from_client.payload)
+        image = self.process_image(from_client.payload)
         image = self._apply_watermark(image)
 
         _, jpeg_img=cv2.imencode('.jpg', image, self.compression_params)
@@ -110,12 +121,12 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         return result_wrapper
 
-    def _process_image(self, image):
+    def process_image(self, image):
 
         # Preprocessing steps used by both engines
         np_data=np.fromstring(image, dtype=np.uint8)
-        img=cv2.imdecode(np_data,cv2.IMREAD_COLOR)
-        img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        img=cv2.imdecode(np_data, cv2.IMREAD_COLOR)
+        img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         preprocessed = self.preprocessing(img)
         post_inference = self.inference(preprocessed)

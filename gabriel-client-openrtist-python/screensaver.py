@@ -17,20 +17,20 @@
 import argparse
 import os
 import cv2
-from client import OpenrtistClient
+from capture_client import CaptureClient
 
 
 STYLE_DIR_PATH = 'style-image'
 
 
-class ScreensaverClient(OpenrtistClient):
+class ScreensaverClient(CaptureClient):
     def __init__(self, server_ip, rgbpipe, style_name_to_image):
         super().__init__(server_ip)
         self.server_ip = server_ip
         self._rgbpipe = rgbpipe
         self._style_name_to_image = style_name_to_image
 
-    def consume_update(self, rgb_frame, style):
+    def consume_rgb_frame_style(self, rgb_frame, style):
         style_image = self._style_name_to_image[style]
         style_im_h, style_im_w, _ = style_image.shape
         rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image

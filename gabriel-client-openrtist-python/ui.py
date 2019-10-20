@@ -24,18 +24,18 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPainter
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QImage
+from capture_client import CaptureClient
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
-import client
 import logging
 
 
-class UiClient(client.OpenrtistClient):
+class UiClient(CaptureClient):
     def __init__(self, server_ip, pyqt_signal):
         super().__init__(server_ip)
         self.pyqt_signal = pyqt_signal
 
-    def consume_update(self, rgb_frame, style):
+    def consume_rgb_frame_style(self, rgb_frame, style):
         self.pyqt_signal.emit(rgb_frame, style)
 
 
@@ -81,7 +81,8 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
+    parser.add_argument("server_ip", action="store",
+                        help="IP address for Openrtist Server")
     inputs = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)
