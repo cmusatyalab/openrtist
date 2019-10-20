@@ -33,8 +33,13 @@ from openrtist_engine import OpenrtistEngine
 from torch.autograd import Variable
 from transformer_net import TransformerNet
 from torchvision import transforms
-import torch
 from distutils.version import LooseVersion
+import torch
+import numpy as np
+
+
+RANDOM_IMAGE_SIZE = (240, 320, 3)
+
 
 class TorchEngine(OpenrtistEngine):
     def __init__(self, use_gpu, default_style, compression_params):
@@ -52,9 +57,16 @@ class TorchEngine(OpenrtistEngine):
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
+        # Run inference on randomly generated image to slow inference time for
+        # first real image
+        img = np.random.randint(0, 255, RANDOM_IMAGE_SIZE, np.uint8)
+        preprocessed = self.preprocessing(img)
+        post_inference = self.inference(preprocessed)
+
+
     def process_image(self, image):
         with torch.no_grad():
-            super()._process_image(image)
+            return super().process_image(image)
 
     def change_style(self, new_style):
         filename = self.path + new_style + ".model"
