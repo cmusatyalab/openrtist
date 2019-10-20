@@ -88,7 +88,6 @@ def check_paths(args):
         print(e)
         sys.exit(1)
 
-
 def get_args(args):
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
     parser.add_argument("--epochs", type=int, default=2,
@@ -131,6 +130,7 @@ def get_args(args):
 
 
 def train(args, progress_callback):
+    device = torch.device("cuda")
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -143,18 +143,18 @@ def train(args, progress_callback):
     train_dataset = datasets.ImageFolder(args.dataset, transform)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
 
-    transformer = TransformerNet().cuda()
+    transformer = TransformerNet().to(device)
     optimizer = Adam(transformer.parameters(), args.lr)
     mse_loss = torch.nn.MSELoss()
 
-    vgg = Vgg16(requires_grad=False).cuda()
+    vgg = Vgg16(requires_grad=False).to(device)
     style_transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Lambda(lambda x: x.mul(255))
     ])
     style = utils.load_image(args.style_image, size=args.style_size)
     style = style_transform(style)
-    style = style.repeat(args.batch_size, 1, 1, 1).cuda()
+    style = style.repeat(args.batch_size, 1, 1, 1).to(device)
     style_v = Variable(style)
     style_v = utils.normalize_batch(style_v)
     features_style = vgg(style_v)
@@ -189,12 +189,12 @@ def train(args, progress_callback):
                 noisy_x = x.clone()
                 noisy_x = noisy_x + noiseimg
                 noisy_x_v = Variable(noisy_x)
-                noisy_x_v = noisy_x_v.cuda()
+                noisy_x_v = noisy_x_v.to(device)
                 noisy_y = transformer(noisy_x_v)
                 noisy_y = utils.normalize_batch(noisy_y)
             
             x = Variable(x)
-            x = x.cuda()
+            x = x.to(device)
             y = transformer(x)
 
             y = utils.normalize_batch(y)
@@ -217,20 +217,20 @@ def train(args, progress_callback):
             if args.noise_count:
               flicker_loss = args.noise_weight * mse_loss(y, noisy_y.detach())
               total_loss += flicker_loss
-              agg_flicker_loss += flicker_loss.data[0]
+              agg_flicker_loss += flicker_loss.item()
 
             total_loss.backward()
             optimizer.step()
 
-            agg_content_loss += content_loss.data[0]
-            agg_style_loss += style_loss.data[0]
+            agg_content_loss += content_loss.item()
+            agg_style_loss += style_loss.item()
 
             if (batch_id + 1) % args.log_interval == 0:
                 progress_callback(e, args.epochs, count, len(train_dataset),
-                             agg_content_loss / (batch_id + 1),
-                             agg_style_loss / (batch_id + 1),
-                             agg_flicker_loss / (batch_id + 1),
-                             (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
+                    agg_content_loss / (batch_id + 1),
+                    agg_style_loss / (batch_id + 1),
+                    agg_flicker_loss / (batch_id + 1),
+                    (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
                 )
 
             if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
@@ -238,7 +238,7 @@ def train(args, progress_callback):
                 ckpt_model_filename = "ckpt_epoch_" + str(e) + "_batch_id_" + str(batch_id + 1) + ".pth"
                 ckpt_model_path = os.path.join(args.checkpoint_model_dir, ckpt_model_filename)
                 torch.save(transformer.state_dict(), ckpt_model_path)
-                transformer.cuda().train()
+                transformer.to(device).train()
 
     # save model
     transformer.eval().cpu()
