@@ -21,9 +21,9 @@
 #   limitations under the License.
 #
 #
-# Portions of this code borrow from sample code distributed as part of 
+# Portions of this code borrow from sample code distributed as part of
 # Intel OpenVino, which is also distributed under the Apache License.
-# 
+#
 # Portions of this code were modified from sampled code distributed as part of
 # the fast_neural_style example that is part of the pytorch repository and is
 # distributed under the BSD 3-Clause License.
@@ -38,7 +38,7 @@ from distutils.version import LooseVersion
 
 class TorchEngine(OpenrtistEngine):
     def __init__(self, use_gpu, default_style, compression_params):
-        super().__init__(default_style, compression_params, 
+        super().__init__(default_style, compression_params,
             LooseVersion(torch.__version__) >= LooseVersion("1.0") )
 
         self.model = self.path+self.style+'.model'
@@ -51,6 +51,10 @@ class TorchEngine(OpenrtistEngine):
             self.style_model.cuda()
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
+
+    def process_image(self, image):
+        with torch.no_grad():
+            super()._process_image(image)
 
     def change_style(self, new_style):
         filename = self.path + new_style + ".model"
@@ -69,7 +73,7 @@ class TorchEngine(OpenrtistEngine):
         if (self.use_gpu):
             content_image = content_image.cuda()
         content_image = content_image.unsqueeze(0)
-        return Variable(content_image, volatile=True)
+        return Variable(content_image)
 
 
     def inference(self, preprocessed):
