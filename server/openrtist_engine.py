@@ -40,7 +40,6 @@ from openrtist_protocol import openrtist_pb2
 from abc import abstractmethod
 
 logger = logging.getLogger(__name__)
-RANDOM_IMAGE_SIZE = (240, 320, 3)
 
 
 class OpenrtistEngine(cognitive_engine.Engine):
@@ -60,12 +59,6 @@ class OpenrtistEngine(cognitive_engine.Engine):
         self.mrk, _, _, mrk_alpha = cv2.split(wtr_mrk4)
 
         self.alpha = mrk_alpha.astype(float) / 255
-
-        # Run inference on randomly generated image to slow inference time for
-        # first real image
-        img = np.random.randint(0, 255, RANDOM_SIZE, np.uint8)
-        preprocessed = self.preprocessing(img)
-        post_inference = self.inference(preprocessed)
 
         # TODO support server display
 
