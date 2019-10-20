@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cv2
-import numpy as np
-import config
-from gabriel_client.opencv_client import OpencvClient
 from abc import abstractmethod
+from gabriel_client.opencv_client import OpencvClient
+from openrtist_protocol import openrtist_pb2
+import cv2
+import config
+import numpy as np
 
 
 class Client(OpencvClient):
