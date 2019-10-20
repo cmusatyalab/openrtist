@@ -65,7 +65,7 @@ class TorchAdapter(OpenrtistAdapter):
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
-        # Run inference on randomly generated image to slow inference time for
+        # Run inference on randomly generated image to speed up inference for
         # first real image
         img = np.random.randint(0, 255, RANDOM_IMAGE_SIZE, np.uint8)
         preprocessed = self.preprocessing(img)
