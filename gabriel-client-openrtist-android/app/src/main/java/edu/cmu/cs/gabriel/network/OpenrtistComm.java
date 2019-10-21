@@ -33,31 +33,32 @@ public class OpenrtistComm extends ServerComm {
     }
 
     protected void handleResults(ResultWrapper resultWrapper) {
-        if (resultWrapper.getResultsCount() == 1) {
-            ResultWrapper.Result result = resultWrapper.getResults(0);
-            if (result.getPayloadType() == PayloadType.IMAGE) {
-                if (result.getEngineName().equals(ENGINE_NAME)) {
-                    ByteString dataString = result.getPayload();
-
-                    Bitmap imageFeedback = BitmapFactory.decodeByteArray(
-                            dataString.toByteArray(), 0, dataString.size());
-
-                    Message msg = Message.obtain();
-                    msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                    msg.obj = imageFeedback;
-                    this.returnMsgHandler.sendMessage(msg);
-                } else {
-                    Log.e(
-                            TAG,
-                            "Got result from engine " + result.getEngineName());
-                }
-            } else {
-                Log.e(TAG, "Got result of type " + result.getPayloadType().name());
-            }
-        } else {
-            Log.e(TAG, "Got " + resultWrapper.getResultsCount() +
-                    " results in output.");
+        if (resultWrapper.getResultsCount() != 1) {
+            Log.e(TAG, "Got " + resultWrapper.getResultsCount() + " results in output.");
+            return;
         }
+
+        ResultWrapper.Result result = resultWrapper.getResults(0);
+
+        if (result.getPayloadType() != PayloadType.IMAGE) {
+            Log.e(TAG, "Got result of type " + result.getPayloadType().name());
+            return;
+        }
+
+        if (!result.getEngineName().equals(ENGINE_NAME)) {
+            Log.e(TAG, "Got result from engine " + result.getEngineName());
+            return;
+        }
+
+        ByteString dataString = result.getPayload();
+
+        Bitmap imageFeedback = BitmapFactory.decodeByteArray(
+                dataString.toByteArray(), 0, dataString.size());
+
+        Message msg = Message.obtain();
+        msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+        msg.obj = imageFeedback;
+        this.returnMsgHandler.sendMessage(msg);
     }
 
     protected void handleDisconnect() {
@@ -66,15 +67,17 @@ public class OpenrtistComm extends ServerComm {
                 ? this.gabrielClientActivity.getResources().getString(R.string.server_disconnected)
                 : this.gabrielClientActivity.getResources().getString(R.string.could_not_connect);
 
-        if (!shownError) {
-            shownError = true;
-
-            Message msg = Message.obtain();
-            msg.what = NetworkProtocol.NETWORK_RET_FAILED;
-            Bundle data = new Bundle();
-            data.putString("message", message);
-            msg.setData(data);
-            this.returnMsgHandler.sendMessage(msg);
+        if (shownError) {
+            return;
         }
+
+        shownError = true;
+
+        Message msg = Message.obtain();
+        msg.what = NetworkProtocol.NETWORK_RET_FAILED;
+        Bundle data = new Bundle();
+        data.putString("message", message);
+        msg.setData(data);
+        this.returnMsgHandler.sendMessage(msg);
     }
 }

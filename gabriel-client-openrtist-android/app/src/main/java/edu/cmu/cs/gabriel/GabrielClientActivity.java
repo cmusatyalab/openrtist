@@ -148,8 +148,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
      */
     private Handler backgroundHandler;
 
-    boolean loopRunning = false;
-
     /**
      * Starts a background thread and its {@link Handler}.
      */
@@ -157,7 +155,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         backgroundThread = new HandlerThread("ImageUpload");
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
-        loopRunning = true;
 
         backgroundHandler.post(imageUpload);
     }
@@ -166,7 +163,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
      * Stops the background thread and its {@link Handler}.
      */
     private void stopBackgroundThread() {
-        loopRunning = false;
         backgroundThread.quitSafely();
         try {
             backgroundThread.join();
@@ -179,8 +175,18 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     public EngineInput getEngineInput() {
         EngineInput engineInput;
-        synchronized (engineInputLock) {
-            engineInput = this.engineInput;
+        synchronized (this.engineInputLock) {
+            try {
+                while (isRunning && this.engineInput == null) {
+                    engineInputLock.wait();
+                }
+                engineInput = this.engineInput;
+
+                this.engineInput = null;  // Prevent sending the same frame again
+            } catch (/* InterruptedException */ Exception e) {
+                Log.e(LOG_TAG, "Error waiting for engine input", e);
+                engineInput = null;
+            }
         }
         return engineInput;
     }
@@ -190,7 +196,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         public void run() {
             openrtistComm.sendSupplier(GabrielClientActivity.this.frameSupplier);
 
-            if (loopRunning) {
+            if (isRunning) {
                 backgroundHandler.post(imageUpload);
             }
         }
@@ -482,6 +488,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
     };
 
+
     @Override
     protected void onResume() {
         Log.v(LOG_TAG, "++onResume");
@@ -500,8 +507,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             serverIP = Const.SERVER_IP;
             initPerRun(serverIP);
         }
-        startBackgroundThread();
+        this.startBackgroundThread();
     }
+
+
 
     @Override
     protected void onPause() {
@@ -510,8 +519,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             iterationHandler.removeCallbacks(styleIterator);
         if(capturingScreen)
             stopRecording();
-
-        stopBackgroundThread();
 
         this.terminate();
 
@@ -780,12 +787,14 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Camera.Parameters parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
-                    synchronized (engineInputLock) {
-                        engineInput = new EngineInput(frame, parameters, style_type);
+                    synchronized (GabrielClientActivity.this.engineInputLock) {
+                        GabrielClientActivity.this.engineInput = new EngineInput(
+                                frame, parameters, style_type);
+                        GabrielClientActivity.this.engineInputLock.notify();
                     }
                 } else {
-                    synchronized (engineInputLock) {
-                        engineInput = null;
+                    synchronized (GabrielClientActivity.this.engineInputLock) {
+                        GabrielClientActivity.this.engineInput = null;
                     }
 
                     Log.v(LOG_TAG, "Display Cleared");
@@ -883,6 +892,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "++terminate");
 
         isRunning = false;
+
+        // Allow this.backgroundHandler to return if it is currently waiting on this.engineInputLock
+        synchronized (this.engineInputLock) {
+            this.engineInputLock.notify();
+        }
+
+        this.stopBackgroundThread();
 
         if (this.openrtistComm != null) {
             this.openrtistComm.stop();
