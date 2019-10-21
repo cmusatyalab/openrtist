@@ -74,10 +74,10 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
 
     public FromClient.Builder get() {
         EngineInput engineInput = this.gabrielClientActivity.getEngineInput();
-        if (engineInput != null) {
-            return this.convertEngineInput(engineInput);
+        if (engineInput == null) {
+            return null;
         }
 
-        return null;
+        return this.convertEngineInput(engineInput);
     }
 }
