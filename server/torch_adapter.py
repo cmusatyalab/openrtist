@@ -42,7 +42,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-RANDOM_IMAGE_SIZE = (240, 320, 3)
+STARTUP_ZEROS_SIZE = (240, 320, 3)
 
 
 class TorchAdapter(OpenrtistAdapter):
@@ -65,10 +65,10 @@ class TorchAdapter(OpenrtistAdapter):
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
-        # Run inference on randomly generated image to speed up inference for
-        # first real image
-        img = np.random.randint(0, 255, RANDOM_IMAGE_SIZE, np.uint8)
-        preprocessed = self.preprocessing(img)
+        # Feed network an array of all zeros. This makes it run faster on the
+        # first real image.
+        zeros = np.zeros(STARTUP_ZEROS_SIZE, np.uint8)
+        preprocessed = self.preprocessing(zeros)
         post_inference = self.inference(preprocessed)
 
         self.supported_styles = set()
