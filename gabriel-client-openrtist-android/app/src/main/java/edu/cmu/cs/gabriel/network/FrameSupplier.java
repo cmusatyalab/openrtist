@@ -29,7 +29,7 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
         this.gabrielClientActivity = gabrielClientActivity;
     }
 
-    private byte[] createFrameData(EngineInput engineInput) {
+    private static byte[] createFrameData(EngineInput engineInput) {
         Camera.Size cameraImageSize = engineInput.parameters.getPreviewSize();
         YuvImage image = new YuvImage(engineInput.frame, engineInput.parameters.getPreviewFormat(),
                 cameraImageSize.width, cameraImageSize.height, null);
@@ -49,15 +49,14 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
                     matrix, false);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 67, rotatedStream);
-            //this.frameBuffer = tmpBuffer.toByteArray();
             return rotatedStream.toByteArray();
         } else {
             return tmpBuffer.toByteArray();
         }
     }
 
-    private FromClient.Builder convertEngineInput(EngineInput engineInput) {
-        byte[] frame = createFrameData(engineInput);
+    private static FromClient.Builder convertEngineInput(EngineInput engineInput) {
+        byte[] frame = FrameSupplier.createFrameData(engineInput);
 
         FromClient.Builder fromClientBuilder = FromClient.newBuilder();
         fromClientBuilder.setPayloadType(PayloadType.IMAGE);
@@ -78,6 +77,6 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
             return null;
         }
 
-        return this.convertEngineInput(engineInput);
+        return FrameSupplier.convertEngineInput(engineInput);
     }
 }
