@@ -130,6 +130,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private int cameraId = 0;
     private boolean imageRotate = false;
     private TextView fpsLabel = null;
+    private boolean cleared = false;
 
     private int framesProcessed = 0;
     private EngineInput engineInput;
@@ -155,6 +156,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         backgroundThread = new HandlerThread("ImageUpload");
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
+
+        backgroundHandler.post(imageUpload);
     }
 
     /**
@@ -173,19 +176,20 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     public EngineInput getEngineInput() {
         EngineInput engineInput;
-//        synchronized (this.engineInputLock) {
-//            try {
-//                while (isRunning && this.engineInput == null) {
-//                    engineInputLock.wait();
-//                }
-//            } catch (/* InterruptedException */ Exception e) {
-//                Log.e(LOG_TAG, "Error waiting for engine input", e);
-//            }
-//        }
+        synchronized (this.engineInputLock) {
+            try {
+                while (isRunning && this.engineInput == null) {
+                    engineInputLock.wait();
+                }
 
-        engineInput = this.engineInput;
-
-        this.engineInput = null;  // Prevent sending the same frame again
+                engineInput = this.engineInput;
+                this.engineInput = null;  // Prevent sending the same frame again
+            } catch (/* InterruptedException */ Exception e) {
+                Log.e(LOG_TAG, "Error waiting for engine input", e);
+                engineInput = null;
+            }
+        }
+        System.out.println(engineInput);
         return engineInput;
     }
 
@@ -788,7 +792,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                                 frame, parameters, style_type);
                         GabrielClientActivity.this.engineInputLock.notify();
                     }
-                } else {
+                } else if (!cleared) {
                     GabrielClientActivity.this.engineInput = null;
 
                     Log.v(LOG_TAG, "Display Cleared");
@@ -810,6 +814,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     } else {
                         imgView.setVisibility(View.INVISIBLE);
                     }
+
+                    cleared = true;
                 }
             }
             mCamera.addCallbackBuffer(frame);
@@ -858,6 +864,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_IMAGE) {
+                if (GabrielClientActivity.this.style_type.equals("none")) {
+                    return;
+                }
+
+                cleared = false;
+
                 Bitmap feedbackImg = (Bitmap) msg.obj;
                 if (Const.STEREO_ENABLED) {
                     stereoView1 = (ImageView) findViewById(R.id.guidance_image1);
@@ -873,7 +885,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
                 }
                 framesProcessed++;
-
             }
         }
     };
