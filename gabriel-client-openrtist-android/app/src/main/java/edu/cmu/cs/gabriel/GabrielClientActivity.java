@@ -155,8 +155,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         backgroundThread = new HandlerThread("ImageUpload");
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
-
-        backgroundHandler.post(imageUpload);
     }
 
     /**
@@ -175,19 +173,19 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     public EngineInput getEngineInput() {
         EngineInput engineInput;
-        synchronized (this.engineInputLock) {
-            try {
-                while (isRunning && this.engineInput == null) {
-                    engineInputLock.wait();
-                }
-                engineInput = this.engineInput;
+//        synchronized (this.engineInputLock) {
+//            try {
+//                while (isRunning && this.engineInput == null) {
+//                    engineInputLock.wait();
+//                }
+//            } catch (/* InterruptedException */ Exception e) {
+//                Log.e(LOG_TAG, "Error waiting for engine input", e);
+//            }
+//        }
 
-                this.engineInput = null;  // Prevent sending the same frame again
-            } catch (/* InterruptedException */ Exception e) {
-                Log.e(LOG_TAG, "Error waiting for engine input", e);
-                engineInput = null;
-            }
-        }
+        engineInput = this.engineInput;
+
+        this.engineInput = null;  // Prevent sending the same frame again
         return engineInput;
     }
 
@@ -778,8 +776,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         startTimer.schedule(autoStart, 1000, 5*60*1000);
     }
 
-
-
     private PreviewCallback previewCallback = new PreviewCallback() {
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
@@ -793,9 +789,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         GabrielClientActivity.this.engineInputLock.notify();
                     }
                 } else {
-                    synchronized (GabrielClientActivity.this.engineInputLock) {
-                        GabrielClientActivity.this.engineInput = null;
-                    }
+                    GabrielClientActivity.this.engineInput = null;
 
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
@@ -821,7 +815,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             mCamera.addCallbackBuffer(frame);
         }
     };
-
 
     private Runnable fpsCalculator = new Runnable() {
 
