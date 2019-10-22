@@ -28,12 +28,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import torch
 import argparse
 import os
 import sys
 import time
-import re
 import random
 import torch
 from torch.autograd import Variable
@@ -42,7 +40,6 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision import transforms
 from torchvision import models
-import cv2
 from server import utils
 from server.transformer_net import TransformerNet
 import numpy as np
@@ -91,129 +88,7 @@ def check_paths(args):
         print(e)
         sys.exit(1)
 
-
-def train(args):
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-
-    transform = transforms.Compose([
-        transforms.Resize(args.image_size),
-        transforms.CenterCrop(args.image_size),
-        transforms.ToTensor(),
-        transforms.Lambda(lambda x: x.mul(255))
-    ])
-    train_dataset = datasets.ImageFolder(args.dataset, transform)
-    train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
-
-    transformer = TransformerNet().cuda()
-    optimizer = Adam(transformer.parameters(), args.lr)
-    mse_loss = torch.nn.MSELoss()
-
-    vgg = Vgg16(requires_grad=False).cuda()
-    style_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Lambda(lambda x: x.mul(255))
-    ])
-    style = utils.load_image(args.style_image, size=args.style_size)
-    style = style_transform(style)
-    style = style.repeat(args.batch_size, 1, 1, 1).cuda()
-    style_v = Variable(style)
-    style_v = utils.normalize_batch(style_v)
-    features_style = vgg(style_v)
-    gram_style = [utils.gram_matrix(y) for y in features_style]
-
-    for e in range(args.epochs):
-        transformer.train()
-        agg_content_loss = 0.
-        agg_style_loss = 0.
-        agg_flicker_loss = 0.
-        count = 0
-        if args.noise_count:
-            noiseimg = torch.zeros([3, args.image_size, args.image_size])
-
-            # prepare a noise image
-            for ii in range(args.noise_count):
-                xx = random.randrange(args.image_size)
-                yy = random.randrange(args.image_size)
-
-                noiseimg[0][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
-                noiseimg[1][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
-                noiseimg[2][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
-
-        for batch_id, (x, _) in enumerate(train_loader):
-            n_batch = len(x)
-            count += n_batch
-
-            optimizer.zero_grad()
-
-            if args.noise_count:
-                # add the noise image to the source image
-                noisy_x = x.clone()
-                noisy_x = noisy_x + noiseimg
-                noisy_x_v = Variable(noisy_x)
-                noisy_x_v = noisy_x_v.cuda()
-                noisy_y = transformer(noisy_x_v)
-                noisy_y = utils.normalize_batch(noisy_y)
-            
-            x = Variable(x)
-            x = x.cuda()
-            y = transformer(x)
-
-            y = utils.normalize_batch(y)
-            x = utils.normalize_batch(x)
-
-            features_y = vgg(y)
-            features_x = vgg(x)
-
-            content_loss = args.content_weight * mse_loss(features_y.relu2_2, features_x.relu2_2)
-
-            style_loss = 0.
-            for ft_y, gm_s in zip(features_y, gram_style):
-                gm_y = utils.gram_matrix(ft_y)
-                style_loss += mse_loss(gm_y, gm_s[:n_batch, :, :])
-            style_loss *= args.style_weight
-
-            total_loss = content_loss + style_loss
-
-            flicker_loss = 0.
-            if args.noise_count:
-              flicker_loss = args.noise_weight * mse_loss(y, noisy_y.detach())
-              total_loss += flicker_loss
-              agg_flicker_loss += flicker_loss.data[0]
-
-            total_loss.backward()
-            optimizer.step()
-
-            agg_content_loss += content_loss.data[0]
-            agg_style_loss += style_loss.data[0]
-
-            if (batch_id + 1) % args.log_interval == 0:
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}".format(
-                    time.ctime(), e + 1, count, len(train_dataset),
-                                  agg_content_loss / (batch_id + 1),
-                                  agg_style_loss / (batch_id + 1),
-                                  agg_flicker_loss / (batch_id + 1),
-                                  (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
-                )
-                print(mesg)
-
-            if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
-                transformer.eval().cpu()
-                ckpt_model_filename = "ckpt_epoch_" + str(e) + "_batch_id_" + str(batch_id + 1) + ".pth"
-                ckpt_model_path = os.path.join(args.checkpoint_model_dir, ckpt_model_filename)
-                torch.save(transformer.state_dict(), ckpt_model_path)
-                transformer.cuda().train()
-
-    # save model
-    transformer.eval().cpu()
-    save_model_filename = os.path.basename(args.style_image).split('.')[0]+'.model'
-    save_model_path = os.path.join(args.save_model_dir, save_model_filename)
-    torch.save(transformer.state_dict(), save_model_path)
-
-    print("\nDone, trained model saved at", save_model_path)
-
-
-def main():
+def get_args(args):
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
     parser.add_argument("--epochs", type=int, default=2,
                         help="number of training epochs, default is 2")
@@ -251,14 +126,143 @@ def main():
     parser.add_argument("--checkpoint-interval", type=int, default=2000,
                                   help="number of batches after which a checkpoint of the trained model will be created")
 
-    args = parser.parse_args()
+    return parser.parse_args(args)
 
+
+def train(args, progress_callback):
+    device = torch.device("cuda")
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
+    transform = transforms.Compose([
+        transforms.Resize(args.image_size),
+        transforms.CenterCrop(args.image_size),
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255))
+    ])
+    train_dataset = datasets.ImageFolder(args.dataset, transform)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size)
+
+    transformer = TransformerNet().to(device)
+    optimizer = Adam(transformer.parameters(), args.lr)
+    mse_loss = torch.nn.MSELoss()
+
+    vgg = Vgg16(requires_grad=False).to(device)
+    style_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255))
+    ])
+    style = utils.load_image(args.style_image, size=args.style_size)
+    style = style_transform(style)
+    style = style.repeat(args.batch_size, 1, 1, 1).to(device)
+    style_v = Variable(style)
+    style_v = utils.normalize_batch(style_v)
+    features_style = vgg(style_v)
+    gram_style = [utils.gram_matrix(y) for y in features_style]
+
+    for e in range(args.epochs):
+        transformer.train()
+        agg_content_loss = 0.
+        agg_style_loss = 0.
+        agg_flicker_loss = 0.
+        count = 0
+        if args.noise_count:
+            noiseimg = torch.zeros([3, args.image_size, args.image_size])
+
+            # prepare a noise image
+            for ii in range(args.noise_count):
+                xx = random.randrange(args.image_size)
+                yy = random.randrange(args.image_size)
+
+                noiseimg[0][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
+                noiseimg[1][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
+                noiseimg[2][yy][xx] += random.randrange(-args.noise_range, args.noise_range)
+
+        for batch_id, (x, _) in enumerate(train_loader):
+            n_batch = len(x)
+            count += n_batch
+
+            optimizer.zero_grad()
+
+            if args.noise_count:
+                # add the noise image to the source image
+                noisy_x = x.clone()
+                noisy_x = noisy_x + noiseimg
+                noisy_x_v = Variable(noisy_x)
+                noisy_x_v = noisy_x_v.to(device)
+                noisy_y = transformer(noisy_x_v)
+                noisy_y = utils.normalize_batch(noisy_y)
+            
+            x = Variable(x)
+            x = x.to(device)
+            y = transformer(x)
+
+            y = utils.normalize_batch(y)
+            x = utils.normalize_batch(x)
+
+            features_y = vgg(y)
+            features_x = vgg(x)
+
+            content_loss = args.content_weight * mse_loss(features_y.relu2_2, features_x.relu2_2)
+
+            style_loss = 0.
+            for ft_y, gm_s in zip(features_y, gram_style):
+                gm_y = utils.gram_matrix(ft_y)
+                style_loss += mse_loss(gm_y, gm_s[:n_batch, :, :])
+            style_loss *= args.style_weight
+
+            total_loss = content_loss + style_loss
+
+            flicker_loss = 0.
+            if args.noise_count:
+              flicker_loss = args.noise_weight * mse_loss(y, noisy_y.detach())
+              total_loss += flicker_loss
+              agg_flicker_loss += flicker_loss.item()
+
+            total_loss.backward()
+            optimizer.step()
+
+            agg_content_loss += content_loss.item()
+            agg_style_loss += style_loss.item()
+
+            if (batch_id + 1) % args.log_interval == 0:
+                progress_callback(e, args.epochs, count, len(train_dataset),
+                    agg_content_loss / (batch_id + 1),
+                    agg_style_loss / (batch_id + 1),
+                    agg_flicker_loss / (batch_id + 1),
+                    (agg_content_loss + agg_style_loss + agg_flicker_loss) / (batch_id + 1)
+                )
+
+            if args.checkpoint_model_dir is not None and (batch_id + 1) % args.checkpoint_interval == 0:
+                transformer.eval().cpu()
+                ckpt_model_filename = "ckpt_epoch_" + str(e) + "_batch_id_" + str(batch_id + 1) + ".pth"
+                ckpt_model_path = os.path.join(args.checkpoint_model_dir, ckpt_model_filename)
+                torch.save(transformer.state_dict(), ckpt_model_path)
+                transformer.to(device).train()
+
+    # save model
+    transformer.eval().cpu()
+    save_model_filename = os.path.basename(args.style_image).split('.')[0]+'.model'
+    save_model_path = os.path.join(args.save_model_dir, save_model_filename)
+    torch.save(transformer.state_dict(), save_model_path)
+
+    print("\nDone, trained model saved at", save_model_path)
+    return save_model_filename
+
+def log_progress(epoch, num_epochs, count, num_images, content, style, flicker, total):
+    mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}".format(
+        time.ctime(), epoch + 1, count, num_images, content, style, flicker, total
+    )
+    print(mesg)
+
+def main():
     if not torch.cuda.is_available():
         print("ERROR: cuda is not available")
         sys.exit(1)
 
+    args = get_args(sys.argv[1:])
     check_paths(args)
-    train(args)
+    train(args, log_progress)
 
 
 if __name__ == "__main__":
