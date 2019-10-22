@@ -306,15 +306,15 @@ The prebuilt Android client from the Google Play Store provides an interface to 
 We use COCO 2014 Train Images as our default training dataset.
 
 #### Option A. Launch on EC2
-An Amazon Machine Image with the server and training images configured out of the box is publicly available
+An Amazon Machine Image with the model training frontend and training dataset configured out of the box is publicly available to deploy on Amazon EC2.
 
-* AMI ID: `ami-078829174439aee2c`
+* AMI ID: `ami-00bd00d1e894912ab`
 * Instance type (recommended): `g4dn.xlarge` (or alternatively any instance with an Nvidia GPU)
 * Public IP enabled
 * Security group
     * Inbound: TCP 22, TCP 5000
 
-After startup, connect to port 5000 of your machine to access the model training frontend
+After startup, connect to port 5000 of your machine to access the model training frontend.
 
 #### Option B. Run model training web frontend
 Prequisites: A machine with an installed Nvidia driver and an accessible redis instance
@@ -336,7 +336,7 @@ cd <openrtist-repo>/model-app
 flask run --host=0.0.0.0
 ```
 
-And in a separate terminal launch a celery worker:
+And finally launch a celery worker in a separate terminal:
 ```
 cd <openrtist-repo>/model-app
 celery worker -A model-app.app.celery --loglevel=info
