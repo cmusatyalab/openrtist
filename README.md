@@ -316,14 +316,53 @@ You can edit the config.py file to change webcam capture parameters.
 
 The prebuilt Android client from the Google Play Store provides an interface to add a server with a custom IP address.
 
-## Training New Styles (Pytorch 0.3.0)
+## Training New Styles (Pytorch 1.3.0)
 
-We use COCO 2014 Train Images as our training dataset
+We use COCO 2014 Train Images as our default training dataset.
+
+#### Option A. Launch on EC2
+An Amazon Machine Image with the model training frontend and training dataset configured out of the box is publicly available to deploy on Amazon EC2.
+
+* AMI ID: `ami-00bd00d1e894912ab`
+* Instance type (recommended): `g4dn.xlarge` (or alternatively any instance with an Nvidia GPU)
+* Public IP enabled
+* Security group
+    * Inbound: TCP 22, TCP 5000
+
+After startup, connect to port 5000 of your machine to access the model training frontend.
+
+#### Option B. Run model training web frontend
+Prequisites: A machine with an installed Nvidia driver and an accessible redis instance
+
+To start the model training web frontend, first install the requisite python dependencies:
+```
+cd <openrtist-repo>/model-app
+pip install -r requirements.txt
+```
+Then download the training data and point model-app/config.py accordingly:
+```
+wget http://images.cocodataset.org/zips/train2014.zip 
+unzip train2014.zip -d coco-data/
+```
+
+And then launch the web frontend:
+```
+cd <openrtist-repo>/model-app
+flask run --host=0.0.0.0
+```
+
+And finally launch a celery worker in a separate terminal:
+```
+cd <openrtist-repo>/model-app
+celery worker -A model-app.app.celery --loglevel=info
+```
+
+#### Option C. Directly run training script
 ```
 wget http://images.cocodataset.org/zips/train2014.zip 
 unzip train2014.zip -d coco-data/
 cd <openrtist-repo>
-python train_style.py --dataset <coco-data> --style-image <style-image> --save-model-dir models/ --epochs 2
+python model-app/train_style.py --dataset <coco-data> --style-image <style-image> --save-model-dir models/ --epochs 2
 ```
 To disable flicker-loss which removes flicker for temporal consistency in real-time image stream, set --noise-count 0
 

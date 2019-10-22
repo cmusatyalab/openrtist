@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block body %}
+    <h1>Upload Style Image</h1>
+    <form method=post enctype=multipart/form-data>
+        <input type=file name=file>
+        <input type=submit value=Upload>
+    </form>
+
+    {% if task_id is not none %}
+    <div id="progress"></div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+
+    <script>
+        function update_progress(nanobar, status_div) {
+            // send GET request to status URL
+            $.getJSON('/status/{{task_id}}', function(data) {
+                // update UI
+                percent = parseInt(data['current'] * 100 / data['total']);
+                nanobar.go(percent);
+                $(status_div.childNodes[1]).text(percent + '%');
+                $(status_div.childNodes[2]).text(data['status']);
+
+                const start_time = data['start_time'];
+                if (start_time) {
+                    $(status_div.childNodes[3]).text("Start time: " + new Date(data['start_time']));
+                    $(status_div.childNodes[4]).text("Elapsed time: " + moment.duration(new Date().getTime() - data['start_time']).humanize());
+                }
+
+                const style = data['style'];
+                if (style) {
+                    $('#style').attr("src", '/styles/'+style);
+                }
+
+                if (data['state'] === 'FAILURE' || data['state'] === 'REVOKED' || data['state'] === 'SUCCESS') {
+                    $('#cancel').attr("disabled", true);
+                    if ('model' in data) {
+                        // download model
+                        location.href = "/models/" + data['model']
+                    }
+                    else {
+                        // something unexpected happened
+                        $(status_div.childNodes[3]).text('Result: ' + data['state']);
+                    }
+                } else {
+                    $('#cancel').attr("disabled", false);
+                    // rerun in 1 second
+                    setTimeout(function() {
+                        update_progress(nanobar, status_div);
+                    }, 1000);
+                }
+            });
+        }
+        $(function() {
+            // add task status elements
+            div = $('<div class="progress"><div/><div>0%</div><div>...</div><div/><div/><div>&nbsp;</div></div>');
+            $('#progress').append(div);
+
+            cancel = $('<form action="/cancel" method="post"><button id="cancel" name="task_id" type="submit" value="{{task_id}}">Cancel</button></form>');
+            $('#progress').append(cancel);
+            $('#cancel').attr("disabled", true);
+
+            img = $('<img id="style" style="width:520px;height:520px;"}/>');
+            $('#progress').append(img);
+
+            // create a progress bar
+            var nanobar = new Nanobar({
+                bg: '#44f',
+                target: div[0].childNodes[0]
+            });
+
+            update_progress(nanobar, div[0]);
+        });
+    </script>
+    {% endif %}
+{% endblock %}
+
