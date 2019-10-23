@@ -109,4 +109,11 @@ def run_training(self, dataset, filepath, model_dir, image):
         '--style-size', '512'
     ]), log_progress)
 
-    return {'current': 100, 'total': 100, 'start_time': start_time, 'model': model, 'style': image}
+    return {
+        'current': 100,
+        'total': 100,
+        'start_time': start_time,
+        'end_time': round(time.time() * 1000),
+        'model': model,
+        'style': image
+    }
