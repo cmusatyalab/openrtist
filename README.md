@@ -344,6 +344,7 @@ Then download the training data and point model-app/config.py accordingly:
 wget http://images.cocodataset.org/zips/train2014.zip 
 unzip train2014.zip -d coco-data/
 ```
+Install OpenVINO or set CONVERT_TO_OPEN_VINO=false in model-app/config.py
 
 And then launch the web frontend:
 ```
@@ -365,6 +366,12 @@ cd <openrtist-repo>
 python model-app/train_style.py --dataset <coco-data> --style-image <style-image> --save-model-dir models/ --epochs 2
 ```
 To disable flicker-loss which removes flicker for temporal consistency in real-time image stream, set --noise-count 0
+
+An additional script can convert from the generated PyTorch model to OpenVINO:
+```
+python model-app/openvino_convert.py <path_to_pytorch_model>
+```
+
 
 ## Credits
 Please see the [CREDITS](CREDITS.md) file for a list of acknowledgments.
