@@ -90,6 +90,10 @@ nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_
 ```sh
 nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
 ```
+
+> NOTE: To use PyTorch 1.0 and above use container : a4anna/openrtist_cu100_torch1p1
+
+
 Type ifconfig and note the interface name and ip address inside the docker container __(for the below examples, we assume eth0 and 172.17.0.2)__.
 ```
 ifconfig
