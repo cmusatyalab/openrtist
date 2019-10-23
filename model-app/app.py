@@ -1,7 +1,9 @@
 import os
 import time
+from zipfile import ZipFile
 from flask import Flask, flash, jsonify, render_template, request, redirect, send_from_directory, url_for
 from werkzeug.utils import secure_filename
+from .openvino_convert import convert
 from .make_celery import make_celery
 from .train_style import train, get_args
 
@@ -109,4 +111,27 @@ def run_training(self, dataset, filepath, model_dir, image):
         '--style-size', '512'
     ]), log_progress)
 
-    return {'current': 100, 'total': 100, 'start_time': start_time, 'model': model, 'style': image}
+    if app.config['CONVERT_TO_OPEN_VINO']:
+        pytorch_model = os.path.join(app.config['DOWNLOAD_FOLDER'], model)
+        convert(pytorch_model)
+        model_name = model[:-len(".model")]
+        archive = model_name + '.zip'
+        with ZipFile(os.path.join(app.config['DOWNLOAD_FOLDER'], archive), 'w') as zip_file:
+            zip_file.write(pytorch_model, model)
+            vino_xml = model_name + '.xml'
+            zip_file.write(os.path.join(app.config['DOWNLOAD_FOLDER'], vino_xml), vino_xml)
+            vino_bin = model_name + '.bin'
+            zip_file.write(os.path.join(app.config['DOWNLOAD_FOLDER'], vino_bin), vino_bin)
+            zip_file.close()
+        to_return = archive
+    else:
+        to_return = model
+
+    return {
+        'current': 100,
+        'total': 100,
+        'start_time': start_time,
+        'end_time': round(time.time() * 1000),
+        'model': to_return,
+        'style': image
+    }
