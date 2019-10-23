@@ -1,4 +1,4 @@
-DATASET="/home/ubuntu/coco-data-small/"
+DATASET="/home/ubuntu/coco-data/"
 UPLOAD_FOLDER="/home/ubuntu/styles"
 DOWNLOAD_FOLDER="/home/ubuntu/models"
 CONVERT_TO_OPEN_VINO=True
