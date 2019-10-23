@@ -323,7 +323,7 @@ We use COCO 2014 Train Images as our default training dataset.
 #### Option A. Launch on EC2
 An Amazon Machine Image with the model training frontend and training dataset configured out of the box is publicly available to deploy on Amazon EC2.
 
-* AMI ID: `ami-00bd00d1e894912ab`
+* AMI ID: `ami-0d9512927124b3c3a`
 * Instance type (recommended): `g4dn.xlarge` (or alternatively any instance with an Nvidia GPU)
 * Public IP enabled
 * Security group
