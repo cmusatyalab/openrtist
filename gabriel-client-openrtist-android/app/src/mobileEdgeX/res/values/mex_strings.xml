@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mex_server">MobiledgeX</string>
+
+    <string name="pref_header_mex">MobiledgeX</string>
+    <string name="pref_mex_dme">DME URL</string>
+    <string name="pref_mex_carrier">Carrier Name</string>
+    <string name="pref_mex_dev">Developer Name</string>
+    <string name="pref_mex_app">Application Name</string>
+    <string name="pref_mex_tag">Container Tag</string>
+</resources>

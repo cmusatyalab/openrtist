@@ -93,6 +93,7 @@ public class ServerListActivity extends AppCompatActivity  {
                 //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 //intent.putExtra("", faceTable);
                 this.startActivity(intent);
+                return true;
             default:
                 return false;
         }
@@ -127,10 +128,7 @@ public class ServerListActivity extends AppCompatActivity  {
         initServerList();
     }
 
-    private void requestPermission() {
-        String permissions[] = {Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        };
+    void requestPremissionHelper(String permissions[]) {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             ActivityCompat.requestPermissions(this,
                     permissions,
@@ -138,8 +136,15 @@ public class ServerListActivity extends AppCompatActivity  {
         }
     }
 
+    void requestPermission() {
+        String permissions[] = {Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+        this.requestPremissionHelper(permissions);
+    }
 
-    private void initServerList(){
+
+    void initServerList() {
         Map<String, ?> prefs = mSharedPreferences.getAll();
         for (Map.Entry<String,?> pref : prefs.entrySet())
             if(pref.getKey().startsWith("server:")) {

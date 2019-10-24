@@ -1,11 +1,12 @@
 apply plugin: 'com.android.application'
 
+def grpcVersion = '1.20.0'
+
 android {
     compileSdkVersion 28
 
     defaultConfig {
         applicationId "edu.cmu.cs.openrtist"
-        minSdkVersion 19
         targetSdkVersion 28
         multiDexEnabled true
     }
@@ -16,6 +17,33 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    flavorDimensions "version"
+    productFlavors {
+        standard {
+            minSdkVersion 19
+        }
+        mobileEdgeX {
+            apply plugin: 'com.jfrog.artifactory'
+
+            minSdkVersion 23
+            Properties properties = new Properties()
+            properties.load(project.rootProject.file('local.properties').newDataInputStream())
+            def artifactory_user = properties.getProperty("artifactory_user")
+            def artifactory_password = properties.getProperty("artifactory_password")
+
+            repositories {
+                maven {
+                    credentials {
+                        // Create these variables in local.properties if you don't have them.
+                        username artifactory_user
+                        password artifactory_password
+                    }
+                    url = "https://artifactory.mobiledgex.net/maven-releases/"
+                }
+            }
+        }
+    }
 }
 
 dependencies {
@@ -23,4 +51,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'edu.cmu.cs.gabriel:client:0.1.5'
+
+    mobileEdgeXImplementation('com.mobiledgex:matchingengine:1.4.11') {
+        exclude group: 'com.mobiledgex', module: 'matchingengine'
+    }
+    mobileEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
+    mobileEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
 }
+
