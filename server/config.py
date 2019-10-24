@@ -32,11 +32,13 @@ TASK_SERVER_IP = "128.2.209.111"
 TASK_SERVER_PORT = 5511
 
 # Configs for object detection
-# set to False to use CPU
-USE_GPU = True
+# set to False to use CPU;  leave undefined to autodetect
+#USE_GPU = True
+#USE_GPU = False
 
 # Set to select OpenVINO (True) or PyTorch (False);  leave undefined to autodetect
 #USE_OPENVINO = True
+#USE_OPENVINO = False
 
 # Whether or not to save the displayed image in a temporary directory
 SAVE_IMAGE = False

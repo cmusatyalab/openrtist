@@ -59,16 +59,63 @@ except:
     def mystr(s):
         return str(s)
 
-if not hasattr(config, 'USE_OPENVINO'):
-    try:
-        from openvino.inference_engine import IENetwork, IEPlugin
-        config.USE_OPENVINO = True
-        print ("Autodetect:  Loaded OpenVINO")
-    except ImportError:
-        config.USE_OPENVINO = False
-        print ("Autodetect:  failed to load OpenVINO; fallback to pyTorch")
-elif config.USE_OPENVINO:
-    from openvino.inference_engine import IENetwork, IEPlugin
+# New autodetection code
+if not hasattr(config, 'USE_GPU') or not hasattr(config, 'USE_OPENVINO'):
+    has_pytorch=False
+    has_cuda=False
+    has_ov=False
+    has_ovgpu=False
+    if not hasattr(config, 'USE_OPENVINO') or config.USE_OPENVINO==False:
+        try:
+            import torch
+            print("Autodetect: Loaded PyTorch")
+            if not hasattr(config, 'USE_GPU') or config.USE_GPU==False:
+                has_pytorch=True
+            if not hasattr(config, 'USE_GPU') or config.USE_GPU==True:
+                torch.tensor([[1., -1.], [1., -1.]]).cuda()
+                print("Autodetect: Detected GPU / CUDA support")
+                has_cuda=True
+        except ImportError:
+            print("Autodetect: Failed to load PyTorch")
+        except:
+            print("Autodetect: Failed to detect GPU / CUDA support")
+    if not hasattr(config, 'USE_OPENVINO') or config.USE_OPENVINO==True:
+        try:
+            from openvino.inference_engine import IENetwork, IEPlugin
+            print("Autodetect: Loaded OpenVINO")
+            if not hasattr(config, 'USE_GPU') or config.USE_GPU==False:
+                has_ov=True
+            if not hasattr(config, 'USE_GPU') or config.USE_GPU==True:
+                IEPlugin('GPU')
+                print("Autodetect: Detected iGPU / clDNN support")
+                has_ovgpu=True
+        except ImportError:
+            print("Autodetect: Failed to load OpenVINO")
+        except:
+            print("Autodetect: Failed to detect iGPU / clDNN support")
+    if has_cuda:
+        print("Autodetect:  Using PyTorch on GPU")
+        config.USE_OPENVINO=False
+        config.USE_GPU=True
+    elif has_ovgpu:
+        print("Autodetect:  Using OpenVINO on GPU")
+        config.USE_OPENVINO=True
+        config.USE_GPU=True
+    elif has_ov:
+        print("Autodetect:  Using OpenVINO on CPU")
+        config.USE_OPENVINO=True
+        config.USE_GPU=False
+    elif has_pytorch:
+        print("Autodetect:  Using PyTorch on CPU")
+        config.USE_OPENVINO=False
+        config.USE_GPU=False
+    else:
+        print("Autodetect:  No suitable configutation found!")
+        print("Ensure PyTorch or OpenVINO are installed and configured")
+        print("  and that USE_OPENVINO and USE_GPU flags are not")
+        print("  incorrectly set in config.py")
+        sys.exit()
+
 
 if config.USE_OPENVINO==False:
     import torch
@@ -84,6 +131,7 @@ if config.USE_OPENVINO==False:
     oldversion = LooseVersion(torch.__version__) < LooseVersion("1.0")
 else:
     import openvino.inference_engine
+    from openvino.inference_engine import IENetwork, IEPlugin
     oldversion = LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0")
 
 if os.path.isdir("../.."):
