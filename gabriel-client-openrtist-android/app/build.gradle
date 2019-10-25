@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+repositories {
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
 android {
     compileSdkVersion 26
 
@@ -22,4 +28,7 @@ dependencies {
     implementation 'com.android.support:support-v4:23.2.0'
     implementation 'com.android.support:support-v13:23.2.0'
     implementation 'com.android.support:design:23.2.0'
+
+    implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
+    implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
 }
