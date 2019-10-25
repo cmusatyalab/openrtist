@@ -88,4 +88,12 @@ public class OpenrtistComm {
 
         this.shownError = false;
     }
+
+    public void sendSupplier(FrameSupplier frameSupplier) {
+        this.serverComm.sendSupplier(frameSupplier);
+    }
+
+    public void stop() {
+        this.serverComm.stop();
+    }
 }

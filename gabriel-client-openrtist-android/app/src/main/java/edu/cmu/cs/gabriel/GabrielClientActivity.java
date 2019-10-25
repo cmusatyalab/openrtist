@@ -65,12 +65,10 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.media.MediaActionSound;
 
-import edu.cmu.cs.gabriel.client.Consumer;
 import edu.cmu.cs.gabriel.network.EngineInput;
 import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
-import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.openrtist.R;
@@ -734,13 +732,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 controlLogWriter = new FileWriter(Const.CONTROL_LOG_FILE);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Control log file cannot be properly opened", e);
-            }
-        }
-
-        Consumer<ResultWrapper> consumer = new Consumer<ResultWrapper>() {
-            @Override
-            public void accept(ResultWrapper resultWrapper) {
-
             }
         }
 

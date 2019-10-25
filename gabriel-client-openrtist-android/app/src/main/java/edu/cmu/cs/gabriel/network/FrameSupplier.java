@@ -67,7 +67,10 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
         engineFieldsBuilder.setStyle(engineInput.style_type);
         EngineFields engineFields = engineFieldsBuilder.build();
 
-        fromClientBuilder.setEngineFields(Any.pack(engineFields));
+        // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:
+        // fromClientBuilder.setEngineFields(Any.pack(engineFields));
+        fromClientBuilder.setEngineFields(FrameSupplier.pack(engineFields));
+
         return fromClientBuilder;
     }
 
@@ -78,5 +81,14 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
         }
 
         return FrameSupplier.convertEngineInput(engineInput);
+    }
+
+    // Based on
+    // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_message.cc#L1387
+    private static Any pack(EngineFields engineFields) {
+        return Any.newBuilder()
+                .setTypeUrl("type.googleapis.com/openrtist.EngineFields")
+                .setValue(engineFields.toByteString())
+                .build();
     }
 }
