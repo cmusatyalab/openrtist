@@ -65,10 +65,12 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.media.MediaActionSound;
 
+import edu.cmu.cs.gabriel.client.Consumer;
 import edu.cmu.cs.gabriel.network.EngineInput;
 import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
+import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.openrtist.R;
@@ -735,6 +737,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             }
         }
 
+        Consumer<ResultWrapper> consumer = new Consumer<ResultWrapper>() {
+            @Override
+            public void accept(ResultWrapper resultWrapper) {
+
+            }
+        }
+
         this.openrtistComm = new OpenrtistComm(serverIP, Const.PORT, this,
                 returnMsgHandler);
     }
@@ -838,6 +847,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             fpsHandler.postDelayed(this, 1000);
         }
     };
+
     /**
      * Handles messages passed from streaming threads and result receiving threads.
      */
