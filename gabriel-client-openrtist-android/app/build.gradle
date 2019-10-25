@@ -50,12 +50,11 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'edu.cmu.cs.gabriel:client:0.1.5'
+    implementation('edu.cmu.cs.gabriel:client:0.1.6-SNAPSHOT'){ changing = true }
 
-    mobileEdgeXImplementation('com.mobiledgex:matchingengine:1.4.11') {
-        exclude group: 'com.mobiledgex', module: 'matchingengine'
-    }
+    mobileEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
     mobileEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
     mobileEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
+
 }
 
