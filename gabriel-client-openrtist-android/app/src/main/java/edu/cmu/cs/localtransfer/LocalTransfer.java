@@ -88,6 +88,7 @@ public class LocalTransfer {
      * @throws FileNotFoundException
      */
     synchronized public void load(Context context, String modelName) throws FileNotFoundException {
+        if (mModule != null) mModule.destroy();
         // get model file path
         String moduleFileAbsoluteFilePath = getAssetFilePath(context, modelName);
         // load model

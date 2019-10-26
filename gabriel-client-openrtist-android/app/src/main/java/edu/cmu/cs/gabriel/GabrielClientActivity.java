@@ -159,6 +159,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private Handler localRunnerThreadHandler = null;
     private volatile boolean localRunnerBusy = false;
     private RenderScript rs = null;
+    private Bitmap localRunnerBitmapCache = null;
     //List of Styles
 
 //    String[] itemname ={
@@ -378,18 +379,15 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         mProjectionManager = (MediaProjectionManager) getSystemService
                 (Context.MEDIA_PROJECTION_SERVICE);
 
-        // if a mobile only run is specified
+        // setup local execution if needed
         if (Const.SERVER_IP.equals(getString(R.string.local_execution_dns_placeholder))) {
             runLocally = true;
             localRunner = new LocalTransfer(
                     Const.IMAGE_WIDTH,
                     Const.IMAGE_HEIGHT
             );
-            localRunnerThread = new HandlerThread("LocalTransfer Thread");
-            localRunnerThread.start();
-            localRunnerThreadHandler = new Handler(localRunnerThread.getLooper());
             rs = RenderScript.create(this);
-       }
+        }
     }
 
     private void storeScreenshot(Bitmap bitmap, String path) {
@@ -671,7 +669,18 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "++initPerRun");
 
         // don't connect to cloudlet if running locally
-        if (runLocally) return;
+        // if a mobile only run is specified
+        if (runLocally){
+            if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
+                localRunnerThread.quitSafely();
+                localRunnerThread.interrupt();
+            }
+            localRunnerThread = new HandlerThread("LocalTransferThread");
+            localRunnerThread.start();
+            localRunnerThreadHandler = new Handler(localRunnerThread.getLooper());
+            localRunnerBusy = false;
+            return;
+        }
 
         if ((pingThread != null) && (pingThread.isAlive())) {
             pingThread.kill();
@@ -841,11 +850,18 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                                     localRunnerBusy = true;
                                     int[] output = localRunner.infer(rgbImage);
                                     // send results back to UI as Gabriel would
-                                    Bitmap imageFeedback = Bitmap.createBitmap(output,
-                                            imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
+                                    if (localRunnerBitmapCache == null){
+                                        localRunnerBitmapCache = Bitmap.createBitmap(
+                                                imageWidth,
+                                                imageHeight,
+                                                Bitmap.Config.ARGB_8888
+                                        );
+                                    }
+                                    localRunnerBitmapCache.setPixels(output, 0,
+                                            imageWidth, 0, 0, imageWidth, imageHeight);
                                     Message msg = Message.obtain();
                                     msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                                    msg.obj = imageFeedback;
+                                    msg.obj = localRunnerBitmapCache;
                                     returnMsgHandler.sendMessage(msg);
                                     localRunnerBusy = false;
                                 }
@@ -1062,6 +1078,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "++terminate");
 
         isRunning = false;
+
+        if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
+            localRunnerThread.quitSafely();
+            localRunnerThread.interrupt();
+            localRunnerThread = null;
+            localRunnerThreadHandler = null;
+        }
+        if (rs != null) {
+            rs.destroy();
+        }
 
         if ((pingThread != null) && (pingThread.isAlive())) {
             pingThread.kill();
