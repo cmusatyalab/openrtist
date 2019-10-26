@@ -15,16 +15,12 @@
 package edu.cmu.cs.localtransfer;
 
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.SystemClock;
 import android.util.Log;
 
 import org.pytorch.IValue;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
-import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 /**
@@ -100,39 +95,23 @@ public class LocalTransfer {
         Log.d(this.getClass().getName(), String.format("loaded style: %s", modelName));
     }
 
-    private Tensor rgbBytesToTensor(byte[] image){
-        // convert to bitmap first
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inMutable = true;
-        Bitmap mConversionBitmap = BitmapFactory.decodeByteArray(image,
-                0, image.length, options);
-        TensorImageUtils.bitmapToFloatBuffer(mConversionBitmap,
-                0, 0, this.model_input_width, this.model_input_height,
-                TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
-                TensorImageUtils.TORCHVISION_NORM_STD_RGB,
-                this.mInputTensorBuffer,
-                0);
-        return Tensor.fromBlob(mInputTensorBuffer,
-                new long[]{1, 3, this.model_input_height, this.model_input_width});
-    }
-
     /**
      * run style transfer on a single image
      * @param image
      * @return
      */
-    public byte[] infer(byte[] image) {
+    public float[] infer(float[] image) {
         // batch 1
-        this.mInputTensor = this.rgbBytesToTensor(image);
+        this.mInputTensor = Tensor.fromBlob(image,
+                new long[]{1, 3, this.model_input_height, this.model_input_width});
 
         long moduleForwardStartTime = 0;
         long moduleForwardDuration = 0;
         moduleForwardStartTime = SystemClock.elapsedRealtime();
         mOutputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
         moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
-        Log.d(this.getClass().getName(), String.format("forward time: %f ms",
+        Log.d(this.getClass().getName(), String.format("forward time: %d ms",
                 moduleForwardDuration));
-
-        return mOutputTensor.getDataAsByteArray();
+        return mOutputTensor.getDataAsFloatArray();
     }
 }
