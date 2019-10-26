@@ -59,5 +59,7 @@ RUN apt-get update && apt-get install -y \
     python-opencv \
 && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN pip install py-cpuinfo
+
 EXPOSE 7070 9098 9111 22222
 CMD ["bash", "-c", "gabriel-control -n eth0 & sleep 5; gabriel-ucomm -s 127.0.0.1:8021 & sleep 5; cd /openrtist/server && python proxy.py -s 127.0.0.1:8021"]
