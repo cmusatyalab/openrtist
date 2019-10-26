@@ -101,18 +101,30 @@ public class LocalTransfer {
      * @return
      */
     synchronized public int[] infer(float[] image) {
-        // batch 1
-        this.mInputTensor = Tensor.fromBlob(image,
+        // change data layout from <height, width, channel> to <channel, height, width>
+        long st = SystemClock.elapsedRealtime();
+        float[] imageCHW = Utils.dataLayoutHWCtoCHW(image);
+        Log.d(this.getClass().getName(), String.format("input data " +
+                        "preprocessing (HWC to CHW) takes %d ms",
+                SystemClock.elapsedRealtime() - st));
+
+        // inference
+        st = SystemClock.elapsedRealtime();
+        this.mInputTensor = Tensor.fromBlob(imageCHW,
                 new long[]{1, 3, this.model_input_height, this.model_input_width});
-        long moduleForwardStartTime = 0;
-        moduleForwardStartTime = SystemClock.elapsedRealtime();
         mOutputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
-        long moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
-        Log.d(this.getClass().getName(), String.format("forward time: %d ms",
-                moduleForwardDuration));
+        Log.d(this.getClass().getName(), String.format("model inference time: %d ms",
+                SystemClock.elapsedRealtime() - st));
+
+        // output. change data layout and type
+        st = SystemClock.elapsedRealtime();
         float[] output = mOutputTensor.getDataAsFloatArray();
-        int[] converted = Utils.convertFloatArrayToImageIntArray(output);
-        Log.d(this.getClass().getName(), String.format("finished conversion"));
+        float[] outputHWC = Utils.dataLayoutCHWtoHWC(output);
+        int[] converted = Utils.convertFloatArrayToImageIntArray(outputHWC);
+        Log.d(this.getClass().getName(), String.format("output data " +
+                        "postprocessing (CHWToHWC, float rgb to int argb) takes %d ms",
+                SystemClock.elapsedRealtime() - st));
+
         return converted;
     }
 }
