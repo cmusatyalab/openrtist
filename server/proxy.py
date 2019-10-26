@@ -72,7 +72,7 @@ if not hasattr(config, 'USE_GPU') or not hasattr(config, 'USE_OPENVINO'):
             if not hasattr(config, 'USE_GPU') or config.USE_GPU==False:
                 has_pytorch=True
             if not hasattr(config, 'USE_GPU') or config.USE_GPU==True:
-                torch.tensor([[1., -1.], [1., -1.]]).cuda()
+                torch.zeros(2,2).cuda()
                 print("Autodetect: Detected GPU / CUDA support")
                 has_cuda=True
         except ImportError:
