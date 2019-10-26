@@ -1,5 +1,7 @@
 package edu.cmu.cs.localtransfer;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
@@ -59,5 +61,25 @@ public class Utils {
             byte a = rgbaBuffer[i++];
         }
         return rgbBuffer;
+    }
+
+    private static int clamp(int v){
+        if (v < 0) v = 0;
+        if (v > 255) v = 255;
+        return v;
+    }
+
+    public static int[] convertFloatArrayToImageIntArray(float[] input){
+        int[] pixels = new int[input.length / 3];
+        final int alpha = 255;
+        int i;
+        for (i = 0; i < input.length; i+=3){
+            // limit to [0, 255]
+            int r = clamp((int) input[i]) & 0xFF; // clamp and then unsigned int
+            int g = clamp((int) input[i+1]) & 0xFF; // clamp and then unsigned int
+            int b = clamp((int) input[i+2]) & 0xFF; // clamp and then unsigned int
+            pixels[i/3] = Color.argb(alpha, r, g, b);
+        }
+        return pixels;
     }
 }

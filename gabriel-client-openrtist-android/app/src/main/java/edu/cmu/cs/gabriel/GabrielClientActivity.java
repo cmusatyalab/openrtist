@@ -154,8 +154,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     // local execution
     private boolean runLocally = false;
     private LocalTransfer localRunner = null;
-    private HandlerThread localRunnerThread=null;
-    private Handler localRunnerThreadHandler=null;
+    private HandlerThread localRunnerThread = null;
+    private Handler localRunnerThreadHandler = null;
+    private volatile boolean localRunnerBusy = false;
+    private RenderScript rs = null;
     //List of Styles
 
 //    String[] itemname ={
@@ -385,7 +387,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             localRunnerThread = new HandlerThread("LocalTransfer Thread");
             localRunnerThread.start();
             localRunnerThreadHandler = new Handler(localRunnerThread.getLooper());
-        }
+            rs = RenderScript.create(this);
+       }
     }
 
     private void storeScreenshot(Bitmap bitmap, String path) {
@@ -811,24 +814,41 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     private PreviewCallback previewCallback = new PreviewCallback() {
         // called whenever a new frame is captured
-        public void onPreviewFrame(final byte[] frame, Camera mCamera) {
+        public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
                 final Camera.Parameters parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
                     if (runLocally) {
-                        //local execution
-                        localRunnerThreadHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                float[] rgbImage = Utils.convertYuvToRgb(
-                                        RenderScript.create(getApplicationContext()),
-                                        frame,
-                                        parameters.getPreviewSize()
-                                );
-                                localRunner.infer(rgbImage);
-                            }
-                        });
+                        if (!localRunnerBusy){
+                            Log.d("debug", "invoked");
+                            //local execution
+                            final float[] rgbImage = Utils.convertYuvToRgb(
+                                    rs,
+                                    frame,
+                                    parameters.getPreviewSize()
+                            );
+                            final int imageWidth = parameters.getPreviewSize().width;
+                            final int imageHeight = parameters.getPreviewSize().height;
+                            Log.d("debug", "converted");
+                            localRunnerThreadHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    localRunnerBusy = true;
+                                    int[] output = localRunner.infer(rgbImage);
+                                    Log.d("debug", "inferred");
+                                    // send results back to UI as Gabriel would
+                                    Bitmap imageFeedback = Bitmap.createBitmap(output,
+                                            imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
+                                    Message msg = Message.obtain();
+                                    msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+                                    msg.obj = imageFeedback;
+                                    returnMsgHandler.sendMessage(msg);
+                                    Log.d("debug", "send off to return");
+                                    localRunnerBusy = false;
+                                }
+                            });
+                        }
                     } else if (videoStreamingThread != null) { // cloudlet execution
                         videoStreamingThread.push(frame, parameters, style_type);
                     }

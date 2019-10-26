@@ -87,7 +87,7 @@ public class LocalTransfer {
      * @param modelName
      * @throws FileNotFoundException
      */
-    public void load(Context context, String modelName) throws FileNotFoundException {
+    synchronized public void load(Context context, String modelName) throws FileNotFoundException {
         // get model file path
         String moduleFileAbsoluteFilePath = getAssetFilePath(context, modelName);
         // load model
@@ -100,18 +100,19 @@ public class LocalTransfer {
      * @param image
      * @return
      */
-    public float[] infer(float[] image) {
+    synchronized public int[] infer(float[] image) {
         // batch 1
         this.mInputTensor = Tensor.fromBlob(image,
                 new long[]{1, 3, this.model_input_height, this.model_input_width});
-
         long moduleForwardStartTime = 0;
-        long moduleForwardDuration = 0;
         moduleForwardStartTime = SystemClock.elapsedRealtime();
         mOutputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
-        moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
+        long moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
         Log.d(this.getClass().getName(), String.format("forward time: %d ms",
                 moduleForwardDuration));
-        return mOutputTensor.getDataAsFloatArray();
+        float[] output = mOutputTensor.getDataAsFloatArray();
+        int[] converted = Utils.convertFloatArrayToImageIntArray(output);
+        Log.d(this.getClass().getName(), String.format("finished conversion"));
+        return converted;
     }
 }
