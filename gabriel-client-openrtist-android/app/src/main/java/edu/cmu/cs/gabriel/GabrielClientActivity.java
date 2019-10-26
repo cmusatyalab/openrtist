@@ -44,6 +44,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -80,6 +81,7 @@ import edu.cmu.cs.gabriel.token.TokenController;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
+import edu.cmu.cs.localtransfer.Utils;
 import edu.cmu.cs.openrtist.R;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
@@ -794,7 +796,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
 
-    private byte[] yuvToRGB(byte[] yuvFrameBytes, Camera.Parameters parameters){
+    private byte[] yuvToRGBBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
         Size cameraImageSize = parameters.getPreviewSize();
         YuvImage image = new YuvImage(yuvFrameBytes,
                 parameters.getPreviewFormat(), cameraImageSize.width,
@@ -819,8 +821,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         localRunnerThreadHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                byte[] jpegImage = yuvToRGB(frame, parameters);
-                                localRunner.infer(jpegImage);
+                                float[] rgbImage = Utils.convertYuvToRgb(
+                                        RenderScript.create(getApplicationContext()),
+                                        frame,
+                                        parameters.getPreviewSize()
+                                );
+                                localRunner.infer(rgbImage);
                             }
                         });
                     } else if (videoStreamingThread != null) { // cloudlet execution
@@ -829,7 +835,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
-                        byte[] bytes = yuvToRGB(frame, parameters);
+                        byte[] bytes = yuvToRGBBytes(frame, parameters);
                         final Bitmap camView = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                         stereoView1.setVisibility(View.INVISIBLE);
                         stereoView2.setVisibility(View.INVISIBLE);
