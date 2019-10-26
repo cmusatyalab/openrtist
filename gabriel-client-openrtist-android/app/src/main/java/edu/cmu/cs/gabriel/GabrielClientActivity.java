@@ -44,6 +44,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.os.SystemClock;
 import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.TextureView;
@@ -821,22 +822,24 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 if(!style_type.equals("none")) {
                     if (runLocally) {
                         if (!localRunnerBusy){
-                            Log.d("debug", "invoked");
                             //local execution
+                            long st = SystemClock.elapsedRealtime();
                             final float[] rgbImage = Utils.convertYuvToRgb(
                                     rs,
                                     frame,
                                     parameters.getPreviewSize()
                             );
+                            Log.d(LOG_TAG, String.format("YuvToRGBA takes %d ms",
+                                    SystemClock.elapsedRealtime() - st));
+
                             final int imageWidth = parameters.getPreviewSize().width;
                             final int imageHeight = parameters.getPreviewSize().height;
-                            Log.d("debug", "converted");
+
                             localRunnerThreadHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     localRunnerBusy = true;
                                     int[] output = localRunner.infer(rgbImage);
-                                    Log.d("debug", "inferred");
                                     // send results back to UI as Gabriel would
                                     Bitmap imageFeedback = Bitmap.createBitmap(output,
                                             imageWidth, imageHeight, Bitmap.Config.ARGB_8888);
@@ -844,7 +847,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                                     msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
                                     msg.obj = imageFeedback;
                                     returnMsgHandler.sendMessage(msg);
-                                    Log.d("debug", "send off to return");
                                     localRunnerBusy = false;
                                 }
                             });

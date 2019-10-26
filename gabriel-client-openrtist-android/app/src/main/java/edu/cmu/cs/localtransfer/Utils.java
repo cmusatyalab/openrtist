@@ -19,7 +19,6 @@ public class Utils {
 
         ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs,
                 Element.RGBA_8888(rs));
-//                Element.RGB_888(rs));
 
         // Create the input allocation  memory for Renderscript to work with
         Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs))
@@ -57,7 +56,7 @@ public class Utils {
             rgbBuffer[j++] = (float) (int) (g & 0xFF);
             byte b = rgbaBuffer[i++];
             rgbBuffer[j++] = (float) (int) (b & 0xFF);
-            // remove a
+            // remove alpha
             byte a = rgbaBuffer[i++];
         }
         return rgbBuffer;
@@ -69,11 +68,39 @@ public class Utils {
         return v;
     }
 
+    public static float[] dataLayoutHWCtoCHW(float[] input){
+        float[][] image = new float[3][input.length/3];
+        for (int i = 0; i < input.length; i+=3){
+            image[0][i/3] = input[i];
+            image[1][i/3] = input[i+1];
+            image[2][i/3] = input[i+2];
+        }
+        float[] output = new float[input.length];
+
+        int pos = 0;
+        for (int i = 0; i < 3; i++){
+            System.arraycopy(image[i], 0, output, pos, image[i].length);
+            pos += image[i].length;
+        }
+        return output;
+    }
+
+    public static float[] dataLayoutCHWtoHWC(float[] input){
+        float[] output = new float[input.length];
+        int num_per_channel = input.length / 3;
+        int j = 0;
+        for (int i = 0; i < num_per_channel; i++){
+            output[j++] = input[i];
+            output[j++] = input[i + num_per_channel];
+            output[j++] = input[i + 2 * num_per_channel];
+        }
+        return output;
+    }
+
     public static int[] convertFloatArrayToImageIntArray(float[] input){
         int[] pixels = new int[input.length / 3];
         final int alpha = 255;
-        int i;
-        for (i = 0; i < input.length; i+=3){
+        for (int i = 0; i < input.length; i+=3){
             // limit to [0, 255]
             int r = clamp((int) input[i]) & 0xFF; // clamp and then unsigned int
             int g = clamp((int) input[i+1]) & 0xFF; // clamp and then unsigned int
