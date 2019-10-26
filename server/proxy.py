@@ -133,6 +133,7 @@ else:
     import openvino.inference_engine
     from openvino.inference_engine import IENetwork, IEPlugin
     oldversion = LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0")
+    from cpuinfo import get_cpu_info
 
 if os.path.isdir("../.."):
     sys.path.insert(0, "../..")
@@ -174,6 +175,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             else:
                 self.device = "CPU"
             self.plugin = IEPlugin(device=self.device, plugin_dirs=None)
+            conf = {}
             if self.device == "CPU":
                 if oldversion:
                     model_xml = self.path+"32.xml"
@@ -181,7 +183,14 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
                 else:
                     model_xml = self.path+"16.xml"
                     model_bin_suff = ".bin"
-                self.plugin.add_cpu_extension("libcpu_extension_sse4.so")  # also avx2, but probably not a significant difference for the MVN layer needed here
+                cpuinf = get_cpu_info()
+                if 'avx512' in cpuinf['flags']:
+                    self.plugin.add_cpu_extension("libcpu_extension_avx512.so")
+                elif 'avx2' in cpuinf['flags']:
+                    self.plugin.add_cpu_extension("libcpu_extension_avx2.so")
+                else:
+                    self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
+                conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
             else:
                 if oldversion:
                     self.plugin.set_config({'CONFIG_FILE' : self.dir_path+"/../clkernels/mvn_custom_layer.xml"})
@@ -217,7 +226,7 @@ class StyleServer(gabriel.proxy.CognitiveProcessThread):
             
                 # Loading model to the plugin
                 print("Loading model to the plugin")
-                self.exec_nets[ name ] = self.plugin.load(network=net)
+                self.exec_nets[ name ] = self.plugin.load(network=net, config=conf)
                 self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
                 del net
                 self.all_styles[name] = read_text( self.path+name+".txt", name+" -- Unknown")
