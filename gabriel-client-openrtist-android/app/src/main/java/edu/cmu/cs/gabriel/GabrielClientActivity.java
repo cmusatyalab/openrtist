@@ -68,6 +68,7 @@ import android.media.MediaActionSound;
 import edu.cmu.cs.gabriel.network.EngineInput;
 import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
+import edu.cmu.cs.gabriel.network.BaseComm;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
@@ -84,11 +85,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private static final int MEDIA_TYPE_VIDEO = 2;
 
     // major components for streaming sensor data and receiving information
-    private String serverIP = null;
+    String serverIP = null;
     private String style_type = "udnie";
     private String prev_style_type = "udnie";
 
-    private OpenrtistComm openrtistComm;
+    BaseComm comm;
 
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
@@ -114,8 +115,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private boolean capturingScreen = false;
     private boolean recordingInitiated = false;
     private String mOutputPath = null;
-
-    private boolean reset = false;
 
     private FileWriter controlLogWriter = null;
 
@@ -189,14 +188,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 engineInput = null;
             }
         }
-        System.out.println(engineInput);
         return engineInput;
     }
 
     private Runnable imageUpload = new Runnable() {
         @Override
         public void run() {
-            openrtistComm.sendSupplier(GabrielClientActivity.this.frameSupplier);
+            comm.sendSupplier(GabrielClientActivity.this.frameSupplier);
 
             if (isRunning) {
                 backgroundHandler.post(imageUpload);
@@ -735,7 +733,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             }
         }
 
-        this.openrtistComm = new OpenrtistComm(serverIP, Const.PORT, this,
+        this.setupComm();
+    }
+
+    void setupComm() {
+        this.comm = new OpenrtistComm(this.serverIP, Const.PORT, this,
                 returnMsgHandler);
     }
 
@@ -842,7 +844,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     /**
      * Handles messages passed from streaming threads and result receiving threads.
      */
-    private Handler returnMsgHandler = new Handler() {
+    Handler returnMsgHandler = new Handler() {
         public void handleMessage(Message msg) {
             if (msg.what == NetworkProtocol.NETWORK_RET_FAILED) {
                 //terminate();
@@ -905,9 +907,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         this.stopBackgroundThread();
 
-        if (this.openrtistComm != null) {
-            this.openrtistComm.stop();
-            this.openrtistComm = null;
+        if (this.comm != null) {
+            this.comm.stop();
+            this.comm = null;
         }
         if (preview != null) {
             mCamera.setPreviewCallback(null);

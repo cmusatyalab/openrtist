@@ -52,8 +52,9 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
-    <string name="pref_title_token_size">Gabriel Token Size</string>
+    <string name="pref_title_token_limit">Gabriel Token Limit</string>
     <string-array name="pref_token_list_titles">
+        <item>No limit</item>
         <item>1 frame</item>
         <item>2 frames</item>
         <item>3 frames</item>
@@ -61,6 +62,7 @@
         <item>5 frames</item>
     </string-array>
     <string-array name="pref_token_list_values">
+        <item>None</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>
