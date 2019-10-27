@@ -23,43 +23,40 @@ Project | Modified | License
 
 
 ## Prerequisites
-__The pre-built OpenRTiST server Docker image requires a GPU for image processing.__ 
 
 OpenRTiST using PyTorch (including the pre-built image) has been tested on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40). 
 
-Alternatively, OpenRTiST can also use the [Intel&reg; OpenVINO toolkit](https://software.intel.com/en-us/openvino-toolkit) for accelerated processing on CPU and processor graphics on many Intel processors.  We have tested OpenVINO support using __Ubuntu 18.04 LTS (Bionic)__ and OpenVINO releases 2018.5 and 2019.3 on an Intel&reg; Core&trade; i7-6770HQ processor.  OpenVINO is supported when installed from source only. 
+Alternatively, OpenRTiST can also use the [Intel&reg; OpenVINO toolkit](https://software.intel.com/en-us/openvino-toolkit) for accelerated processing on CPU and processor graphics on many Intel processors.  We have tested OpenVINO support using __Ubuntu 18.04 LTS (Bionic)__ and OpenVINO releases 2018.5 and 2019.3 on an Intel&reg; Core&trade; i7-6770HQ processor.  
 
 The OpenRTiST server can run on CPU alone.  See below on installing from source for details.
 
 OpenRTiST supports Android and standalone Python clients.  We have tested the Android client on __Nexus 6__, __Samsung Galaxy S7__, and __Essential PH-1__.
 
 
-##  Server Installation using Docker (with PyTorch, requires GPU)
-### Step 1. Become root
-```sh
-sudo -i
-```
+##  Server Installation using Docker
 
-### Step 2. Prepare the environment
-```sh
+The quickest way to set up an OpenRTiST server is to download and run our pre-built Docker container.  This build supports execution on NVIDIA GPUs, Intel integrated GPUs, and execution on the CPU.  All of the following steps must be executed as root.  
+
+### Step 1. Install Docker
+If you do not already have Docker installed, install as follows:
+```
 apt-get update
 apt-get upgrade
+apt-get install docker.io
 ```
-
-### Step 3. Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
-Follow the steps in the above Docker documentation or use the following convenience script:
+Alternatively, you can follow the steps in [this Docker install guide](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) or use the following convenience script:
 
 ```sh
 curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 ```
 
-### Step 4. Ensure nVidia drivers are installed
+### Step 2. Ensure nVidia drivers are installed (Optional -- only for NVIDIA GPU support)
 ```sh
 apt-get install nvidia-384
 ```
 
-### Step 5. Install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
+### Step 3. Install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) (Optional -- only for NVIDIA GPU support)
 ```sh
 # If you have nvidia-docker 1.0 installed: we need to remove it and all existing GPU containers
 docker volume ls -q -f driver=nvidia-docker | xargs -r -I{} -n1 docker ps -q -a -f volume={} | xargs -r docker rm -f
@@ -76,17 +73,28 @@ pkill -SIGHUP dockerd
 
 ```
 
-### Step 6. Obtain OpenRTiST docker container.
+### Step 4. Obtain OpenRTiST Docker image
 ```sh
 docker pull cmusatyalab/openrtist
 ```
 
-### Step 7A. Launch the Docker container with nvidia-docker
+### Step 5A. Launch the Docker container
+For CPU and Intel iGPU support only, run the container with `docker`:
+```sh
+docker run --rm -it --device /dev/dri:/dev/dri -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist
+```
+To also support NVIDIA GPUs, run the container with `nvidia-docker`:
 ```sh
 nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist 
 ```
+Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models. 
 
-### Step 7B. Launch the container and manually start the server (if you wish configure things)
+### Step 5B. Launch the container and manually start the server (if you wish configure things)
+If you don't need NVIDIA GPU support:
+```sh
+docker run --rm -it --device /dev/dri:/dev/dri -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
+```
+If you need NVIDIA GPU support:
 ```sh
 nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
 ```
@@ -125,9 +133,11 @@ Execute the proxy, specifying the ip address listed earlier with the -s flag. Be
 cd /openrtist/server
 ./proxy.py -s 172.17.0.2:8021
 ```
+Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models. 
+
 ---
 
-### Running backend in Amazon AWS
+## Running server on Amazon AWS
 If you wish to compare between running the server on a cloudlet versus a cloud instance, you can launch the following instance type/image from your Amazon EC2 Dashboard:
 
 __Instance Type__ - p2.xlarge (can be found by filtering under GPU compute instance types)
@@ -148,35 +158,41 @@ sudo reboot
 ```
 
 ## Client Installation
-### Python Client
+### Python Client in Docker
 The docker image for the server component also includes the Python client which can be run on a non-Android machine. __The python client requires that a USB webcam is connected to the machine.__
 
-#### Step 1. Install [Docker](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
-Follow the steps in the above Docker documentation or use the following convenience script:
-
+#### Step 1. Install Docker
+If you do not already have Docker installed, install as follows:
 ```
+apt-get update
+apt-get upgrade
+apt-get install docker.io
+```
+Alternatively, you can follow the steps in [this Docker install guide](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) or use the following convenience script:
+
+```sh
 curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 ```
 
-#### Step 2. Obtain OpenRTiST docker container.
+#### Step 2. Obtain OpenRTiST Docker image
 ```
 docker pull cmusatyalab/openrtist
 ```
 
-#### Step 3. Set the xhost display and launch the container.
+#### Step 3. Set the xhost display and launch the container
 ```
 xhost local:root
-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
+docker run --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro cmusatyalab/openrtist /bin/bash
 ```
-#### Step 4. Edit the client configuration (optional).
+#### Step 4. Edit the client configuration (optional)
 ```
 cd /openrtist/gabriel-client-openrtist-python
 vim.tiny config.py
 #Here you can edit the image resolution captured by the camera and the frames per second.
 ```
 
-#### Step 5. Launch the Python client UI specifying the server's IP address.
+#### Step 5. Launch the Python client UI specifying the server's IP address
 ```
 ./ui.py <server ip address>
 ```
