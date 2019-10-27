@@ -40,6 +40,10 @@ public class ServerListAdapter extends BaseAdapter {
     ArrayList<Server> itemModelList;
     SharedPreferences mSharedPreferences = null;
 
+    Class<?> gabrielClientActivityClass() {
+        return GabrielClientActivity.class;
+    }
+
     public ServerListAdapter(Context context, ArrayList<Server> modelList) {
         this.context = context;
         this.itemModelList = modelList;
@@ -76,7 +80,8 @@ public class ServerListAdapter extends BaseAdapter {
                 public void onClick(View v) {
                     Server s = itemModelList.get(position);
                     Const.SERVER_IP = s.getEndpoint();
-                    Intent intent = new Intent(context, GabrielClientActivity.class);
+                    Intent intent = new Intent(
+                            context, ServerListAdapter.this.gabrielClientActivityClass());
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     //intent.putExtra("", faceTable);
                     context.startActivity(intent);

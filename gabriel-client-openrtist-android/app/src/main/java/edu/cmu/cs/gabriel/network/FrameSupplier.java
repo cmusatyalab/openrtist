@@ -17,7 +17,7 @@ import edu.cmu.cs.gabriel.GabrielClientActivity;
 import edu.cmu.cs.gabriel.protocol.Protos.FromClient;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.openrtist.Protos.EngineFields;
-import edu.cmu.cs.gabriel.client.Supplier;
+import edu.cmu.cs.gabriel.client.function.Supplier;
 
 public class FrameSupplier implements Supplier<FromClient.Builder> {
 

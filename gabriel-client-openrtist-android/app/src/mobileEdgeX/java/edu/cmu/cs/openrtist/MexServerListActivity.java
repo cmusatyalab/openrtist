@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class MexServerListActivity extends ServerListActivity {
-    private static final String TAG = "ServerListActivity";
+    private static final String TAG = "TimingServerListActivity";
 
     private MatchingEngine matchingEngine;
     private String statusText = null;

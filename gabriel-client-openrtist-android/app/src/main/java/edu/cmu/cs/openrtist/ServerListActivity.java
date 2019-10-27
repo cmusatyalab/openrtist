@@ -17,21 +17,15 @@ package edu.cmu.cs.openrtist;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.SeekBar;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ListView;
 import android.widget.ImageView;
-import android.widget.TextView;
 import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -42,17 +36,12 @@ import android.util.Log;
 import android.content.Context;
 import android.hardware.camera2.CameraManager;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.Map;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.gabriel.GabrielClientActivity;
 
 
 public class ServerListActivity extends AppCompatActivity  {
@@ -65,6 +54,10 @@ public class ServerListActivity extends AppCompatActivity  {
     CameraManager camMan = null;
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
+
+    ServerListAdapter createServerListAdapter() {
+        return new ServerListAdapter(getApplicationContext(), ItemModelList);
+    }
 
     //activity menu
     @Override
@@ -113,7 +106,7 @@ public class ServerListActivity extends AppCompatActivity  {
         serverAddress = (EditText) findViewById(R.id.addServerAddress);
         add = (ImageView) findViewById(R.id.imgViewAdd);
         ItemModelList = new ArrayList<Server>();
-        serverListAdapter = new ServerListAdapter(getApplicationContext(), ItemModelList);
+        serverListAdapter = createServerListAdapter();
         listView.setAdapter(serverListAdapter);
         mSharedPreferences=PreferenceManager.getDefaultSharedPreferences(this);
         Map<String, ?> m = mSharedPreferences.getAll();
@@ -124,6 +117,8 @@ public class ServerListActivity extends AppCompatActivity  {
 
         }
         camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+
+        System.out.println(Const.TOKEN_LIMIT);
 
         initServerList();
     }
