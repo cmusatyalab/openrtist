@@ -77,6 +77,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             logger.info('New Style: %s', engine_fields.style)
             engine_fields.style_image = self.adapter.get_style_image()
 
+        style = self.adapter.get_style()
         image = self.process_image(from_client.payload)
         image = self._apply_watermark(image)
 
@@ -87,6 +88,14 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result.payload_type = gabriel_pb2.PayloadType.IMAGE
         result.engine_name = self.ENGINE_NAME
         result.payload = img_data
+
+        engine_fields = openrtist_pb2.EngineFields()
+        engine_fields.style = style
+
+        if new_style:
+            engine_fields.style_image = self.adapter.get_style_image()
+            for k, v in self.adapter.get_all_styles().items():
+                engine_fields.style_list[k] = v
 
         result_wrapper = gabriel_pb2.ResultWrapper()
         result_wrapper.frame_id = from_client.frame_id

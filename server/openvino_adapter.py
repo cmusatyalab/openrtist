@@ -47,12 +47,17 @@ class OpenvinoAdapter(OpenrtistAdapter):
         device = 'CPU' if cpu_only else 'GPU'
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
-        path = os.path.join(os.getcwd(), '..', 'models')
+        if LooseVersion(openvino.inference_engine.__version__) >= LooseVersion("2.0"):
+            models_dir = 'models_1p0'
+            model_xml_num = '16'
+            model_bin_suff = '.bin'
+        else:
+            models_dir = 'models'
+            model_xml_num = '32' if cpu_only else '16v2'
+            model_bin_suff = '-32.bin' if cpu_only else '-16.bin'
 
-        model_xml_num = '32' if cpu_only else '16v2'
-        model_bin_num = '32' if cpu_only else '16'
-        model_xml = os.path.join(path, '{}.xml'.format(model_xml_num))
-        model_bin_suff = '-{}.bin'.format(model_bin_num)
+        self.path = os.path.join(os.getcwd(), '..', models_dir)
+        model_xml = os.path.join(self.path, '{}.xml'.format(model_xml_num))
 
         conf = {}
         if cpu_only:
@@ -70,12 +75,11 @@ class OpenvinoAdapter(OpenrtistAdapter):
             self.plugin.set_config({'CONFIG_FILE' : config_file})
 
         self.exec_nets = {}
-        self.style_images = {}
         names = [
-            n[:-7] for n in os.listdir(path) if n.endswith(model_bin_suff)
+            n[:-len(model_bin_suff)] for n in os.listdir(self.path) if n.endswith(model_bin_suff)
         ]
         for name in names:
-            model_bin = os.path.join(path, name + model_bin_suff)
+            model_bin = os.path.join(self.path, name + model_bin_suff)
 
             # Read IR
             print('Loading network files:\n\t', model_xml, '\n\t', model_bin)
@@ -100,16 +104,9 @@ class OpenvinoAdapter(OpenrtistAdapter):
             # Loading model to the plugin
             print("Loading model to the plugin")
             self.exec_nets[name] = self.plugin.load(network=net, config=conf)
-            self.style_images[name] = os.path.join(path, name + ".jpg")
+            self.add_supported_style(name)
             self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
             del net
-
-    def set_style(self, new_style):
-        if new_style in self.exec_nets:
-            super().set_style(new_style)
-        else:
-            logger.error('Got style %s that we do not have. Ignoring',
-                         new_style)
 
     def preprocessing(self, img):
         if img.shape[:-1] != (self.h, self.w):
@@ -132,8 +129,3 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
         return img_out
 
-    def _style_image(self):
-        return self.style_images[self._style]
-
-    def supported_styles(self):
-        return self.exec_nets.keys()

@@ -61,7 +61,7 @@ class TorchAdapter(OpenrtistAdapter):
         else:
             models_dir = 'models'
         self.path = os.path.join(os.getcwd(), '..', models_dir)
-        self._update_model_style(default_style)
+        #self._update_model_style(default_style)
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
@@ -71,19 +71,13 @@ class TorchAdapter(OpenrtistAdapter):
         preprocessed = self.preprocessing(zeros)
         post_inference = self.inference(preprocessed)
 
-        self.supported_styles = set()
         for name in os.listdir(self.path):
             if name.endswith('.model'):
-                self.supported_styles.add(name[:-6])
+                self.add_supported_style(name[:-6])
 
     def set_style(self, new_style):
-        if new_style not in self.supported_styles:
-            logger.error('Got style %s that we do not have. Ignoring',
-                         new_style)
-            return
-
-        super().set_style(new_style)
-        self._update_model_style(new_style)
+        if super().set_style(new_style):
+            self._update_model_style(new_style)
 
     def preprocessing(self, img):
         content_image = self.content_transform(img)
@@ -105,8 +99,3 @@ class TorchAdapter(OpenrtistAdapter):
         if not self.cpu_only:
             self.style_model.cuda()
 
-    def _style_image(self):
-        return os.path.join(self.path '{}.jpg'.format(self._style)
-
-    def get_all_styles(self):
-        return self.supported_styles

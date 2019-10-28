@@ -7,6 +7,6 @@ option java_outer_classname = "Protos";
 
 message EngineFields {
     string style = 1;
-    bytes style_image = 2;
-    string all_styles = 3;
+    map<string, string> style_list = 2;
+    bytes style_image = 3;
 }
