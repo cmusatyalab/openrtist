@@ -158,6 +158,11 @@ public class ServerListActivity extends AppCompatActivity  {
             editor.commit();
         }
 
+        // local execution
+        Server s = new Server(getString(R.string.local_execution),
+                getString(R.string.local_execution_dns_placeholder));
+        ItemModelList.add(s);
+        serverListAdapter.notifyDataSetChanged();
     }
 
     /**
