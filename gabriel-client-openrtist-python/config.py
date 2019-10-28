@@ -18,7 +18,7 @@ class Config(object):
     RESULT_RECEIVING_PORT = 9111
     TOKEN=2
     TIME_SEC = 30
-    CAM_FPS = 10
-    IMG_WIDTH = 320
-    IMG_HEIGHT = 240
+    CAM_FPS = 30
+    IMG_WIDTH = 480
+    IMG_HEIGHT = 360
 
