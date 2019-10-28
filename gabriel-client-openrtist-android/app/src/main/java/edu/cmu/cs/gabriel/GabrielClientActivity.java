@@ -809,7 +809,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
 
-    private byte[] yuvToRGBBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
+    private byte[] yuvToJPEGBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
         Size cameraImageSize = parameters.getPreviewSize();
         YuvImage image = new YuvImage(yuvFrameBytes,
                 parameters.getPreviewFormat(), cameraImageSize.width,
@@ -826,7 +826,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
             if (isRunning) {
-                final Camera.Parameters parameters = mCamera.getParameters();
+                Camera.Parameters parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
                     if (runLocally) {
@@ -873,7 +873,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 } else{
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
-                        byte[] bytes = yuvToRGBBytes(frame, parameters);
+                        byte[] bytes = yuvToJPEGBytes(frame, parameters);
                         final Bitmap camView = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                         stereoView1.setVisibility(View.INVISIBLE);
                         stereoView2.setVisibility(View.INVISIBLE);

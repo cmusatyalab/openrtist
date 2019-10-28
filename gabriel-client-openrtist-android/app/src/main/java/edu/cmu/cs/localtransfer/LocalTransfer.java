@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.FloatBuffer;
 
 /**
  * A class for running style transfer locally
@@ -37,19 +36,15 @@ import java.nio.FloatBuffer;
 public class LocalTransfer {
 
     private Module mModule;
-    private FloatBuffer mInputTensorBuffer;
     private Tensor mInputTensor;
     private Tensor mOutputTensor;
-    private int model_input_width;
-    private int model_input_height;
+    private int modelInputWidth;
+    private int modelInputHeight;
 
-    public LocalTransfer(int model_input_width, int model_input_height) {
+    public LocalTransfer(int modelInputWidth, int modelInputHeight) {
         mModule=null;
-        this.model_input_width = model_input_width;
-        this.model_input_height = model_input_height;
-        this.mInputTensorBuffer = Tensor.allocateFloatBuffer(3 * this.model_input_width
-                * this.model_input_height);
-
+        this.modelInputWidth = modelInputWidth;
+        this.modelInputHeight = modelInputHeight;
     }
 
     private String getAssetFilePath(Context context, String modelName)
@@ -112,7 +107,7 @@ public class LocalTransfer {
         // inference
         st = SystemClock.elapsedRealtime();
         this.mInputTensor = Tensor.fromBlob(imageCHW,
-                new long[]{1, 3, this.model_input_height, this.model_input_width});
+                new long[]{1, 3, this.modelInputHeight, this.modelInputWidth});
         mOutputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
         Log.d(this.getClass().getName(), String.format("model inference time: %d ms",
                 SystemClock.elapsedRealtime() - st));
