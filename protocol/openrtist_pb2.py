@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,8 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='openrtist',
   syntax='proto3',
   serialized_options=_b('\n\024edu.cmu.cs.openrtistB\006Protos'),
-  serialized_pb=_b('\n\x0fopenrtist.proto\x12\topenrtist\"\xa0\x01\n\x0c\x45ngineFields\x12\r\n\x05style\x18\x01 \x01(\t\x12:\n\nstyle_list\x18\x02 \x03(\x0b\x32&.openrtist.EngineFields.StyleListEntry\x12\x13\n\x0bstyle_image\x18\x03 \x01(\x0c\x1a\x30\n\x0eStyleListEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x1e\n\x14\x65\x64u.cmu.cs.openrtistB\x06Protosb\x06proto3')
-)
+  serialized_pb=_b('\n\x0fopenrtist.proto\x12\topenrtist\x1a\x1egoogle/protobuf/wrappers.proto\"\xbd\x01\n\x0c\x45ngineFields\x12\r\n\x05style\x18\x01 \x01(\t\x12:\n\nstyle_list\x18\x02 \x03(\x0b\x32&.openrtist.EngineFields.StyleListEntry\x12\x30\n\x0bstyle_image\x18\x03 \x01(\x0b\x32\x1b.google.protobuf.BytesValue\x1a\x30\n\x0eStyleListEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x1e\n\x14\x65\x64u.cmu.cs.openrtistB\x06Protosb\x06proto3')
+  ,
+  dependencies=[google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,])
 
 
 
@@ -58,8 +60,8 @@ _ENGINEFIELDS_STYLELISTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=143,
-  serialized_end=191,
+  serialized_start=204,
+  serialized_end=252,
 )
 
 _ENGINEFIELDS = _descriptor.Descriptor(
@@ -85,8 +87,8 @@ _ENGINEFIELDS = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='style_image', full_name='openrtist.EngineFields.style_image', index=2,
-      number=3, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b(""),
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -102,12 +104,13 @@ _ENGINEFIELDS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=31,
-  serialized_end=191,
+  serialized_start=63,
+  serialized_end=252,
 )
 
 _ENGINEFIELDS_STYLELISTENTRY.containing_type = _ENGINEFIELDS
 _ENGINEFIELDS.fields_by_name['style_list'].message_type = _ENGINEFIELDS_STYLELISTENTRY
+_ENGINEFIELDS.fields_by_name['style_image'].message_type = google_dot_protobuf_dot_wrappers__pb2._BYTESVALUE
 DESCRIPTOR.message_types_by_name['EngineFields'] = _ENGINEFIELDS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

@@ -69,13 +69,16 @@ class OpenrtistEngine(cognitive_engine.Engine):
         engine_fields = cognitive_engine.unpack_engine_fields(
             openrtist_pb2.EngineFields, from_client)
 
+        new_style = False
+        send_style_list = False
         if engine_fields.style == '?':
-            engine_fields.all_styles = self.adapter.get_all_styles()
+            new_style = True
+            send_style_list = True
 
         elif engine_fields.style != self.adapter.get_style():
             self.adapter.set_style(engine_fields.style)
             logger.info('New Style: %s', engine_fields.style)
-            engine_fields.style_image = self.adapter.get_style_image()
+            new_style = True
 
         style = self.adapter.get_style()
         image = self.process_image(from_client.payload)
@@ -93,7 +96,8 @@ class OpenrtistEngine(cognitive_engine.Engine):
         engine_fields.style = style
 
         if new_style:
-            engine_fields.style_image = self.adapter.get_style_image()
+            engine_fields.style_image.value = self.adapter.get_style_image()
+        if send_style_list:
             for k, v in self.adapter.get_all_styles().items():
                 engine_fields.style_list[k] = v
 

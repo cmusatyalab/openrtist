@@ -29,6 +29,7 @@
 # distributed under the BSD 3-Clause License.
 # https://github.com/pytorch/examples/blob/master/LICENSE
 
+import openvino
 from openvino.inference_engine import IENetwork
 from openvino.inference_engine import IEPlugin
 from openrtist_adapter import OpenrtistAdapter
@@ -37,6 +38,8 @@ import numpy as np
 import logging
 import os
 import sys
+import cv2
+from distutils.version import LooseVersion
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +113,9 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
     def preprocessing(self, img):
         if img.shape[:-1] != (self.h, self.w):
-            logger.warning('Image is resized from', shape[:-1], 'to',
-                           (self.h, self.w))
-            img = cv2.resize(img, (self.w, self.h))
+            logger.warning('Image is resized from '+str(img.shape[:-1])+' to '+
+                           str((self.h, self.w)) )
+            img = cv2.resize(img,(self.w, self.h))
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
         return [ img ]
 
