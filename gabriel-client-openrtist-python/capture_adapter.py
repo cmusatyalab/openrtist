@@ -16,10 +16,11 @@ class CaptureAdapter:
         return self.adapter.consumer
 
     def preprocess(self, frame):
-        if self.current_style_frames == self.style_interval:
-            self.style_num = (self.style_num + 1) % len(self.style_array)
+        style_array = self.adapter.get_styles()
+        if len(style_array)>0 and self.current_style_frames >= self.style_interval:
+            self.style_num = (self.style_num + 1) % len(style_array)
             self.adapter.set_style(
-                self.style_array[self.style_num].split(".")[0])
+                style_array[self.style_num])
 
             self.current_style_frames = 0
         else:
@@ -36,8 +37,6 @@ class CaptureAdapter:
         style parameter.
         '''
 
-        self.style_array = os.listdir('./style-image')
-        random.shuffle(self.style_array)
         self.style_num = 0
         self.style_interval = config.STYLE_DISPLAY_INTERVAL
         self.current_style_frames = 0
@@ -45,12 +44,12 @@ class CaptureAdapter:
         video_capture = cv2.VideoCapture(-1)
         video_capture.set(cv2.CAP_PROP_FPS, config.CAM_FPS)
 
-        def consume_frame_style(frame, style):
+        def consume_frame_style(frame, style, style_image):
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            consume_rgb_frame_style(rgb_frame, style)
+            consume_rgb_frame_style(rgb_frame, style, style_image)
 
         self.adapter = Adapter(
-            self.preprocess, consume_frame_style, video_capture)
+            self.preprocess, consume_frame_style, video_capture, start_style='?')
 
 
 def create_client(server_ip, consume_rgb_frame_style):

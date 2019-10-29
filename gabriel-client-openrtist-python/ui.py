@@ -68,9 +68,8 @@ class ClientThread(QThread):
     def __init__(self, server_ip):
         super().__init__()
 
-        def consume_rgb_frame_style(rgb_frame, style):
-            self.pyqt_signal.emit(rgb_frame, style)
-
+        def consume_rgb_frame_style(rgb_frame, style, style_image):
+            self.pyqt_signal.emit(rgb_frame, style, style_image)
         self._client = capture_adapter.create_client(
             server_ip, consume_rgb_frame_style)
 

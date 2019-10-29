@@ -26,7 +26,7 @@ def main():
             cv2.imshow('Result from server', frame)
             cv2.waitKey(1)
     else:
-        def consume_frame_style(frame, style):
+        def consume_frame_style(frame, style, style_image):
             pass
 
     video_capture = cv2.VideoCapture(args.video)
