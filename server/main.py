@@ -52,13 +52,13 @@ def create_adapter(openvino, cpu_only):
                 logger.info('Failed to detect iGPU / clDNN support')
                 cpu_only = True
 
-            from openvino_adapter import OpenvinoAdapter
-            adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE)
-            return adapter
+        from openvino_adapter import OpenvinoAdapter
+        adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE)
+        return adapter
 
     logger.info('Attempting to use Toch with CPU')
     from torch_adapter import TorchAdapter
-    return TorchAdapter(False, DEFAULT_STYLE)
+    return TorchAdapter(True, DEFAULT_STYLE)
 
 
 def main():
