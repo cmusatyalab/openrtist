@@ -32,6 +32,7 @@
 from openvino.inference_engine import IENetwork
 from openvino.inference_engine import IEPlugin
 from openrtist_adapter import OpenrtistAdapter
+from cpuinfo import cpuinfo
 import numpy as np
 import logging
 import os
@@ -53,16 +54,23 @@ class OpenvinoAdapter(OpenrtistAdapter):
         model_xml = os.path.join(path, '{}.xml'.format(model_xml_num))
         model_bin_suff = '-{}.bin'.format(model_bin_num)
 
+        conf = {}
         if cpu_only:
-            # also avx2, but probably not a significant difference for the MVN
-            # layer needed here
-            self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
+            cpuinf = get_cpu_info()
+            if 'avx512' in cpuinf['flags']:
+                self.plugin.add_cpu_extension("libcpu_extension_avx512.so")
+            elif 'avx2' in cpuinf['flags']:
+                self.plugin.add_cpu_extension("libcpu_extension_avx2.so")
+            else:
+                self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
+            conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
         else:
             config_file = os.path.join(
                 os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
             self.plugin.set_config({'CONFIG_FILE' : config_file})
 
         self.exec_nets = {}
+        self.style_images = {}
         names = [
             n[:-7] for n in os.listdir(path) if n.endswith(model_bin_suff)
         ]
@@ -91,7 +99,8 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
             # Loading model to the plugin
             print("Loading model to the plugin")
-            self.exec_nets[name] = self.plugin.load(network=net)
+            self.exec_nets[name] = self.plugin.load(network=net, config=conf)
+            self.style_images[name] = os.path.join(path, name + ".jpg")
             self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
             del net
 
@@ -122,3 +131,9 @@ class OpenvinoAdapter(OpenrtistAdapter):
         img_out[img_out > 255] = 255
 
         return img_out
+
+    def _style_image(self):
+        return self.style_images[self._style]
+
+    def supported_styles(self):
+        return self.exec_nets.keys()

@@ -35,15 +35,22 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
 
-    def set_image(self, frame,str_name):
-        img = QImage(frame, frame.shape[1], frame.shape[0], QtGui.QImage.Format_RGB888)
+    def set_image(self, frame, str_name, style_image):
+        img = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QtGui.QImage.Format_RGB888)
 
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
 
-        pixmap = QPixmap()
-        pixmap.load('style-image/'+str_name)
-        print("UI STYLE {}".format('style-image/'+str_name))
+        #w = self.label_image.maximumWidth();
+        #h = self.label_image.maximumHeight();
+        #pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
+        if style_image is not None:
+            img = QImage(style_image, style_image.shape[1], style_image.shape[0], style_image.strides[0], QtGui.QImage.Format_RGB888)
+            pixmap = QPixmap.fromImage(img)
+        else:
+            pixmap = QPixmap()
+            pixmap.load('style-image/'+str_name)
+        #print("UI STYLE {}".format('style-image/'+str_name))
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix);
@@ -56,13 +63,14 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
 
 class ClientThread(QThread):
-    pyqt_signal = pyqtSignal(object, str)
+    pyqt_signal = pyqtSignal(object, str, object)
 
     def __init__(self, server_ip):
         super().__init__()
 
         def consume_rgb_frame_style(rgb_frame, style):
             self.pyqt_signal.emit(rgb_frame, style)
+
         self._client = capture_adapter.create_client(
             server_ip, consume_rgb_frame_style)
 

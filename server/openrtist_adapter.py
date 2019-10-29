@@ -25,3 +25,16 @@ class OpenrtistAdapter(ABC):
 
     def get_style(self):
         return self._style
+
+    def _style_image(self):
+        return ""
+
+    def get_style_image(self):
+        try:
+            with open(self._style_image, "rb") as f:
+                return f.read()
+        except:
+            return b''
+
+    def get_all_styles(self):
+        return []
