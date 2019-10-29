@@ -3,6 +3,11 @@ apply plugin: 'com.google.protobuf'
 
 def grpcVersion = '1.20.0'
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def artifactory_user = properties.getProperty("artifactory_user")
+def artifactory_password = properties.getProperty("artifactory_password")
+
 android {
     sourceSets {
         main {
@@ -36,15 +41,10 @@ android {
         timing {
             minSdkVersion 19
         }
-        mobileEdgeX {
+        mobilEdgeX {
             apply plugin: 'com.jfrog.artifactory'
 
             minSdkVersion 23
-            Properties properties = new Properties()
-            properties.load(project.rootProject.file('local.properties').newDataInputStream())
-            def artifactory_user = properties.getProperty("artifactory_user")
-            def artifactory_password = properties.getProperty("artifactory_password")
-
             repositories {
                 maven {
                     credentials {
@@ -93,12 +93,15 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'edu.cmu.cs.gabriel:client:0.1.7-SNAPSHOT'
 
-    mobileEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
-    mobileEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
-    mobileEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
-    mobileEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
-    mobileEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
-    mobileEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:0.1.18-SNAPSHOT'
+    // Allow user to build other flavors when they do not have MobilEdgeX credentials
+    if (artifactory_user != null) {
+        mobilEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
+    }
+
+    mobilEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
+    mobilEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
+    mobilEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
+    mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:0.1.18-SNAPSHOT'
 
     standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.18-SNAPSHOT'
     timingImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.18-SNAPSHOT'
