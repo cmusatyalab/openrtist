@@ -118,8 +118,6 @@ public class ServerListActivity extends AppCompatActivity  {
         }
         camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
-        System.out.println(Const.TOKEN_LIMIT);
-
         initServerList();
     }
 
