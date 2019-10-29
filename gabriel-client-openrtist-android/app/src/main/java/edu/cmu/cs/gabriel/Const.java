@@ -180,6 +180,7 @@ public class Const {
                     editor.putBoolean("general_front_camera", false);
                     editor.putBoolean("general_recording", false);
                     editor.putBoolean("general_show_fps", false);
+                    editor.putString("general_iterate_delay", "2");
                     editor.commit();
                 }
                 break;
