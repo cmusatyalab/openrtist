@@ -7,6 +7,7 @@ import timing_engine
 import logging
 import cv2
 import argparse
+import autodetect
 
 PORT = 9098
 DEFAULT_NUM_TOKENS = 2
@@ -21,14 +22,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--tokens', type=int, default=DEFAULT_NUM_TOKENS,
                         help='number of tokens')
-    parser.add_argument('-o', '--openvino', action='store_true',
+    parser.add_argument('-o', '--openvino', nargs='?', 
+                        choices=['yes','no','auto'], const='yes', default='auto',
                         help='Pass this flag to use OpenVINO. Otherwise Torch'
                         'will be used')
-    parser.add_argument('-c', '--cpu-only', action='store_true',
-                        help='Pass this flag to prevent use of the GPU')
+    parser.add_argument('-c', '--cpu-only', nargs='?',
+                        choices=['yes','no','auto'], const='yes', default='auto',
+                        help='Set this flag to use CPU. Otherwise, use GPU')
     parser.add_argument('--timing', action='store_true',
                         help='Print timing information')
     args = parser.parse_args()
+
+    print (args.openvino,args.cpu_only)
+    autodetect.detect( args )
 
     def engine_setup():
         if args.openvino:
