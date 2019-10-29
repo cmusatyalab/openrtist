@@ -8,14 +8,12 @@ import logging
 import cv2
 import argparse
 import importlib
-import sys
 
 PORT = 9098
 DEFAULT_NUM_TOKENS = 2
 INPUT_QUEUE_MAXSIZE = 60
 DEFAULT_STYLE = 'the_scream'
 COMPRESSION_PARAMS = [cv2.IMWRITE_JPEG_QUALITY, 67]
-MODULE_ERROR_CODE = 1
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,7 +39,7 @@ def create_adapter(openvino, cpu_only):
     if importlib.util.find_spec('openvino') is None:
         logger.info('Could not find Openvino')
         if openvino:
-            sys.exit(MODULE_ERROR_CODE)
+            raise Exception('No suitable engine')
     else:
         if not cpu_only:
             from openvino.inference_engine import IEPlugin
