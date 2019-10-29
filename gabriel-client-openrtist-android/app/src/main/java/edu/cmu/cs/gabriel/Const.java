@@ -104,16 +104,13 @@ public class Const {
     public static String SERVER_IP = "128.2.208.111";  // Cloudlet
 
     // token size
-    public static int TOKEN_SIZE = 2;
+    public static String TOKEN_LIMIT = "None";
 
     /************************ Experiment mode only *******************************/
     // server IP list
     public static final String[] SERVER_IP_LIST = {
             "128.2.211.75",
     };
-
-    // token size list
-    public static final int[] TOKEN_SIZE_LIST = {1};
 
     // maximum times to ping (for time synchronization
     public static final int MAX_PING_TIMES = 20;
@@ -168,8 +165,8 @@ public class Const {
                     Const.IMAGE_WIDTH = 320;
                 }
                 break;
-            case "experimental_token_size":
-                Const.TOKEN_SIZE = new Integer(stringValue);
+            case "experimental_token_limit":
+                Const.TOKEN_LIMIT = stringValue;
                 break;
             case "general_stereoscopic":
                 b = new Boolean(value.toString());

@@ -14,13 +14,13 @@
 
 
     <ListPreference
-        android:defaultValue="2"
+        android:defaultValue="None"
         android:entries="@array/pref_token_list_titles"
         android:entryValues="@array/pref_token_list_values"
-        android:key="experimental_token_size"
+        android:key="experimental_token_limit"
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
-        android:title="@string/pref_title_token_size" />
+        android:title="@string/pref_title_token_limit" />
 
 
 </PreferenceScreen>
