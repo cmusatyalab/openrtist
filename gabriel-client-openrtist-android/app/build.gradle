@@ -91,7 +91,7 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'edu.cmu.cs.gabriel:client:0.1.7-SNAPSHOT'
+    implementation 'edu.cmu.cs.gabriel:client:0.1.6'
 
     // Allow user to build other flavors when they do not have MobilEdgeX credentials
     if (artifactory_user != null) {
@@ -101,8 +101,8 @@ dependencies {
     mobilEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
     mobilEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
     mobilEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
-    mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:0.1.18-SNAPSHOT'
+    mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:0.1.4'
 
-    standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.18-SNAPSHOT'
-    timingImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.18-SNAPSHOT'
+    standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.4'
+    timingImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.4'
 }
