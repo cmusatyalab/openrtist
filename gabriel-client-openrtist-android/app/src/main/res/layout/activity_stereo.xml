@@ -5,10 +5,6 @@
     android:keepScreenOn="true"
     android:orientation="vertical"
     android:weightSum="1">
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
