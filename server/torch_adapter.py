@@ -1,4 +1,4 @@
-# OpenRTiST
+3# OpenRTiST
 #   - Real-time Style Transfer
 #
 #   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
@@ -42,7 +42,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-STARTUP_ZEROS_SIZE = (240, 320, 3)
+STARTUP_ONES_SIZE = (360, 240, 3)
 
 
 class TorchAdapter(OpenrtistAdapter):
@@ -65,15 +65,16 @@ class TorchAdapter(OpenrtistAdapter):
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
-        # Feed network an array of all zeros. This makes it run faster on the
-        # first real image.
-        zeros = np.zeros(STARTUP_ZEROS_SIZE, np.uint8)
-        preprocessed = self.preprocessing(zeros)
-        post_inference = self.inference(preprocessed)
-
         for name in os.listdir(self.path):
             if name.endswith('.model'):
                 self.add_supported_style(name[:-6])
+
+        # Feed network an array of all ones. This makes it run faster on the
+        # first real image.
+        ones = np.ones(STARTUP_ONES_SIZE, np.uint8)
+        preprocessed = self.preprocessing(ones)
+        post_inference = self.inference(preprocessed)
+
 
     def set_style(self, new_style):
         if super().set_style(new_style):
