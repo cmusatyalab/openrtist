@@ -8,15 +8,15 @@ printf "Trying to connect to specified openrtist server: ${server_ip}"
 
 stream_pipe="/tmp/rgbpipe"
 while true; do
-	  echo "killing client.py if there is any"
-	  pkill -f -9 client.py
+	  echo "killing screensaver.py if there is any"
+	  pkill -f -9 screensaver.py
 	  echo "removing rgbpipe to make sure no image is half written/read"
 	  rm /tmp/rgbpipe;
 	  echo "create rgbpipe fifo"
 	  mkfifo /tmp/rgbpipe;
-	  echo "launching client in the bg"
+	  echo "launching screensaver in the bg"
 	  trap 'kill -KILL ${bg_pid}; wait ${bg_pid}; exit' TERM INT
-	  ./client.py "${server_ip}" "${stream_pipe}" &
+	  ./screensaver.py "${server_ip}" "${stream_pipe}" &
 	  bg_pid=$!
 	  wait ${bg_pid}
 	  trap - TERM INT

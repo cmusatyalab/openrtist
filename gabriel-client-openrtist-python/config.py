@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class Config(object):
-    RECEIVE_FRAME=True
-    VIDEO_STREAM_PORT = 9098
-    RESULT_RECEIVING_PORT = 9111
-    TOKEN=2
-    TIME_SEC = 30
-    CAM_FPS = 30
-    IMG_WIDTH = 480
-    IMG_HEIGHT = 360
-
+PORT = 9098
+STYLE_DISPLAY_INTERVAL = 300  # Number of frames
+CAM_FPS = 30
+IMG_WIDTH = 480
+IMG_HEIGHT = 360
+START_STYLE_STRING = 'udnie'
+ENGINE_NAME = 'openrtist'
