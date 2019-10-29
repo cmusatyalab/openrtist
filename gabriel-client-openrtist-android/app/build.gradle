@@ -42,10 +42,10 @@ android {
     flavorDimensions "version"
     productFlavors {
         standard {
-            minSdkVersion 19
+            minSdkVersion 21
         }
         timing {
-            minSdkVersion 19
+            minSdkVersion 21
         }
         mobilEdgeX {
             apply plugin: 'com.jfrog.artifactory'
