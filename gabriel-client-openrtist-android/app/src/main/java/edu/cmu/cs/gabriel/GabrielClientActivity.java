@@ -16,6 +16,7 @@ package edu.cmu.cs.gabriel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,6 +44,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.os.SystemClock;
+import android.renderscript.RenderScript;
 import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
@@ -71,6 +74,8 @@ import edu.cmu.cs.gabriel.network.NetworkProtocol;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
+import edu.cmu.cs.localtransfer.LocalTransfer;
+import edu.cmu.cs.localtransfer.Utils;
 import edu.cmu.cs.openrtist.R;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
@@ -204,6 +209,14 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
     };
 
+    // local execution
+    private boolean runLocally = false;
+    private LocalTransfer localRunner = null;
+    private HandlerThread localRunnerThread = null;
+    private Handler localRunnerThreadHandler = null;
+    private volatile boolean localRunnerBusy = false;
+    private RenderScript rs = null;
+    private Bitmap localRunnerBitmapCache = null;
     //List of Styles
 
 //    String[] itemname ={
@@ -423,8 +436,15 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         mProjectionManager = (MediaProjectionManager) getSystemService
                 (Context.MEDIA_PROJECTION_SERVICE);
 
-        Intent intent = getIntent();
-        //reset = intent.getExtras().getBoolean("reset");
+        // setup local execution if needed
+        if (Const.SERVER_IP.equals(getString(R.string.local_execution_dns_placeholder))) {
+            runLocally = true;
+            localRunner = new LocalTransfer(
+                    Const.IMAGE_WIDTH,
+                    Const.IMAGE_HEIGHT
+            );
+            rs = RenderScript.create(this);
+        }
     }
 
     private void storeScreenshot(Bitmap bitmap, String path) {
@@ -711,6 +731,20 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private void initPerRun(String serverIP) {
         Log.v(LOG_TAG, "++initPerRun");
 
+        // don't connect to cloudlet if running locally
+        // if a mobile only run is specified
+        if (runLocally){
+            if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
+                localRunnerThread.quitSafely();
+                localRunnerThread.interrupt();
+            }
+            localRunnerThread = new HandlerThread("LocalTransferThread");
+            localRunnerThread.start();
+            localRunnerThreadHandler = new Handler(localRunnerThread.getLooper());
+            localRunnerBusy = false;
+            return;
+        }
+
         if (Const.IS_EXPERIMENT) {
             if (isFirstExperiment) {
                 isFirstExperiment = false;
@@ -780,6 +814,19 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         startTimer.schedule(autoStart, 1000, 5*60*1000);
     }
 
+    private byte[] yuvToJPEGBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
+        Size cameraImageSize = parameters.getPreviewSize();
+        YuvImage image = new YuvImage(yuvFrameBytes,
+                parameters.getPreviewFormat(), cameraImageSize.width,
+                cameraImageSize.height, null);
+
+        ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
+        // chooses quality 67 and it roughly matches quality 5 in avconv
+        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()),
+                67, tmpBuffer);
+        return tmpBuffer.toByteArray();
+    }
+
     private PreviewCallback previewCallback = new PreviewCallback() {
         // called whenever a new frame is captured
         public void onPreviewFrame(byte[] frame, Camera mCamera) {
@@ -787,26 +834,57 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Camera.Parameters parameters = mCamera.getParameters();
 
                 if(!style_type.equals("none")) {
-                    synchronized (GabrielClientActivity.this.engineInputLock) {
-                        GabrielClientActivity.this.engineInput = new EngineInput(
-                                frame, parameters, style_type);
-                        GabrielClientActivity.this.engineInputLock.notify();
+                    if (runLocally) {
+                        if (!localRunnerBusy){
+                            //local execution
+                            long st = SystemClock.elapsedRealtime();
+                            final float[] rgbImage = Utils.convertYuvToRgb(
+                                    rs,
+                                    frame,
+                                    parameters.getPreviewSize()
+                            );
+                            Log.d(LOG_TAG, String.format("YuvToRGBA takes %d ms",
+                                    SystemClock.elapsedRealtime() - st));
+
+                            final int imageWidth = parameters.getPreviewSize().width;
+                            final int imageHeight = parameters.getPreviewSize().height;
+
+                            localRunnerThreadHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    localRunnerBusy = true;
+                                    int[] output = localRunner.infer(rgbImage);
+                                    // send results back to UI as Gabriel would
+                                    if (localRunnerBitmapCache == null){
+                                        localRunnerBitmapCache = Bitmap.createBitmap(
+                                                imageWidth,
+                                                imageHeight,
+                                                Bitmap.Config.ARGB_8888
+                                        );
+                                    }
+                                    localRunnerBitmapCache.setPixels(output, 0,
+                                            imageWidth, 0, 0, imageWidth, imageHeight);
+                                    Message msg = Message.obtain();
+                                    msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
+                                    msg.obj = localRunnerBitmapCache;
+                                    returnMsgHandler.sendMessage(msg);
+                                    localRunnerBusy = false;
+                                }
+                            });
+                        }
+                    } else if (videoStreamingThread != null) { // cloudlet execution
+                        synchronized (GabrielClientActivity.this.engineInputLock) {
+                            GabrielClientActivity.this.engineInput = new EngineInput(
+                                    frame, parameters, style_type);
+                            GabrielClientActivity.this.engineInputLock.notify();
+                        }
                     }
                 } else if (!cleared) {
                     GabrielClientActivity.this.engineInput = null;
 
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
-                        Size cameraImageSize = parameters.getPreviewSize();
-                        byte[] flip_frame = null;
-                        YuvImage image = new YuvImage(frame, parameters.getPreviewFormat(), cameraImageSize.width,
-                                cameraImageSize.height, null);
-
-                        ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
-                        // chooses quality 67 and it roughly matches quality 5 in avconv
-                        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 67, tmpBuffer);
-                        byte[] bytes = tmpBuffer.toByteArray();
-
+                        byte[] bytes = yuvToJPEGBytes(frame, parameters);
                         final Bitmap camView = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                         stereoView1.setVisibility(View.INVISIBLE);
                         stereoView2.setVisibility(View.INVISIBLE);
@@ -896,6 +974,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "++terminate");
 
         isRunning = false;
+
+        if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
+            localRunnerThread.quitSafely();
+            localRunnerThread.interrupt();
+            localRunnerThread = null;
+            localRunnerThreadHandler = null;
+        }
+        if (rs != null) {
+            rs.destroy();
+        }
 
         // Allow this.backgroundHandler to return if it is currently waiting on this.engineInputLock
         synchronized (this.engineInputLock) {
@@ -1100,6 +1188,27 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 if (imgView.getVisibility() == View.INVISIBLE) {
                     imgView.setVisibility(View.VISIBLE);
                 }
+            }
+
+            if (runLocally) {
+                localRunnerThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            localRunner.load(getApplicationContext(),
+                                    String.format("%s.pt", style_type));
+                        } catch (FileNotFoundException e) {
+                            style_type = "none";
+                            AlertDialog.Builder builder = new AlertDialog.Builder(
+                                    GabrielClientActivity.this,
+                                    AlertDialog.THEME_HOLO_DARK);
+                            builder.setMessage("Style Not Found Locally")
+                                    .setTitle("Failed to Load Style");
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+                    }
+                });
             }
         }
 //        styleView.setImageResource(imgid[position]);

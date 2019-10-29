@@ -104,3 +104,9 @@ class TorchAdapter(OpenrtistAdapter):
         self.style_model.load_state_dict(torch.load(model))
         if not self.cpu_only:
             self.style_model.cuda()
+
+    def _style_image(self):
+        return os.path.join(self.path '{}.jpg'.format(self._style)
+
+    def get_all_styles(self):
+        return self.supported_styles
