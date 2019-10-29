@@ -874,7 +874,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                                 }
                             });
                         }
-                    } else if (videoStreamingThread != null) { // cloudlet execution
+                    } else if (GabrielClientActivity.this.comm != null) { // cloudlet execution
                         synchronized (GabrielClientActivity.this.engineInputLock) {
                             GabrielClientActivity.this.engineInput = new EngineInput(
                                     frame, parameters, style_type);
