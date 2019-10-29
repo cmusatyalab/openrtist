@@ -308,17 +308,18 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             setContentView(R.layout.activity_stereo);
         } else {
             setContentView(R.layout.activity_main);
+            // Spinner element
+            Spinner spinner = (Spinner) findViewById(R.id.spinner);
+            // Spinner click listener
+            spinner.setOnItemSelectedListener(this);
+            CustomAdapter customAdapter=new CustomAdapter(getApplicationContext(),imgid,display_names);
+            spinner.setAdapter(customAdapter);
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED+
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON+
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        // Spinner element
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
-        // Spinner click listener
-        spinner.setOnItemSelectedListener(this);
-        CustomAdapter customAdapter=new CustomAdapter(getApplicationContext(),imgid,display_names);
-        spinner.setAdapter(customAdapter);
+
         stereoView1 = (ImageView) findViewById(R.id.guidance_image1);
         //styleView1 = (ImageView) findViewById(R.id.style_image1);
         stereoView2 = (ImageView) findViewById(R.id.guidance_image2);
@@ -366,7 +367,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         if(Const.ITERATE_STYLES) {
-            findViewById(R.id.spinner).setVisibility(View.GONE);
+            if(!Const.STEREO_ENABLED)
+                findViewById(R.id.spinner).setVisibility(View.GONE);
             iterationHandler = new Handler();
             //start iterating immediately if recording is not enabled,
             //otherwise we should hold off on iterating until onActivityResult is called
@@ -377,47 +379,47 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Toast.makeText(this, R.string.iteration_delayed, Toast.LENGTH_LONG).show();
             }
         }
-
-        //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-        final ImageView camButton = (ImageView) findViewById(R.id.imgSwitchCam);
-        final ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
-        camButton.setVisibility(View.VISIBLE);
-        camButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCamera.setPreviewCallback(null);
-                CameraClose();
-                if (cameraId > 0) {
-                    camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_front_24px));
-                    Const.USING_FRONT_CAMERA = false;
-                    cameraId = 0;
-                    rotateButton.setVisibility(View.GONE);
-                } else {
-                    camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_rear_24px));
-                    cameraId = findFrontFacingCamera();
-                    Const.USING_FRONT_CAMERA = true;
-                    rotateButton.setVisibility(View.VISIBLE);
+        if(!Const.STEREO_ENABLED) {
+            //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+            final ImageView camButton = (ImageView) findViewById(R.id.imgSwitchCam);
+            final ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
+            camButton.setVisibility(View.VISIBLE);
+            camButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mCamera.setPreviewCallback(null);
+                    CameraClose();
+                    if (cameraId > 0) {
+                        camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_front_24px));
+                        Const.USING_FRONT_CAMERA = false;
+                        cameraId = 0;
+                        rotateButton.setVisibility(View.GONE);
+                    } else {
+                        camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_rear_24px));
+                        cameraId = findFrontFacingCamera();
+                        Const.USING_FRONT_CAMERA = true;
+                        rotateButton.setVisibility(View.VISIBLE);
+                    }
+                    mSurfaceTexture = preview.getSurfaceTexture();
+                    mCamera = checkCamera();
+                    CameraStart();
+                    mCamera.setPreviewCallbackWithBuffer(previewCallback);
+                    reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
+                    mCamera.addCallbackBuffer(reusedBuffer);
                 }
-                mSurfaceTexture = preview.getSurfaceTexture();
-                mCamera = checkCamera();
-                CameraStart();
-                mCamera.setPreviewCallbackWithBuffer(previewCallback);
-                reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
-                mCamera.addCallbackBuffer(reusedBuffer);
-            }
-        });
+            });
 
-        rotateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            rotateButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                imageRotate = !imageRotate;
-                Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
-                if(style_type.equals("none"))
-                    preview.setRotation(180 - preview.getRotation());
-            }
-        });
-
+                    imageRotate = !imageRotate;
+                    Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
+                    if (style_type.equals("none"))
+                        preview.setRotation(180 - preview.getRotation());
+                }
+            });
+        }
 
         if(Const.SHOW_FPS) {
             findViewById(R.id.fpsLabel).setVisibility(View.VISIBLE);
