@@ -76,7 +76,7 @@ def main():
     args = parser.parse_args()
 
     def engine_setup():
-        adaper = create_adapter(args.openvino, args.cpu_only)
+        adapter = create_adapter(args.openvino, args.cpu_only)
 
         if args.timing:
             engine = TimingEngine(COMPRESSION_PARAMS, adapter)
