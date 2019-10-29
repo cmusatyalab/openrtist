@@ -44,7 +44,7 @@ def create_adapter(openvino, cpu_only):
             sys.exit(MODULE_ERROR_CODE)
     else:
         if not cpu_only:
-            from openvino.inference_engine import IENetwork
+            from openvino.inference_engine import IEPlugin
             try:
                 IEPlugin('GPU')
                 logger.info('Detected iGPU / clDNN support')
