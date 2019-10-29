@@ -14,6 +14,7 @@ RUN echo "deb http://ppa.launchpad.net/intel-opencl/intel-opencl/ubuntu bionic m
     clinfo \
     intel-opencl-icd \
     intel-openvino-dev-ubuntu18-2019.3.344 \
+    libgtk-3-0 \
     libsm6 \
     libxext6 \
     libxrender1 \
@@ -26,10 +27,12 @@ RUN echo "deb http://ppa.launchpad.net/intel-opencl/intel-opencl/ubuntu bionic m
 RUN python3 -m pip install --no-cache-dir \
     'opencv-python<5' \
     protobuf \
+    py-cpuinfo \
     pyzmq \
-    torchvision \
+    'torchvision<0.5' \
     websockets \
-    zmq
+    zmq \
+    'gabriel-server==0.0.9'
 
 # Prevent NVIDIA libOpenCL.so from being loaded
 RUN mv /usr/local/cuda-10.1/targets/x86_64-linux/lib/libOpenCL.so.1 \
@@ -42,4 +45,4 @@ WORKDIR openrtist/server
 RUN python3 -m pip install -r requirements.txt
 
 EXPOSE 5555 9098
-ENTRYPOINT ["./main.py"]
+ENTRYPOINT ["./entrypoint.sh"]
