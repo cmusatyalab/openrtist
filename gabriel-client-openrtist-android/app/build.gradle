@@ -41,7 +41,7 @@ android {
         timing {
             minSdkVersion 19
         }
-        mobileEdgeX {
+        mobilEdgeX {
             apply plugin: 'com.jfrog.artifactory'
 
             minSdkVersion 23
@@ -95,13 +95,13 @@ dependencies {
 
     // Allow user to build other flavors when they do not have MobilEdgeX credentials
     if (artifactory_user != null) {
-        mobileEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
+        mobilEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
     }
 
-    mobileEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
-    mobileEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
-    mobileEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
-    mobileEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:0.1.18-SNAPSHOT'
+    mobilEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
+    mobilEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
+    mobilEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
+    mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:0.1.18-SNAPSHOT'
 
     standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.18-SNAPSHOT'
     timingImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:0.1.18-SNAPSHOT'
