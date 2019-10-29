@@ -197,6 +197,4 @@ public class ServerListActivity extends AppCompatActivity  {
             editor.commit();
         }
     }
-
-
 }
