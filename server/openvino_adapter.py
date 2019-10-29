@@ -33,7 +33,7 @@ import openvino
 from openvino.inference_engine import IENetwork
 from openvino.inference_engine import IEPlugin
 from openrtist_adapter import OpenrtistAdapter
-from cpuinfo import cpuinfo
+from cpuinfo import get_cpu_info
 import numpy as np
 import logging
 import os
@@ -72,7 +72,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
             else:
                 self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
             conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
-        else:
+        elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0"):
             config_file = os.path.join(
                 os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
             self.plugin.set_config({'CONFIG_FILE' : config_file})
@@ -83,10 +83,13 @@ class OpenvinoAdapter(OpenrtistAdapter):
         ]
         for name in names:
             model_bin = os.path.join(self.path, name + model_bin_suff)
+            m_xml = self.path+name+".xml"
+            if not os.path.isfile(m_xml):
+                m_xml = model_xml
 
             # Read IR
-            print('Loading network files:\n\t', model_xml, '\n\t', model_bin)
-            net = IENetwork(model=model_xml, weights=model_bin)
+            print('Loading network files:\n\t', m_xml, '\n\t', model_bin)
+            net = IENetwork(model=m_xml, weights=model_bin)
 
             if cpu_only:
                 supported_layers = self.plugin.get_supported_layers(net)
