@@ -52,7 +52,6 @@ def detect( args ):
     else:
         print("Autodetect:  No suitable configutation found!")
         print("Ensure PyTorch or OpenVINO are installed and configured")
-        print("  and that USE_OPENVINO and USE_GPU flags are not")
-        print("  incorrectly set in config.py")
+        print("  and that -c and -o command-line options are set appropriately")
         sys.exit()
     return

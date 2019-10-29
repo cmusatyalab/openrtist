@@ -24,7 +24,7 @@ def main():
                         help='number of tokens')
     parser.add_argument('-o', '--openvino', nargs='?', 
                         choices=['yes','no','auto'], const='yes', default='auto',
-                        help='Pass this flag to use OpenVINO. Otherwise Torch'
+                        help='Pass this flag to use OpenVINO. Otherwise Torch '
                         'will be used')
     parser.add_argument('-c', '--cpu-only', nargs='?',
                         choices=['yes','no','auto'], const='yes', default='auto',
