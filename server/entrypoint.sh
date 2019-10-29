@@ -1,3 +1,4 @@
 #!/bin/bash
+args=$*
 source /opt/intel/openvino/bin/setupvars.sh
-exec python3 ./main.py $@
+/usr/bin/python3 main.py $args
