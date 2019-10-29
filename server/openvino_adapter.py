@@ -29,7 +29,7 @@
 # distributed under the BSD 3-Clause License.
 # https://github.com/pytorch/examples/blob/master/LICENSE
 
-import openvino
+import openvino.inference_engine
 from openvino.inference_engine import IENetwork
 from openvino.inference_engine import IEPlugin
 from openrtist_adapter import OpenrtistAdapter
@@ -83,7 +83,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
         ]
         for name in names:
             model_bin = os.path.join(self.path, name + model_bin_suff)
-            m_xml = self.path+name+".xml"
+            m_xml = os.path.join(self.path, name+".xml")
             if not os.path.isfile(m_xml):
                 m_xml = model_xml
 
