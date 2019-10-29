@@ -1,0 +1,13 @@
+syntax = "proto3";
+import "google/protobuf/wrappers.proto";
+
+package openrtist;
+
+option java_package = "edu.cmu.cs.openrtist";
+option java_outer_classname = "Protos";
+
+message EngineFields {
+    string style = 1;
+    map<string, string> style_list = 2;
+    google.protobuf.BytesValue style_image = 3;
+}

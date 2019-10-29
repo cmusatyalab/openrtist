@@ -68,17 +68,10 @@ import android.content.DialogInterface;
 import android.net.Uri;
 import android.media.MediaActionSound;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.cmu.cs.gabriel.network.ControlThread;
-import edu.cmu.cs.gabriel.network.LogicalTime;
+import edu.cmu.cs.gabriel.network.EngineInput;
+import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
-import edu.cmu.cs.gabriel.util.PingThread;
-import edu.cmu.cs.gabriel.network.ResultReceivingThread;
-import edu.cmu.cs.gabriel.network.VideoStreamingThread;
-import edu.cmu.cs.gabriel.token.ReceivedPacketInfo;
-import edu.cmu.cs.gabriel.token.TokenController;
+import edu.cmu.cs.gabriel.network.OpenrtistComm;
 import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
@@ -99,11 +92,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private String serverIP = null;
     private String style_type = "udnie";
     private String prev_style_type = "udnie";
-    private VideoStreamingThread videoStreamingThread = null;
-    private ResultReceivingThread resultThread = null;
-    private ControlThread controlThread = null;
-    private TokenController tokenController = null;
-    private PingThread pingThread = null;
+
+    private OpenrtistComm openrtistComm;
 
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
@@ -130,10 +120,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private boolean recordingInitiated = false;
     private String mOutputPath = null;
 
-    private ReceivedPacketInfo receivedPacketInfo = null;
-
-    private LogicalTime logicalTime = null;
-
     private boolean reset = false;
 
     private FileWriter controlLogWriter = null;
@@ -149,8 +135,79 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private int cameraId = 0;
     private boolean imageRotate = false;
     private TextView fpsLabel = null;
+    private boolean cleared = false;
 
     private int framesProcessed = 0;
+    private EngineInput engineInput;
+    final private Object engineInputLock = new Object();
+    private FrameSupplier frameSupplier = new FrameSupplier(this);
+
+    // Background threads based on
+    // https://github.com/googlesamples/android-Camera2Basic/blob/master/Application/src/main/java/com/example/android/camera2basic/Camera2BasicFragment.java#L652
+    /**
+     * Thread for running tasks that shouldn't block the UI.
+     */
+    private HandlerThread backgroundThread;
+
+    /**
+     * A {@link Handler} for running tasks in the background.
+     */
+    private Handler backgroundHandler;
+
+    /**
+     * Starts a background thread and its {@link Handler}.
+     */
+    private void startBackgroundThread() {
+        backgroundThread = new HandlerThread("ImageUpload");
+        backgroundThread.start();
+        backgroundHandler = new Handler(backgroundThread.getLooper());
+
+        backgroundHandler.post(imageUpload);
+    }
+
+    /**
+     * Stops the background thread and its {@link Handler}.
+     */
+    private void stopBackgroundThread() {
+        backgroundThread.quitSafely();
+        try {
+            backgroundThread.join();
+            backgroundThread = null;
+            backgroundHandler = null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public EngineInput getEngineInput() {
+        EngineInput engineInput;
+        synchronized (this.engineInputLock) {
+            try {
+                while (isRunning && this.engineInput == null) {
+                    engineInputLock.wait();
+                }
+
+                engineInput = this.engineInput;
+                this.engineInput = null;  // Prevent sending the same frame again
+            } catch (/* InterruptedException */ Exception e) {
+                Log.e(LOG_TAG, "Error waiting for engine input", e);
+                engineInput = null;
+            }
+        }
+        System.out.println(engineInput);
+        return engineInput;
+    }
+
+    private Runnable imageUpload = new Runnable() {
+        @Override
+        public void run() {
+            openrtistComm.sendSupplier(GabrielClientActivity.this.frameSupplier);
+
+            if (isRunning) {
+                backgroundHandler.post(imageUpload);
+            }
+        }
+    };
 
     // local execution
     private boolean runLocally = false;
@@ -453,6 +510,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
     };
 
+
     @Override
     protected void onResume() {
         Log.v(LOG_TAG, "++onResume");
@@ -469,9 +527,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             runExperiments();
         } else { // demo mode
             serverIP = Const.SERVER_IP;
-            initPerRun(serverIP, Const.TOKEN_SIZE, null);
+            initPerRun(serverIP);
         }
+        this.startBackgroundThread();
     }
+
+
 
     @Override
     protected void onPause() {
@@ -480,7 +541,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             iterationHandler.removeCallbacks(styleIterator);
         if(capturingScreen)
             stopRecording();
+
         this.terminate();
+
         super.onPause();
     }
 
@@ -665,7 +728,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
      * Does initialization before each run (connecting to a specific server).
      * Called once before each experiment.
      */
-    private void initPerRun(String serverIP, int tokenSize, File latencyFile) {
+    private void initPerRun(String serverIP) {
         Log.v(LOG_TAG, "++initPerRun");
 
         // don't connect to cloudlet if running locally
@@ -682,20 +745,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             return;
         }
 
-        if ((pingThread != null) && (pingThread.isAlive())) {
-            pingThread.kill();
-            pingThread.interrupt();
-            pingThread = null;
-        }
-        if ((videoStreamingThread != null) && (videoStreamingThread.isAlive())) {
-            videoStreamingThread.stopStreaming();
-            videoStreamingThread = null;
-        }
-        if ((resultThread != null) && (resultThread.isAlive())) {
-            resultThread.close();
-            resultThread = null;
-        }
-
         if (Const.IS_EXPERIMENT) {
             if (isFirstExperiment) {
                 isFirstExperiment = false;
@@ -703,31 +752,14 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 try {
                     Thread.sleep(20 * 1000);
                 } catch (InterruptedException e) {}
-                controlThread.sendControlMsg("ping");
                 // wait a while for ping to finish...
                 try {
                     Thread.sleep(5 * 1000);
                 } catch (InterruptedException e) {}
             }
         }
-        if (tokenController != null) {
-            tokenController.close();
-        }
-        if ((controlThread != null) && (controlThread.isAlive())) {
-            controlThread.close();
-            controlThread = null;
-        }
 
         if (serverIP == null) return;
-
-        if (Const.BACKGROUND_PING) {
-	        pingThread = new PingThread(serverIP, Const.PING_INTERVAL);
-	        pingThread.start();
-        }
-
-        logicalTime = new LogicalTime();
-
-        tokenController = new TokenController(tokenSize, latencyFile);
 
         if (Const.IS_EXPERIMENT) {
             try {
@@ -737,46 +769,28 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             }
         }
 
-        controlThread = new ControlThread(serverIP, Const.CONTROL_PORT, returnMsgHandler, tokenController);
-        controlThread.setPriority(Thread.MIN_PRIORITY);
-        controlThread.start();
-
-        if (Const.IS_EXPERIMENT) {
-            controlThread.sendControlMsg("ping");
-            // wait a while for ping to finish...
-            try {
-                Thread.sleep(5 * 1000);
-            } catch (InterruptedException e) {}
-        }
-
-        resultThread = new ResultReceivingThread(serverIP, Const.RESULT_RECEIVING_PORT, returnMsgHandler);
-        resultThread.start();
-
-        if (Const.SENSOR_VIDEO) {
-            videoStreamingThread = new VideoStreamingThread(serverIP, Const.VIDEO_STREAM_PORT, returnMsgHandler, tokenController, mCamera, logicalTime);
-            videoStreamingThread.start();
-        }
+        this.openrtistComm = new OpenrtistComm(serverIP, Const.PORT, this,
+                returnMsgHandler);
     }
 
     /**
-     * Runs a set of experiments with different server IPs and token numbers.
-     * IP list and token sizes are defined in the Const file.
+     * Runs a set of experiments with different server IPs.
+     * IP list is defined in the Const file.
      */
     private void runExperiments() {
         final Timer startTimer = new Timer();
         TimerTask autoStart = new TimerTask() {
             int ipIndex = 0;
-            int tokenIndex = 0;
             @Override
             public void run() {
                 GabrielClientActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         // end condition
-                        if ((ipIndex == Const.SERVER_IP_LIST.length) || (tokenIndex == Const.TOKEN_SIZE_LIST.length)) {
+                        if (ipIndex == Const.SERVER_IP_LIST.length) {
                             Log.d(LOG_TAG, "Finish all experiemets");
 
-                            initPerRun(null, 0, null); // just to get another set of ping results
+                            initPerRun(null); // just to get another set of ping results
 
                             startTimer.cancel();
                             terminate();
@@ -785,20 +799,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
                         // make a new configuration
                         serverIP = Const.SERVER_IP_LIST[ipIndex];
-                        int tokenSize = Const.TOKEN_SIZE_LIST[tokenIndex];
-                        File latencyFile = new File (Const.EXP_DIR.getAbsolutePath() + File.separator +
-                                "latency-" + serverIP + "-" + tokenSize + ".txt");
-                        Log.i(LOG_TAG, "Start new experiment - IP: " + serverIP +"\tToken: " + tokenSize);
 
                         // run the experiment
-                        initPerRun(serverIP, tokenSize, latencyFile);
+                        initPerRun(serverIP);
 
                         // move to the next experiment
-                        tokenIndex++;
-                        if (tokenIndex == Const.TOKEN_SIZE_LIST.length){
-                            tokenIndex = 0;
-                            ipIndex++;
-                        }
+                        ipIndex++;
                     }
                 });
             }
@@ -807,7 +813,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // run 5 minutes for each experiment
         startTimer.schedule(autoStart, 1000, 5*60*1000);
     }
-
 
     private byte[] yuvToJPEGBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
         Size cameraImageSize = parameters.getPreviewSize();
@@ -868,9 +873,15 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                             });
                         }
                     } else if (videoStreamingThread != null) { // cloudlet execution
-                        videoStreamingThread.push(frame, parameters, style_type);
+                        synchronized (GabrielClientActivity.this.engineInputLock) {
+                            GabrielClientActivity.this.engineInput = new EngineInput(
+                                    frame, parameters, style_type);
+                            GabrielClientActivity.this.engineInputLock.notify();
+                        }
                     }
-                } else{
+                } else if (!cleared) {
+                    GabrielClientActivity.this.engineInput = null;
+
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
                         byte[] bytes = yuvToJPEGBytes(frame, parameters);
@@ -882,93 +893,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         imgView.setVisibility(View.INVISIBLE);
                     }
 
+                    cleared = true;
                 }
             }
             mCamera.addCallbackBuffer(frame);
         }
     };
-
-    /**
-     * Notifies token controller that some response is back
-     */
-    private void notifyToken() {
-        Message msg = Message.obtain();
-        msg.what = NetworkProtocol.NETWORK_RET_TOKEN;
-        receivedPacketInfo.setGuidanceDoneTime(System.currentTimeMillis());
-        msg.obj = receivedPacketInfo;
-        try {
-            tokenController.tokenHandler.sendMessage(msg);
-        } catch (NullPointerException e) {
-            // might happen because token controller might have been terminated
-        }
-    }
-
-    private void processServerControl(JSONObject msgJSON) {
-        if (Const.IS_EXPERIMENT) {
-            try {
-                controlLogWriter.write("" + logicalTime.imageTime + "\n");
-                String log = msgJSON.toString();
-                controlLogWriter.write(log + "\n");
-            } catch (IOException e) {}
-        }
-
-        try {
-            // Switching on/off image sensor
-            if (msgJSON.has(NetworkProtocol.SERVER_CONTROL_SENSOR_TYPE_IMAGE)) {
-                boolean sw = msgJSON.getBoolean(NetworkProtocol.SERVER_CONTROL_SENSOR_TYPE_IMAGE);
-                if (sw) { // turning on
-                    Const.SENSOR_VIDEO = true;
-                    tokenController.reset();
-                    if (preview == null) {
-                        preview = (TextureView) findViewById(R.id.camera_preview);
-                        mSurfaceTexture = preview.getSurfaceTexture();
-                        preview.setSurfaceTextureListener(this);
-                        mCamera = checkCamera();
-                        CameraStart();
-
-                        mCamera.setPreviewCallbackWithBuffer(previewCallback);
-                        reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
-                        mCamera.addCallbackBuffer(reusedBuffer);
-                    }
-                    if (videoStreamingThread == null) {
-                        videoStreamingThread = new VideoStreamingThread(serverIP, Const.VIDEO_STREAM_PORT, returnMsgHandler, tokenController, mCamera, logicalTime);
-                        videoStreamingThread.start();
-                    }
-                } else { // turning off
-                    Const.SENSOR_VIDEO = false;
-                    if (preview != null) {
-                        mCamera.setPreviewCallback(null);
-                        CameraClose();
-                        reusedBuffer = null;
-                        preview = null;
-                        mCamera = null;
-                    }
-                    if (videoStreamingThread != null) {
-                        videoStreamingThread.stopStreaming();
-                        videoStreamingThread = null;
-                    }
-                }
-            }
-
-            // Camera configs
-            if (preview != null) {
-                int targetFps = -1, imgWidth = -1, imgHeight = -1;
-                if (msgJSON.has(NetworkProtocol.SERVER_CONTROL_FPS))
-                    targetFps = msgJSON.getInt(NetworkProtocol.SERVER_CONTROL_FPS);
-                if (msgJSON.has(NetworkProtocol.SERVER_CONTROL_IMG_WIDTH))
-                    imgWidth = msgJSON.getInt(NetworkProtocol.SERVER_CONTROL_IMG_WIDTH);
-                if (msgJSON.has(NetworkProtocol.SERVER_CONTROL_IMG_HEIGHT))
-                    imgHeight = msgJSON.getInt(NetworkProtocol.SERVER_CONTROL_IMG_HEIGHT);
-                if (targetFps != -1 || imgWidth != -1)
-                    updateCameraConfigurations(targetFps, imgWidth, imgHeight);
-            }
-
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, "" + msgJSON);
-            Log.e(LOG_TAG, "error in processing server control messages" + e);
-            return;
-        }
-    }
 
     private Runnable fpsCalculator = new Runnable() {
 
@@ -980,8 +910,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
                 }
                 String msg= "FPS: " + framesProcessed;
-                if(tokenController != null)
-                    msg += " Avg RTT: " + tokenController.getAvgRTT();
                 fpsLabel.setText( msg );
             }
             framesProcessed=0;
@@ -995,7 +923,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         public void handleMessage(Message msg) {
             if (msg.what == NetworkProtocol.NETWORK_RET_FAILED) {
                 //terminate();
-                if(!recordingInitiated) {  //suppress this error when screen recording as we have to temporarily leave this activity causing a network disruption
+                if (!recordingInitiated) {  //suppress this error when screen recording as we have to temporarily leave this activity causing a network disruption
                     AlertDialog.Builder builder = new AlertDialog.Builder(GabrielClientActivity.this, AlertDialog.THEME_HOLO_DARK);
                     builder.setMessage(msg.getData().getString("message"))
                             .setTitle(R.string.connection_error)
@@ -1013,13 +941,15 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 }
 
             }
-            if (msg.what == NetworkProtocol.NETWORK_RET_MESSAGE) {
-                receivedPacketInfo = (ReceivedPacketInfo) msg.obj;
-                receivedPacketInfo.setMsgRecvTime(System.currentTimeMillis());
-            }
-            if (msg.what == NetworkProtocol.NETWORK_RET_IMAGE || msg.what == NetworkProtocol.NETWORK_RET_ANIMATION) {
+            if (msg.what == NetworkProtocol.NETWORK_RET_IMAGE) {
+                if (GabrielClientActivity.this.style_type.equals("none")) {
+                    return;
+                }
+
+                cleared = false;
+
                 Bitmap feedbackImg = (Bitmap) msg.obj;
-                if(Const.STEREO_ENABLED) {
+                if (Const.STEREO_ENABLED) {
                     stereoView1 = (ImageView) findViewById(R.id.guidance_image1);
                     stereoView1.setVisibility(View.VISIBLE);
                     stereoView1.setImageBitmap(feedbackImg);
@@ -1033,40 +963,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
                 }
                 framesProcessed++;
-
-            }
-            if (msg.what == NetworkProtocol.NETWORK_RET_DONE) {
-                notifyToken();
-            }
-            if (msg.what == NetworkProtocol.NETWORK_RET_CONFIG) {
-                String controlMsg = (String) msg.obj;
-                try {
-                    final JSONObject controlJSON = new JSONObject(controlMsg);
-                    if (controlJSON.has("delay")) {
-                        final long delay = controlJSON.getInt("delay");
-
-                        final Timer controlTimer = new Timer();
-                        TimerTask controlTask = new TimerTask() {
-                            @Override
-                            public void run() {
-                                GabrielClientActivity.this.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        logicalTime.increaseImageTime((int) (delay * 15 / 1000));
-                                        processServerControl(controlJSON);
-                                    }
-                                });
-                            }
-                        };
-
-                        // run 5 minutes for each experiment
-                        controlTimer.schedule(controlTask, delay);
-                    } else {
-                        processServerControl(controlJSON);
-                    }
-                } catch (JSONException e) {
-                    Log.e(LOG_TAG, "error in jsonizing server control messages" + e);
-                }
             }
         }
     };
@@ -1089,26 +985,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             rs.destroy();
         }
 
-        if ((pingThread != null) && (pingThread.isAlive())) {
-            pingThread.kill();
-            pingThread.interrupt();
-            pingThread = null;
+        // Allow this.backgroundHandler to return if it is currently waiting on this.engineInputLock
+        synchronized (this.engineInputLock) {
+            this.engineInputLock.notify();
         }
-        if ((resultThread != null) && (resultThread.isAlive())) {
-            resultThread.close();
-            resultThread = null;
-        }
-        if ((videoStreamingThread != null) && (videoStreamingThread.isAlive())) {
-            videoStreamingThread.stopStreaming();
-            videoStreamingThread = null;
-        }
-        if ((controlThread != null) && (controlThread.isAlive())) {
-            controlThread.close();
-            controlThread = null;
-        }
-        if (tokenController != null){
-            tokenController.close();
-            tokenController = null;
+
+        this.stopBackgroundThread();
+
+        if (this.openrtistComm != null) {
+            this.openrtistComm.stop();
+            this.openrtistComm = null;
         }
         if (preview != null) {
             mCamera.setPreviewCallback(null);

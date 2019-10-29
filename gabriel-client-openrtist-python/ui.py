@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 # Copyright 2018 Carnegie Mellon University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +15,24 @@
 # limitations under the License.
 
 import argparse
-from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import Qt, QThread, SIGNAL, pyqtSignal, QSize
-from PyQt4.QtGui import *
-#from PyQt4.QtGui import QPainter, QPixmap, QImage, QMessageBox, QVBoxLayout
-import threading
+from PyQt5 import QtWidgets
+from PyQt5 import QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QThread
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QImage
+import capture_adapter
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
-import os  # For listing directory methods
-import client
-import numpy as np
-import re
-import pdb
+import logging
 
-class UI(QtGui.QMainWindow, design.Ui_MainWindow):
+
+class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super().__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
 
     def set_image(self, frame, str_name, style_image):
@@ -55,38 +58,46 @@ class UI(QtGui.QMainWindow, design.Ui_MainWindow):
         painter.setPen(Qt.red)
         painter.drawRect(0,0,pixmap.width(),pixmap.height());
         painter.end()
-        self.label_image.setPixmap(pix) 
-        self.label_image.setScaledContents(True);          
+        self.label_image.setPixmap(pix)
+        self.label_image.setScaledContents(True);
+
 
 class ClientThread(QThread):
-    sig_frame_available = pyqtSignal(object,str,object)
-    
-    def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__()
-        self._stop = threading.Event()
-        self._gabriel_client = client.GabrielClient(*args, **kwargs)
+    pyqt_signal = pyqtSignal(object, str, object)
+
+    def __init__(self, server_ip):
+        super().__init__()
+
+        def consume_rgb_frame_style(rgb_frame, style, style_image):
+            self.pyqt_signal.emit(rgb_frame, style, style_image)
+        self._client = capture_adapter.create_client(
+            server_ip, consume_rgb_frame_style)
 
     def run(self):
-        self._gabriel_client.start(self.sig_frame_available)
+        self._client.launch()
 
     def stop(self):
-        self._stop.set()
-        self._gabriel_client.cleanup()
+        self._client.stop()
 
-def main(inputs):
-    app = QtGui.QApplication(sys.argv)
-    ui = UI()        
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("server_ip", action="store",
+                        help="IP address for Openrtist Server")
+    inputs = parser.parse_args()
+
+    app = QtWidgets.QApplication(sys.argv)
+    ui = UI()
     ui.show()
     clientThread = ClientThread(inputs.server_ip)
-    clientThread.sig_frame_available.connect(ui.set_image)
+    clientThread.pyqt_signal.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
-    
-    sys.exit(app.exec_())  # and execute the app
 
-    
-if __name__ == '__main__':  # if we're running file directly and not importing it
-    parser = argparse.ArgumentParser()
-    parser.add_argument("server_ip", action="store", help="IP address for Openrtist Server")
-    inputs = parser.parse_args()
-    main(inputs)
+    sys.exit(app.exec())  # return Dialog Code
+
+
+if __name__ == '__main__':
+    main()

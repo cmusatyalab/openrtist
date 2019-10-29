@@ -2,9 +2,9 @@
 This is the Desktop demo python client for Openrtist.
 
 
-# Dependency:
+# Dependencies:
 ```bash
-sudo apt-get install libopencv-dev python-opencv python-qt4
+pip install -r requirements.txt
 ```
 
 # Usage:
