@@ -7,7 +7,7 @@ public class TimingClientActivity extends GabrielClientActivity {
 
     void setupComm() {
         this.timingComm = new TimingComm(this.serverIP, Const.PORT, this,
-                this.returnMsgHandler);
+                this.returnMsgHandler, Const.TOKEN_LIMIT);
          this.comm = this.timingComm;
     }
 

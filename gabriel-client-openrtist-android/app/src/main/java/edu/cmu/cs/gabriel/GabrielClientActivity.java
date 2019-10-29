@@ -738,7 +738,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     void setupComm() {
         this.comm = new OpenrtistComm(this.serverIP, Const.PORT, this,
-                returnMsgHandler);
+                returnMsgHandler, Const.TOKEN_LIMIT);
     }
 
     /**
