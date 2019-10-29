@@ -63,9 +63,17 @@ public final class Protos {
         java.lang.String key);
 
     /**
-     * <code>bytes style_image = 3;</code>
+     * <code>.google.protobuf.BytesValue style_image = 3;</code>
      */
-    com.google.protobuf.ByteString getStyleImage();
+    boolean hasStyleImage();
+    /**
+     * <code>.google.protobuf.BytesValue style_image = 3;</code>
+     */
+    com.google.protobuf.BytesValue getStyleImage();
+    /**
+     * <code>.google.protobuf.BytesValue style_image = 3;</code>
+     */
+    com.google.protobuf.BytesValueOrBuilder getStyleImageOrBuilder();
   }
   /**
    * Protobuf type {@code openrtist.EngineFields}
@@ -81,7 +89,6 @@ public final class Protos {
     }
     private EngineFields() {
       style_ = "";
-      styleImage_ = com.google.protobuf.ByteString.EMPTY;
     }
 
     @java.lang.Override
@@ -128,8 +135,16 @@ public final class Protos {
               break;
             }
             case 26: {
+              com.google.protobuf.BytesValue.Builder subBuilder = null;
+              if (styleImage_ != null) {
+                subBuilder = styleImage_.toBuilder();
+              }
+              styleImage_ = input.readMessage(com.google.protobuf.BytesValue.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(styleImage_);
+                styleImage_ = subBuilder.buildPartial();
+              }
 
-              styleImage_ = input.readBytes();
               break;
             }
             default: {
@@ -288,12 +303,24 @@ public final class Protos {
     }
 
     public static final int STYLE_IMAGE_FIELD_NUMBER = 3;
-    private com.google.protobuf.ByteString styleImage_;
+    private com.google.protobuf.BytesValue styleImage_;
     /**
-     * <code>bytes style_image = 3;</code>
+     * <code>.google.protobuf.BytesValue style_image = 3;</code>
      */
-    public com.google.protobuf.ByteString getStyleImage() {
-      return styleImage_;
+    public boolean hasStyleImage() {
+      return styleImage_ != null;
+    }
+    /**
+     * <code>.google.protobuf.BytesValue style_image = 3;</code>
+     */
+    public com.google.protobuf.BytesValue getStyleImage() {
+      return styleImage_ == null ? com.google.protobuf.BytesValue.getDefaultInstance() : styleImage_;
+    }
+    /**
+     * <code>.google.protobuf.BytesValue style_image = 3;</code>
+     */
+    public com.google.protobuf.BytesValueOrBuilder getStyleImageOrBuilder() {
+      return getStyleImage();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -319,8 +346,8 @@ public final class Protos {
           internalGetStyleList(),
           StyleListDefaultEntryHolder.defaultEntry,
           2);
-      if (!styleImage_.isEmpty()) {
-        output.writeBytes(3, styleImage_);
+      if (styleImage_ != null) {
+        output.writeMessage(3, getStyleImage());
       }
       unknownFields.writeTo(output);
     }
@@ -344,9 +371,9 @@ public final class Protos {
         size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(2, styleList__);
       }
-      if (!styleImage_.isEmpty()) {
+      if (styleImage_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(3, styleImage_);
+          .computeMessageSize(3, getStyleImage());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -368,8 +395,11 @@ public final class Protos {
           .equals(other.getStyle());
       result = result && internalGetStyleList().equals(
           other.internalGetStyleList());
-      result = result && getStyleImage()
-          .equals(other.getStyleImage());
+      result = result && (hasStyleImage() == other.hasStyleImage());
+      if (hasStyleImage()) {
+        result = result && getStyleImage()
+            .equals(other.getStyleImage());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -387,8 +417,10 @@ public final class Protos {
         hash = (37 * hash) + STYLE_LIST_FIELD_NUMBER;
         hash = (53 * hash) + internalGetStyleList().hashCode();
       }
-      hash = (37 * hash) + STYLE_IMAGE_FIELD_NUMBER;
-      hash = (53 * hash) + getStyleImage().hashCode();
+      if (hasStyleImage()) {
+        hash = (37 * hash) + STYLE_IMAGE_FIELD_NUMBER;
+        hash = (53 * hash) + getStyleImage().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -547,8 +579,12 @@ public final class Protos {
         style_ = "";
 
         internalGetMutableStyleList().clear();
-        styleImage_ = com.google.protobuf.ByteString.EMPTY;
-
+        if (styleImageBuilder_ == null) {
+          styleImage_ = null;
+        } else {
+          styleImage_ = null;
+          styleImageBuilder_ = null;
+        }
         return this;
       }
 
@@ -580,7 +616,11 @@ public final class Protos {
         result.style_ = style_;
         result.styleList_ = internalGetStyleList();
         result.styleList_.makeImmutable();
-        result.styleImage_ = styleImage_;
+        if (styleImageBuilder_ == null) {
+          result.styleImage_ = styleImage_;
+        } else {
+          result.styleImage_ = styleImageBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -636,8 +676,8 @@ public final class Protos {
         }
         internalGetMutableStyleList().mergeFrom(
             other.internalGetStyleList());
-        if (other.getStyleImage() != com.google.protobuf.ByteString.EMPTY) {
-          setStyleImage(other.getStyleImage());
+        if (other.hasStyleImage()) {
+          mergeStyleImage(other.getStyleImage());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -861,33 +901,121 @@ public final class Protos {
         return this;
       }
 
-      private com.google.protobuf.ByteString styleImage_ = com.google.protobuf.ByteString.EMPTY;
+      private com.google.protobuf.BytesValue styleImage_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.BytesValue, com.google.protobuf.BytesValue.Builder, com.google.protobuf.BytesValueOrBuilder> styleImageBuilder_;
       /**
-       * <code>bytes style_image = 3;</code>
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
        */
-      public com.google.protobuf.ByteString getStyleImage() {
-        return styleImage_;
+      public boolean hasStyleImage() {
+        return styleImageBuilder_ != null || styleImage_ != null;
       }
       /**
-       * <code>bytes style_image = 3;</code>
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
        */
-      public Builder setStyleImage(com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  
-        styleImage_ = value;
-        onChanged();
+      public com.google.protobuf.BytesValue getStyleImage() {
+        if (styleImageBuilder_ == null) {
+          return styleImage_ == null ? com.google.protobuf.BytesValue.getDefaultInstance() : styleImage_;
+        } else {
+          return styleImageBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
+       */
+      public Builder setStyleImage(com.google.protobuf.BytesValue value) {
+        if (styleImageBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          styleImage_ = value;
+          onChanged();
+        } else {
+          styleImageBuilder_.setMessage(value);
+        }
+
         return this;
       }
       /**
-       * <code>bytes style_image = 3;</code>
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
+       */
+      public Builder setStyleImage(
+          com.google.protobuf.BytesValue.Builder builderForValue) {
+        if (styleImageBuilder_ == null) {
+          styleImage_ = builderForValue.build();
+          onChanged();
+        } else {
+          styleImageBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
+       */
+      public Builder mergeStyleImage(com.google.protobuf.BytesValue value) {
+        if (styleImageBuilder_ == null) {
+          if (styleImage_ != null) {
+            styleImage_ =
+              com.google.protobuf.BytesValue.newBuilder(styleImage_).mergeFrom(value).buildPartial();
+          } else {
+            styleImage_ = value;
+          }
+          onChanged();
+        } else {
+          styleImageBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
        */
       public Builder clearStyleImage() {
-        
-        styleImage_ = getDefaultInstance().getStyleImage();
-        onChanged();
+        if (styleImageBuilder_ == null) {
+          styleImage_ = null;
+          onChanged();
+        } else {
+          styleImage_ = null;
+          styleImageBuilder_ = null;
+        }
+
         return this;
+      }
+      /**
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
+       */
+      public com.google.protobuf.BytesValue.Builder getStyleImageBuilder() {
+        
+        onChanged();
+        return getStyleImageFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
+       */
+      public com.google.protobuf.BytesValueOrBuilder getStyleImageOrBuilder() {
+        if (styleImageBuilder_ != null) {
+          return styleImageBuilder_.getMessageOrBuilder();
+        } else {
+          return styleImage_ == null ?
+              com.google.protobuf.BytesValue.getDefaultInstance() : styleImage_;
+        }
+      }
+      /**
+       * <code>.google.protobuf.BytesValue style_image = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          com.google.protobuf.BytesValue, com.google.protobuf.BytesValue.Builder, com.google.protobuf.BytesValueOrBuilder> 
+          getStyleImageFieldBuilder() {
+        if (styleImageBuilder_ == null) {
+          styleImageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              com.google.protobuf.BytesValue, com.google.protobuf.BytesValue.Builder, com.google.protobuf.BytesValueOrBuilder>(
+                  getStyleImage(),
+                  getParentForChildren(),
+                  isClean());
+          styleImage_ = null;
+        }
+        return styleImageBuilder_;
       }
       @java.lang.Override
       public final Builder setUnknownFields(
@@ -961,12 +1089,14 @@ public final class Protos {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\017openrtist.proto\022\topenrtist\"\240\001\n\014EngineF" +
-      "ields\022\r\n\005style\030\001 \001(\t\022:\n\nstyle_list\030\002 \003(\013" +
-      "2&.openrtist.EngineFields.StyleListEntry" +
-      "\022\023\n\013style_image\030\003 \001(\014\0320\n\016StyleListEntry\022" +
-      "\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001B\036\n\024edu.c" +
-      "mu.cs.openrtistB\006Protosb\006proto3"
+      "\n\017openrtist.proto\022\topenrtist\032\036google/pro" +
+      "tobuf/wrappers.proto\"\275\001\n\014EngineFields\022\r\n" +
+      "\005style\030\001 \001(\t\022:\n\nstyle_list\030\002 \003(\0132&.openr" +
+      "tist.EngineFields.StyleListEntry\0220\n\013styl" +
+      "e_image\030\003 \001(\0132\033.google.protobuf.BytesVal" +
+      "ue\0320\n\016StyleListEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005val" +
+      "ue\030\002 \001(\t:\0028\001B\036\n\024edu.cmu.cs.openrtistB\006Pr" +
+      "otosb\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -979,6 +1109,7 @@ public final class Protos {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
+          com.google.protobuf.WrappersProto.getDescriptor(),
         }, assigner);
     internal_static_openrtist_EngineFields_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -992,6 +1123,7 @@ public final class Protos {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_openrtist_EngineFields_StyleListEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
+    com.google.protobuf.WrappersProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
