@@ -57,7 +57,7 @@ public class MexSettingsActivity extends SettingsActivity {
                 }
             };
 
-    protected static void bindPreferenceSummaryToValue(Preference preference) {
+    static void bindPreferenceSummaryToValue(Preference preference) {
         SettingsActivity.bindPreferenceSummaryToValue(
                 preference, sBindPreferenceSummaryToValueListener);
     }

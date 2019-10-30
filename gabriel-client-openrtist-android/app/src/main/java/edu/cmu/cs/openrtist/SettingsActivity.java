@@ -33,8 +33,7 @@ import edu.cmu.cs.gabriel.Const;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
-    protected static Preference.OnPreferenceChangeListener getSBindPreferenceSummaryToValueListener(
-    ) {
+    static Preference.OnPreferenceChangeListener getSBindPreferenceSummaryToValueListener() {
         return SettingsActivity.sBindPreferenceSummaryToValueListener;
     }
 
@@ -99,7 +98,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      *
      * @see #sBindPreferenceSummaryToValueListener
      */
-    protected static void bindPreferenceSummaryToValue(
+    static void bindPreferenceSummaryToValue(
             Preference preference,
             Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener) {
         // Set the listener to watch for value changes.
