@@ -9,7 +9,7 @@ import cv2
 import argparse
 import importlib
 
-PORT = 9098
+DEFAULT_PORT = 9098
 DEFAULT_NUM_TOKENS = 2
 INPUT_QUEUE_MAXSIZE = 60
 DEFAULT_STYLE = 'the_scream'
@@ -79,6 +79,8 @@ def main():
                         'OpenVINO may be used.')
     parser.add_argument('--timing', action='store_true',
                         help='Print timing information')
+    parser.add_argument('-p', '--port', type=int, default=DEFAULT_PORT,
+                        help='Set port number (Default='+str(DEFAULT_PORT)+')')
     args = parser.parse_args()
 
     def engine_setup():
@@ -92,7 +94,7 @@ def main():
         return engine
 
     runner.run(engine_setup, OpenrtistEngine.ENGINE_NAME, INPUT_QUEUE_MAXSIZE,
-               PORT, args.tokens)
+               args.port, args.tokens)
 
 
 if __name__ == '__main__':
