@@ -2,7 +2,7 @@ package edu.cmu.cs.openrtist;
 
 import distributed_match_engine.AppClient;
 import distributed_match_engine.Appcommon;
-import edu.cmu.cs.gabriel.MexConst;
+import edu.cmu.cs.gabriel.Const;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class MexServerListActivity extends ServerListActivity {
-    private static final String TAG = "TimingServerListActivity";
+    private static final String TAG = "MexServerList";
 
     private MatchingEngine matchingEngine;
     private String statusText = null;
@@ -88,17 +88,17 @@ public class MexServerListActivity extends ServerListActivity {
     private boolean registerClient() throws ExecutionException, InterruptedException, io.grpc.StatusRuntimeException {
         // NOTICE: In a real app, these values would be determined by the SDK, but we are reusing
         // an existing app so we don't have to create new app provisioning data for this workshop.
-        appName = MexConst.MEX_APP;
-        devName = MexConst.MEX_DEV;
-        carrierName = MexConst.MEX_CARRIER;
-        appVersion = MexConst.MEX_TAG;
+        appName = Const.MEX_APP;
+        devName = Const.MEX_DEV;
+        carrierName = Const.MEX_CARRIER;
+        appVersion = Const.MEX_TAG;
 
         //NOTICE: A real app would request permission to enable this.
         MatchingEngine.setMatchingEngineLocationAllowed(true);
 
         matchingEngine = new MatchingEngine( this );
         matchingEngine.setNetworkSwitchingEnabled( false ); // Stick with wifi for workshop.
-        host = MexConst.MEX_DME_URL; // Override host.
+        host = Const.MEX_DME_URL; // Override host.
         port = matchingEngine .getPort(); // Keep same port.
         AppClient.RegisterClientRequest registerClientRequest = matchingEngine .createRegisterClientRequest( this ,
                 devName , appName , appVersion , carrierName , null );
