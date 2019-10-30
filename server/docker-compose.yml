@@ -1,0 +1,32 @@
+version: '2.3'
+services:
+  openrtist:
+    image: cmusatyalab/openrtist
+    command: --port 9099
+    ports:
+      - "9099:9099"
+    devices:
+      - "/dev/dri:/dev/dri"
+    restart: unless-stopped
+
+    # for NVIDIA GPUs
+    # gpus: all     # not yet supported by docker-compose
+    runtime: nvidia
+    privileged: true
+
+#  openrtist_legacy:
+#    image: cmusatyalab/openrtist:legacy
+#    ports:
+#      - "7070:7070"
+#      - "8021:8021"
+#      - "9098:9098"
+#      - "9111:9111"
+#      - "22222:22222"
+#    devices:
+#      - "/dev/dri:/dev/dri"
+#    restart: unless-stopped
+#
+#    # for NVIDIA GPUs
+#    # gpus: all    # not yet supported by docker-compose
+#    runtime: nvidia
+#    privileged: true
