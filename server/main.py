@@ -20,8 +20,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def create_adapter(openvino, cpu_only):
+def create_adapter(openvino, cpu_only, force_torch):
     '''Create the best adapter based on constraints passed as CLI arguments.'''
+
+    if force_torch and openvino:
+        raise Exception('Cannot run with both Torch and OpenVINO')
 
     if not openvino:
         if importlib.util.find_spec('torch') is None:
@@ -36,25 +39,28 @@ def create_adapter(openvino, cpu_only):
             else:
                 logger.info('Failed to detect GPU / CUDA support')
 
-    if importlib.util.find_spec('openvino') is None:
-        logger.info('Could not find Openvino')
-        if openvino:
-            raise Exception('No suitable engine')
-    else:
-        if not cpu_only:
-            from openvino.inference_engine import IEPlugin
-            try:
-                IEPlugin('GPU')
-                logger.info('Detected iGPU / clDNN support')
-            except RuntimeError:
-                logger.info('Failed to detect iGPU / clDNN support')
-                cpu_only = True
+    if not force_torch:
+        if importlib.util.find_spec('openvino') is None:
+            logger.info('Could not find Openvino')
+            if openvino:
+                raise Exception('No suitable engine')
+        else:
+            if not cpu_only:
+                from openvino.inference_engine import IEPlugin
+                try:
+                    IEPlugin('GPU')
+                    logger.info('Detected iGPU / clDNN support')
+                except RuntimeError:
+                    logger.info('Failed to detect iGPU / clDNN support')
+                    cpu_only = True
 
-        from openvino_adapter import OpenvinoAdapter
-        adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE)
-        return adapter
+            logger.info('Using OpenVINO')
+            logger.info('CPU Only: %s', cpu_only)
+            from openvino_adapter import OpenvinoAdapter
+            adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE)
+            return adapter
 
-    logger.info('Attempting to use Toch with CPU')
+    logger.info('Using Toch with CPU')
     from torch_adapter import TorchAdapter
     return TorchAdapter(True, DEFAULT_STYLE)
 
@@ -67,14 +73,16 @@ def main():
                         help='Pass this flag to force the use of OpenVINO.'
                         'Otherwise Torch may be used')
     parser.add_argument('-c', '--cpu-only', action='store_true',
-                        help='Set this flag to force the use CPU. Otherwise,'
-                        ' the GPU may be used.')
+                        help='Pass this flag to prevent the GPU from being used.')
+    parser.add_argument('--torch', action='store_true',
+                        help='Set this flag to force the use of torch. Otherwise'
+                        'OpenVINO may be used.')
     parser.add_argument('--timing', action='store_true',
                         help='Print timing information')
     args = parser.parse_args()
 
     def engine_setup():
-        adapter = create_adapter(args.openvino, args.cpu_only)
+        adapter = create_adapter(args.openvino, args.cpu_only, args.torch)
 
         if args.timing:
             engine = TimingEngine(COMPRESSION_PARAMS, adapter)
