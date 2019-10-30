@@ -9,7 +9,7 @@ import cv2
 import argparse
 import importlib
 
-DEFAULT_PORT = 9098
+DEFAULT_PORT = 9099
 DEFAULT_NUM_TOKENS = 2
 INPUT_QUEUE_MAXSIZE = 60
 DEFAULT_STYLE = 'the_scream'
