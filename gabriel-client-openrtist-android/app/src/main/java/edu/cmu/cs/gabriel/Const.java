@@ -77,7 +77,7 @@ public class Const {
             "network connections first.";
 
 
-    public static final int PORT = 9098;
+    public static final int PORT = 9099;
 
     // the app name
     public static final String APP_NAME = "style_transfer";
