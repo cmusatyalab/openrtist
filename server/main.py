@@ -66,7 +66,9 @@ def create_adapter(openvino, cpu_only, force_torch):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument('-t', '--tokens', type=int, default=DEFAULT_NUM_TOKENS,
                         help='number of tokens')
     parser.add_argument('-o', '--openvino', action='store_true',
@@ -80,7 +82,7 @@ def main():
     parser.add_argument('--timing', action='store_true',
                         help='Print timing information')
     parser.add_argument('-p', '--port', type=int, default=DEFAULT_PORT,
-                        help='Set port number (Default='+str(DEFAULT_PORT)+')')
+                        help='Set port number')
     args = parser.parse_args()
 
     def engine_setup():
