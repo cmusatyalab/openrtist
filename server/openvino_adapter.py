@@ -128,10 +128,8 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
     def postprocessing(self, post_inference):
         img_out = post_inference[self.out_blob][0]
-        img_out = np.swapaxes(img_out, 0, 2)
-        img_out = np.swapaxes(img_out, 0, 1)
-        img_out[img_out < 0] = 0
-        img_out[img_out > 255] = 255
+        img_out = img_out.transpose(1,2,0)
+        img_out = np.clip( img_out, 0, 255 )
 
         return img_out
 
