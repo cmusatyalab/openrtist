@@ -529,7 +529,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             serverIP = Const.SERVER_IP;
             initPerRun(serverIP);
         }
-        this.startBackgroundThread();
     }
 
 
@@ -733,7 +732,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         // don't connect to cloudlet if running locally
         // if a mobile only run is specified
-        if (runLocally){
+        if (runLocally) {
             if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
                 localRunnerThread.quitSafely();
                 localRunnerThread.interrupt();
@@ -770,6 +769,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         this.setupComm();
+        this.startBackgroundThread();
     }
 
     void setupComm() {
@@ -995,7 +995,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             this.engineInputLock.notify();
         }
 
-        this.stopBackgroundThread();
+        if (this.backgroundThread != null) {
+            this.stopBackgroundThread();
+        }
 
         if (this.comm != null) {
             this.comm.stop();
