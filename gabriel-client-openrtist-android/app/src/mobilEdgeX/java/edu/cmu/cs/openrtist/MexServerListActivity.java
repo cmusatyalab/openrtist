@@ -33,7 +33,7 @@ public class MexServerListActivity extends ServerListActivity {
     private String appVersion;
 
     @Override
-    protected void loadPref(Context c, String key, Object value) {
+    void loadPref(Context c, String key, Object value) {
         super.loadPref(c, key, value);
         MexConst.loadPref(c, key, value);
     }

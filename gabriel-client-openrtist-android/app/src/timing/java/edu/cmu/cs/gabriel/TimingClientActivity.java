@@ -5,6 +5,7 @@ import edu.cmu.cs.gabriel.network.TimingComm;
 public class TimingClientActivity extends GabrielClientActivity {
     private TimingComm timingComm;
 
+    @Override
     void setupComm() {
         this.timingComm = new TimingComm(this.serverIP, Const.PORT, this,
                 this.returnMsgHandler, Const.TOKEN_LIMIT);

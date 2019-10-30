@@ -55,7 +55,7 @@ public class ServerListActivity extends AppCompatActivity  {
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
 
-    protected void loadPref(Context c, String key, Object value) {
+    void loadPref(Context c, String key, Object value) {
         Const.loadPref(c, key, value);
     }
 
