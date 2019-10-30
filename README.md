@@ -24,7 +24,7 @@ Project | Modified | License
 
 ## Prerequisites
 
-OpenRTiST using PyTorch (including the pre-built image) has been tested on __Ubuntu 16.04 LTS (Xenial)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40).
+OpenRTiST using PyTorch (including the pre-built image) has been tested on __Ubuntu 18.04 LTS (Bionic)__ using several nVidia GPUs (GTX 960, GTX 1060, GTX 1080 Ti, Tesla K40).
 
 Alternatively, OpenRTiST can also use the [Intel&reg; OpenVINO toolkit](https://software.intel.com/en-us/openvino-toolkit) for accelerated processing on CPU and processor graphics on many Intel processors.  We have tested OpenVINO support using __Ubuntu 18.04 LTS (Bionic)__ and OpenVINO releases 2018.5 and 2019.3 on an Intel&reg; Core&trade; i7-6770HQ processor.  
 
@@ -38,44 +38,22 @@ The quickest way to set up an OpenRTiST server is to download and run our pre-bu
 
 ### Step 1. Install Docker
 
-If you do not already have Docker installed, install as follows:
-
-```bash
-apt-get update
-apt-get upgrade
-apt-get install docker.io
-```
-
-Alternatively, you can follow the steps in [this Docker install guide](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) or use the following convenience script:
+If you do not already have Docker installed, install it using the steps in [this Docker install guide](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) or use the following convenience script:
 
 ```sh
 curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 ```
 
-### Step 2. Ensure nVidia drivers are installed (Optional -- only for NVIDIA GPU support)
+### Step 2. Ensure an NVIDIA driver are installed (Optional -- only for NVIDIA GPU support)
 
-```sh
-apt-get install nvidia-384
-```
+[These notes](https://github.com/NVIDIA/nvidia-docker/wiki/Frequently-Asked-Questions#how-do-i-install-the-nvidia-driver) explain how to install the driver.
 
-### Step 3. Install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) (Optional -- only for NVIDIA GPU support)
+If you think you may already have an NVIDIA driver installed, run `nvidia-smi`. The Driver version will be listed at the top of the table that gets printed.
 
-```sh
-# If you have nvidia-docker 1.0 installed: we need to remove it and all existing GPU containers
-docker volume ls -q -f driver=nvidia-docker | xargs -r -I{} -n1 docker ps -q -a -f volume={} | xargs -r docker rm -f
-apt-get purge -y nvidia-docker
+### Step 3. Install the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) (Optional -- only for NVIDIA GPU support)
 
-# Add the package repositories
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list
-apt-get update
-
-# Install nvidia-docker2 and reload the Docker daemon configuration
-apt-get install -y nvidia-docker2
-pkill -SIGHUP dockerd
-
-```
+Follow [these instructions](https://github.com/NVIDIA/nvidia-docker#ubuntu-16041804-debian-jessiestretchbuster).
 
 ### Step 4. Obtain OpenRTiST Docker image
 
@@ -85,79 +63,19 @@ docker pull cmusatyalab/openrtist
 
 ### Step 5A. Launch the Docker container
 
-For CPU and Intel iGPU support only, run the container with `docker`:
+For CPU and Intel iGPU support only, run the following command:
 
 ```sh
-docker run --rm -it --device /dev/dri:/dev/dri -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist
+docker run -it -p 9099:9099 cmusatyalab/openrtist
 ```
 
-To also support NVIDIA GPUs, run the container with `nvidia-docker`:
+For NVIDIA GPU support, run:
 
 ```sh
-nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist
+docker run --gpus all -it -p 9099:9099 cmusatyalab/openrtist
 ```
 
 Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.
-
-### Step 5B. Launch the container and manually start the server (if you wish configure things)
-
-If you don't need NVIDIA GPU support:
-
-```sh
-docker run --rm -it --device /dev/dri:/dev/dri -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
-```
-
-If you need NVIDIA GPU support:
-
-```sh
-nvidia-docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" -v /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro -p 7070:7070 -p 9098:9098 -p 9111:9111 -p 22222:22222 -p 8021:8021 cmusatyalab/openrtist /bin/bash
-```
-
-> NOTE: To use PyTorch 1.0 and above use container : a4anna/openrtist_cu100_torch1p1
-
-Type ifconfig and note the interface name and ip address inside the docker container __(for the below examples, we assume eth0 and 172.17.0.2)__.
-
-```bash
-ifconfig
-```
-
-Open tmux and create three windows (CTRL-b c).
-
-```bash
-tmux
-```
-
-In the first tmux window (CTRL-b 0), navigate to /gabriel/server/bin.
-
-```bash
-cd /gabriel/server/bin
-```
-
----
-
-Execute gabriel-control, specifying the interface inside the docker container with the -n flag
-
-```bash
-./gabriel-control -n eth0
-```
-
----
-In the next tmux window(CTRL-b 1), execute gabriel-ucomm, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
-
-```bash
-cd /gabriel/server/bin
-./gabriel-ucomm -s 172.17.0.2:8021
-```
-
-In the next tmux window(CTRL-b 2), navigate to the OpenRTiST application directory.
-Execute the proxy, specifying the ip address listed earlier with the -s flag. Be sure to include the port 8021.
-
-```bash
-cd /openrtist/server
-./proxy.py -s 172.17.0.2:8021
-```
-
-__Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.__
 
 ---
 
@@ -185,49 +103,17 @@ sudo reboot
 
 ## Client Installation
 
-### Python Client in Docker
+The client requires Python 3.5 or later.
 
-The docker image for the server component also includes the Python client which can be run on a non-Android machine. __The python client requires that a USB webcam is connected to the machine.__
+### Step 1. Setup a virtualenv and install dependencies
 
-#### Step 1. Install Docker
-
-If you do not already have Docker installed, install as follows:
-
-``` bash
-apt-get update
-apt-get upgrade
-apt-get install docker.io
-```
-
-Alternatively, you can follow the steps in [this Docker install guide](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) or use the following convenience script:
-
-```sh
-curl -fsSL get.docker.com -o get-docker.sh
-sh get-docker.sh
-```
-
-#### Step 2. Obtain OpenRTiST Docker image
+Navigate to the `gabriel-client-openrtist-python` directory. Setup a Python 3 [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/). Install dependencies by running:
 
 ```bash
-docker pull cmusatyalab/openrtist
+pip install -r requirements.txt
 ```
 
-#### Step 3. Set the xhost display and launch the container
-
-```bash
-xhost local:root
-docker run --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" --device /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro cmusatyalab/openrtist /bin/bash
-```
-
-#### Step 4. Edit the client configuration (optional)
-
-```bash
-cd /openrtist/gabriel-client-openrtist-python
-vim.tiny config.py
-#Here you can edit the image resolution captured by the camera and the frames per second.
-```
-
-#### Step 5. Launch the Python client UI specifying the server's IP address
+### Step 2. Launch the Python client UI specifying the server's IP address
 
 ```bash
 ./ui.py <server ip address>
@@ -259,7 +145,7 @@ Once the camera is active, the application will be set to 'Clear Display' by def
 ##### Experimental
 
 * Resolution - Configure the resoultion to capture at. This will have a moderate impact in the computation time on the server.
-* Gabriel Token Size - Allows configuration of the token-based flow control mechanism in the Gabriel platform. This indicates how many frames can be in flight before a response frame is received back from the serve.r
+* Gabriel Token Limit - Allows configuration of the token-based flow control mechanism in the Gabriel platform. This indicates how many frames can be in flight before a response frame is received back from the server. The minimum of the token limit specified in the app and the number of tokens specified on the server will be used.
 
 #### Front-facing Camera
 
@@ -267,28 +153,15 @@ Once connected to a server, an icon is displayed in the upper right hand corner 
 
 ## Installation from source (PyTorch or OpenVINO, GPU or CPU)
 
-### 1. Install PyTorch or OpenVINO
+### 1. Install CUDA or OpenVINO
 
-The OpenRTiST server can use PyTorch or OpenVINO to execute style transfer networks.  Please install PyTorch or OpenVINO (or both).
-
-#### Option A. Install torchvision and pytorch
+The OpenRTiST server can use PyTorch or OpenVINO to execute style transfer networks. You may want to install CUDA or OpenVINO (or both). However, you can run OpenRTiST using pytorch on the CPU without CUDA or OpenVINO. 
 
 OpenRTiST has been tested with pytorch versions 0.2.0, 0.3.1, 1.0, and 1.2 with CUDA support.  As the APIs and layer names have been changed in newer releases, model files for both pre-1.0 and post-1.0 versions have been provided. __NOTE: Even if you do not have a CUDA-capable GPU, you can install pytorch with CUDA support and run OpenRTiST on CPU only.__
 
-OpenRTiST should work with Python 2.7 as well as Python 3.x.  We recommend using virtualenv/venv to better control the Python environment and keep your distribution defaults clean.  
+#### Option A. Install CUDA
 
-To install PyTorch, simply install torchvision:
-
-```bash
-pip install torchvision
-```
-
-This will usually install the latest version of PyTorch.  If you need a different / older version (e.g., to support a particular CUDA version), you can find alternative versions [here](https://pytorch.org/get-started/previous-versions/). Uninstall and replace the auto-installed one with the desired PyTorch version (e.g.):
-
-```bash
-pip uninstall torch
-pip install https://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp27-cp27m-manylinux1_x86_64.whl
-```
+Follow [NVIDIA's instructions](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#package-manager-installation).
 
 #### Option B. Install OpenVINO
 
@@ -296,7 +169,7 @@ We recommend Ubuntu 18.04 for a painless install.  We have had success with Ubun
 
 ##### Install the latest OpenVINO
 
-You can find and download the latest OpenVINO release from <https://software.intel.com/en-us/openvino-toolkit>.  Full installation instructions are available at <https://software.intel.com/en-us/articles/OpenVINO-Install-Linux>.
+You can find and download the latest OpenVINO release from <https://software.intel.com/en-us/openvino-toolkit>. Full installation instructions are available at <https://software.intel.com/en-us/articles/OpenVINO-Install-Linux>.
 
 For Ubuntu 16.04 / 18.04, you can install using `apt` by adding the custom repository as follows:
 
@@ -347,61 +220,28 @@ Setup environment variables and paths to use OpenVINO in the current shell:
 $source /opt/intel/openvino/bin/setupvars.sh
 ```
 
-Note: although OpenVINO lists Python 3.5 as a prerequisite, it supports Python 2.7 as well.  To setup environment variables and paths for Python 2.7:
+### 2. Install Openrtist Dependencies
 
-```sh
-$source /opt/intel/openvino/bin/setupvars.sh -pyver 2.7
-```
+OpenRTiST requires Python 3.5 or later. We recommend using a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) to better control the Python environment and keep your distribution defaults clean.  
 
-### 2. Setup Gabriel
-
-Follow the instructions given in [Gabriel repo](https://github.com/cmusatyalab/gabriel) to download and install the Gabriel framework.  Note: although the full Gabriel framework needs Python 2, the server components used for OpenRTiST should work with Python 3.  
-
-Run the `control server` and `ucomm server`, e.g.:
+To install dependencies for Openrtist, navigate to the server directory, activate a Python 3 virtual environment, then run:
 
 ```bash
-$cd $HOME/gabriel/server/bin
-$./gabriel-control -n eth0 &
-$./gabriel-ucomm -n eth0 -s x.x.x.x &
-```
-
-replacing `eth0` with your network nic device (e.g., may be `eth1` or `eno1`), and `x.x.x.x` with the IP address of the machine.
-Add the path to gabriel/server to your `PYTHONPATH` environment variable, e.g.:
-
-```bash
-$export PYTHONPATH=$HOME/gabriel/server/:$PYTHONPATH
+pip install -r requirements.txt
 ```
 
 ### 3. Run the server
 
-Start the server like this:
+With your virtual environment activated, start the server like this:
 
 ```bash
-$cd <openrtist-repo>/server/
-$ ./proxy.py -s x.x.x.x:8021
-Autodetect:  Loaded OpenVINO
-TOKEN SIZE OF OFFLOADING ENGINE: 1
-Loading network files:
-        <openrtist-repo>/server/../models/16v2.xml
-        <openrtist-repo>/server/../models/cafe_gogh-16.bin
-Loading model to the plugin
-Loading network files:
-        <openrtist-repo>/server/../models/16v2.xml
-                     .
-                     .
-                     .
-        <openrtist-repo>/server/../models/udnie-16.bin
-Loading model to the plugin
-Loading network files:
-        <openrtist-repo>/server/../models/16v2.xml
-        <openrtist-repo>/server/../models/weeping_woman-16.bin
-Loading model to the plugin
-FINISHED INITIALISATION
+$ cd <openrtist-repo>/server/
+$ python main.py
 ```
 
 __Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.  This is not the case for OpenVINO on CPU, or with PyTorch.  Once initialized, the server is ready for clients at this point.__
 
-With either PyTorch or OpenVINO, you can run the server in CPU-only mode by first editing config.py and setting `USE_GPU = False`.  By default, OpenRTiST tries to detect and use OpenVINO, and fails over to PyTorch.  To force it to use one system, add a line to config.py, setting `USE_OPENVINO = <True / False>`.  Remove this line to re-enable the auto-detection behavior.
+With either PyTorch or OpenVINO, you can run the server in CPU-only mode by passing the --cpu CLI flag. By default, OpenRTiST tries to detect and use OpenVINO, and fails over to PyTorch.  To force it to use one system, pass the --openvino or --torch CLI flags.
 
 ### 4.  Run a python or mobile client using source code at gabriel-client-style-(client_type), or the Android client from the Google Play Store
 
