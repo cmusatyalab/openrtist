@@ -5,7 +5,6 @@ import distributed_match_engine.Appcommon;
 import edu.cmu.cs.gabriel.MexConst;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -21,7 +20,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class MexServerListActivity extends ServerListActivity {
-    private static final String TAG = "MexServerList";
+    private static final String TAG = "MexServerListActivity";
 
     private MatchingEngine matchingEngine;
     private String statusText = null;
@@ -32,6 +31,12 @@ public class MexServerListActivity extends ServerListActivity {
     private String appName;
     private String devName;
     private String appVersion;
+
+    @Override
+    protected void loadPref(Context c, String key, Object value) {
+        super.loadPref(c, key, value);
+        MexConst.loadPref(c, key, value);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

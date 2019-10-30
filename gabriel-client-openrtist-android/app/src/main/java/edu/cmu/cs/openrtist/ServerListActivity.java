@@ -55,6 +55,10 @@ public class ServerListActivity extends AppCompatActivity  {
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
 
+    protected void loadPref(Context c, String key, Object value) {
+        Const.loadPref(c, key, value);
+    }
+
     ServerListAdapter createServerListAdapter() {
         return new ServerListAdapter(getApplicationContext(), ItemModelList);
     }
@@ -113,7 +117,7 @@ public class ServerListActivity extends AppCompatActivity  {
         for(Map.Entry<String,?> entry : m.entrySet()){
             Log.d("SharedPreferences",entry.getKey() + ": " +
                     entry.getValue().toString());
-            Const.loadPref(this.getApplicationContext(), entry.getKey(), entry.getValue());
+            this.loadPref(this.getApplicationContext(), entry.getKey(), entry.getValue());
 
         }
         camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);

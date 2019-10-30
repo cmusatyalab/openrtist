@@ -134,21 +134,6 @@ public class Const {
         Integer i = null;
         //update Const values so that new settings take effect
         switch(key) {
-            case "mex_app":
-                MexConst.MEX_APP = value.toString();
-                break;
-            case "mex_dev":
-                MexConst.MEX_DEV = value.toString();
-                break;
-            case "mex_tag":
-                MexConst.MEX_TAG = value.toString();
-                break;
-            case "mex_carrier":
-                MexConst.MEX_CARRIER = value.toString();
-                break;
-            case "mex_dme_url":
-                MexConst.MEX_DME_URL = value.toString();
-                break;
             case "general_recording":
                 Const.SHOW_RECORDER = new Boolean(value.toString());
                 break;

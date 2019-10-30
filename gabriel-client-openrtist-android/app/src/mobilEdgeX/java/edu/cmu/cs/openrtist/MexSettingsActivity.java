@@ -2,8 +2,11 @@ package edu.cmu.cs.openrtist;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
+
+import edu.cmu.cs.gabriel.MexConst;
 
 public class MexSettingsActivity extends SettingsActivity {
     @Override
@@ -39,5 +42,23 @@ public class MexSettingsActivity extends SettingsActivity {
             }
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener =
+            new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object value) {
+                    SettingsActivity.getSBindPreferenceSummaryToValueListener().onPreferenceChange(
+                            preference, value
+                    );
+
+                    MexConst.loadPref(preference.getContext(), preference.getKey(), value);
+                    return true;
+                }
+            };
+
+    protected static void bindPreferenceSummaryToValue(Preference preference) {
+        SettingsActivity.bindPreferenceSummaryToValue(
+                preference, sBindPreferenceSummaryToValueListener);
     }
 }

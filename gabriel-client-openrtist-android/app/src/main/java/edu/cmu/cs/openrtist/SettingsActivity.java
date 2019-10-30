@@ -1,10 +1,8 @@
 package edu.cmu.cs.openrtist;
 
 import android.annotation.TargetApi;
-import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,7 +13,6 @@ import android.preference.SwitchPreference;
 import androidx.appcompat.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.MenuItem;
 import androidx.core.app.NavUtils;
 
@@ -36,43 +33,49 @@ import edu.cmu.cs.gabriel.Const;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
+    protected static Preference.OnPreferenceChangeListener getSBindPreferenceSummaryToValueListener(
+    ) {
+        return SettingsActivity.sBindPreferenceSummaryToValueListener;
+    }
+
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener =
+            new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
-        String stringValue = value.toString();
+            String stringValue = value.toString();
 
-        if (preference instanceof ListPreference) {
-            // For list preferences, look up the correct display value in
-            // the preference's 'entries' list.
-            ListPreference listPreference = (ListPreference) preference;
-            int index = listPreference.findIndexOfValue(stringValue);
+            if (preference instanceof ListPreference) {
+                // For list preferences, look up the correct display value in
+                // the preference's 'entries' list.
+                ListPreference listPreference = (ListPreference) preference;
+                int index = listPreference.findIndexOfValue(stringValue);
 
-            // Set the summary to reflect the new value.
-            preference.setSummary(
-                    index >= 0
-                            ? listPreference.getEntries()[index]
-                            : null);
+                // Set the summary to reflect the new value.
+                preference.setSummary(
+                        index >= 0
+                                ? listPreference.getEntries()[index]
+                                : null);
 
-        } else if (preference instanceof SwitchPreference) {
-            Boolean b = new Boolean(value.toString());
-            if(b)
-                preference.setSummary("Enabled");
-            else
-                preference.setSummary("Disabled");
-        } else {
-            // For all other preferences, set the summary to the value's
-            // simple string representation.
-            preference.setSummary(stringValue);
-        }
+            } else if (preference instanceof SwitchPreference) {
+                Boolean b = new Boolean(value.toString());
+                if(b)
+                    preference.setSummary("Enabled");
+                else
+                    preference.setSummary("Disabled");
+            } else {
+                // For all other preferences, set the summary to the value's
+                // simple string representation.
+                preference.setSummary(stringValue);
+            }
 
-        Const.loadPref(preference.getContext(), preference.getKey(), value);
+            Const.loadPref(preference.getContext(), preference.getKey(), value);
 
-        return true;
+            return true;
         }
     };
 
@@ -85,6 +88,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
 
+
+
     /**
      * Binds a preference's summary to its value. More specifically, when the
      * preference's value is changed, its summary (line of text below the
@@ -94,7 +99,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      *
      * @see #sBindPreferenceSummaryToValueListener
      */
-    static void bindPreferenceSummaryToValue(Preference preference) {
+    protected static void bindPreferenceSummaryToValue(
+            Preference preference,
+            Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener) {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
@@ -111,7 +118,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 .getDefaultSharedPreferences(preference.getContext())
                                 .getString(preference.getKey(), ""));
         }
+    }
 
+    static void bindPreferenceSummaryToValue(Preference preference) {
+        bindPreferenceSummaryToValue(preference, sBindPreferenceSummaryToValueListener);
     }
 
     @Override
