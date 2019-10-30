@@ -61,8 +61,9 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
         self.path = os.path.join(os.getcwd(), '..', models_dir)
         model_xml = os.path.join(self.path, '{}.xml'.format(model_xml_num))
+        self.use_reshape = False #True #cpu_only
 
-        conf = {}
+        self.conf = {}
         if cpu_only:
             cpuinf = get_cpu_info()
             if 'avx512' in cpuinf['flags']:
@@ -71,13 +72,13 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 self.plugin.add_cpu_extension("libcpu_extension_avx2.so")
             else:
                 self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
-            conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
+            self.conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
         elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0"):
             config_file = os.path.join(
                 os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
             self.plugin.set_config({'CONFIG_FILE' : config_file})
 
-        self.exec_nets = {}
+        self.nets = {}
         names = [
             n[:-len(model_bin_suff)] for n in os.listdir(self.path) if n.endswith(model_bin_suff)
         ]
@@ -107,23 +108,37 @@ class OpenvinoAdapter(OpenrtistAdapter):
             self.out_blob = next(iter(net.outputs))
             net.batch_size = 1
 
-            # Loading model to the plugin
-            logger.info("Loading model to the plugin")
-            self.exec_nets[name] = self.plugin.load(network=net, config=conf)
+            if not self.use_reshape:
+                # Loading model to the plugin
+                logger.info("Loading model to the plugin")
+                self.nets[name] = ( net, self.plugin.load(network=net, config=self.conf) )
+            else:
+                self.nets[name] = (net, None )
             self.add_supported_style(name)
-            self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
-            del net
 
     def preprocessing(self, img):
-        if img.shape[:-1] != (self.h, self.w):
-            logger.warning('Image is resized from '+str(img.shape[:-1])+' to '+
-                           str((self.h, self.w)) )
-            img = cv2.resize(img,(self.w, self.h))
+        net, exec_net = self.nets[self.get_style()]
+        h, w = net.inputs[self.input_blob].shape[2:]
+        reshaped=False
+        if img.shape[:-1] != (h, w):
+            if self.use_reshape:
+                logger.warning('Network reshaped to '+str(img.shape[:-1]))
+                net.reshape( {self.input_blob: (1,3,img.shape[0],img.shape[1])} )
+                reshaped = True
+            else:
+                logger.warning('Image is resized from '+str(img.shape[:-1])+' to '+
+                           str((h, w)) )
+                img = cv2.resize(img,(w, h))
+        if exec_net is None or reshaped:
+            logger.info("Loading model to the plugin")
+            self.nets[self.get_style()] = ( net, self.plugin.load(network=net, config=self.conf) )
+            if exec_net is not None:
+                del exec_net
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
         return [ img ]
 
     def inference(self, preprocessed):
-        return self.exec_nets[self.get_style()].infer(
+        return self.nets[self.get_style()][1].infer(
             inputs={self.input_blob: preprocessed})
 
     def postprocessing(self, post_inference):
