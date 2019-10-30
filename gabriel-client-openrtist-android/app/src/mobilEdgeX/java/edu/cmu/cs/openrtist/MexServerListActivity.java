@@ -92,6 +92,10 @@ public class MexServerListActivity extends ServerListActivity {
         devName = Const.MEX_DEV;
         carrierName = Const.MEX_CARRIER;
         appVersion = Const.MEX_TAG;
+        Log.i(TAG,appName);
+        Log.i(TAG,devName);
+        Log.i(TAG, carrierName);
+        Log.i(TAG, appVersion);
 
         //NOTICE: A real app would request permission to enable this.
         MatchingEngine.setMatchingEngineLocationAllowed(true);
@@ -126,8 +130,7 @@ public class MexServerListActivity extends ServerListActivity {
         Log.i(TAG, "SessionCookie:" + registerStatus.getSessionCookie());
         Log.i(TAG,"Client registered with MobiledgeX DME");
         // Populate app details.
-        Log.i(TAG,carrierName);
-        Log.i(TAG, appName);
+
 
         return true;
     }
