@@ -44,5 +44,5 @@ COPY . openrtist
 WORKDIR openrtist/server
 RUN python3 -m pip install -r requirements.txt
 
-EXPOSE 5555 9098
+EXPOSE 5555 9099
 ENTRYPOINT ["./entrypoint.sh"]

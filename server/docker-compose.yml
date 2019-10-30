@@ -2,7 +2,6 @@ version: '2.3'
 services:
   openrtist:
     image: cmusatyalab/openrtist
-    command: --port 9099
     ports:
       - "9099:9099"
     devices:
