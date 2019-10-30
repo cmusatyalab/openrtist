@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class MexServerListActivity extends ServerListActivity {
-    private static final String TAG = "TimingServerListActivity";
+    private static final String TAG = "MexServerList";
 
     private MatchingEngine matchingEngine;
     private String statusText = null;
@@ -92,7 +92,10 @@ public class MexServerListActivity extends ServerListActivity {
         devName = MexConst.MEX_DEV;
         carrierName = MexConst.MEX_CARRIER;
         appVersion = MexConst.MEX_TAG;
-
+        Log.i(TAG,appName);
+        Log.i(TAG,devName);
+        Log.i(TAG, carrierName);
+        Log.i(TAG, appVersion);
         //NOTICE: A real app would request permission to enable this.
         MatchingEngine.setMatchingEngineLocationAllowed(true);
 
@@ -126,8 +129,7 @@ public class MexServerListActivity extends ServerListActivity {
         Log.i(TAG, "SessionCookie:" + registerStatus.getSessionCookie());
         Log.i(TAG,"Client registered with MobiledgeX DME");
         // Populate app details.
-        Log.i(TAG,carrierName);
-        Log.i(TAG, appName);
+
 
         return true;
     }
