@@ -88,7 +88,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 m_xml = model_xml
 
             # Read IR
-            print('Loading network files:\n\t', m_xml, '\n\t', model_bin)
+            logger.info('Loading network files:\n\t'+m_xml+'\n\t'+model_bin)
             net = IENetwork(model=m_xml, weights=model_bin)
 
             if cpu_only:
@@ -98,8 +98,8 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 ]
 
                 if len(not_supported_layers) != 0:
-                    print('Following layers are not supported by the plugin for'
-                          ' specified device', self.plugin.device, ':\n',
+                    logger.error('Following layers are not supported by the plugin for'+
+                          ' specified device'+self.plugin.device+':\n'+
                           ', '.join(not_supported_layers))
                     sys.exit(1)
 
@@ -108,7 +108,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
             net.batch_size = 1
 
             # Loading model to the plugin
-            print("Loading model to the plugin")
+            logger.info("Loading model to the plugin")
             self.exec_nets[name] = self.plugin.load(network=net, config=conf)
             self.add_supported_style(name)
             self.n, self.c, self.h, self.w = net.inputs[self.input_blob].shape
