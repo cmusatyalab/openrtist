@@ -92,7 +92,7 @@ __Instance Type__ - p2.xlarge (can be found by filtering under GPU compute insta
 
 __Image__ - Deep Learning Base AMI (Ubuntu) - ami-041db87c
 
-__Ensure that ports 9000-10000 are open in your security group rules so that traffic to/from the mobile client will pass through to the server.__
+__Ensure that port 9099 is open in your security group rules so that traffic to/from the mobile client will pass through to the server.__
 
 Once the server is running in AWS, you can follow the steps above to setup the server.
 
@@ -295,7 +295,7 @@ wget http://images.cocodataset.org/zips/train2014.zip
 unzip train2014.zip -d coco-data/
 ```
 
-Install OpenVINO or set CONVERT_TO_OPEN_VINO=false in model-app/config.py
+Install OpenVINO or set `CONVERT_TO_OPEN_VINO=false` in model-app/config.py
 
 And then launch the web frontend:
 

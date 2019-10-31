@@ -10,13 +10,9 @@ The lowest latency is achieved using named pipes and rawvideo codecs.
 docker run --privileged --rm -it --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" \
 -v /dev/video0:/dev/video0 \
 -v /tmp:/tmp \
--p 9098:9098 \
--p 9111:9111 \
--p 22222:22222 \
--p 8021:8021 \
 --name styletransfer \
-cmusatyalab/openrtist \
-/bin/bash
+--entrypoint /bin/bash \
+cmusatyalab/openrtist
 ```
 
 # Short Latency Setup
@@ -29,7 +25,7 @@ Use mjpeg encoding with udp.
 ```
 * For screensaver receiving side:
 ```
-mplayer -benchmark -demuxer mpjepg udp://172.17.0.1:8091
+mplayer -benchmark -demuxer mjpeg udp://172.17.0.1:8091
 ```
 
 # Most Scalable Setup
@@ -51,7 +47,7 @@ ffserver -f ffserver.conf
 		  --no-video-title-show			      \
 		  http://localhost:8090/camera.mjpeg	    \n\
 ```
-* If one want to do everything using containers
+* If one wants to do everything using containers
 ```
 docker run --rm --name ffserver -v `pwd`:/config --entrypoint 
 docker run --rm -v /tmp/.X11-unix:/tmp/.X11-unix -e uid=$(id -u) -e gid=$(id -g) -e DISPLAY=$DISPLAY --privileged --entrypoint cvlc --name vlc quay.io/galexrt/vlc -q http://172.17.0.1:8090/camera.mjpeg
