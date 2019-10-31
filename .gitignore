@@ -1,3 +1,5 @@
 .idea/
 .venv/
 __pycache__/
+gabriel-client-openrtist-python/design.py
+protocol/openrtist_pb2.py
