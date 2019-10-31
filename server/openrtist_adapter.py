@@ -1,6 +1,9 @@
 from abc import abstractmethod
 from abc import ABC
+import logging
 import os
+
+logger = logging.getLogger(__name__)
 
 
 class OpenrtistAdapter(ABC):
@@ -27,7 +30,7 @@ class OpenrtistAdapter(ABC):
         try:
             with open(os.path.join(self.path, '{}.txt'.format(new_style)), "r") as f:
                 info_text = f.read()
-        except:
+        except IOError:
             info_text = new_style+" -- Unknown"
         self.supported_styles[new_style] = info_text
         if self._style is None:
@@ -50,9 +53,8 @@ class OpenrtistAdapter(ABC):
         try:
             with open(self._style_image(), "rb") as f:
                 return f.read()
-        except:
+        except IOError:
             return b''
 
     def get_all_styles(self):
         return self.supported_styles
-

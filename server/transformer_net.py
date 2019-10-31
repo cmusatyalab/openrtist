@@ -3,7 +3,7 @@
 # modified by Junjue Wang (junjuew.cs.cmu.edu) to remove unused conditional
 # layer definition for easy pytorch model tracing.
 #
-# Copyright (c) 2017, 
+# Copyright (c) 2017,
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

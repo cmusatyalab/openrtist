@@ -29,15 +29,12 @@
 # distributed under the BSD 3-Clause License.
 # https://github.com/pytorch/examples/blob/master/LICENSE
 
-import os
 import cv2
 import numpy as np
 import logging
 from gabriel_server import cognitive_engine
 from gabriel_protocol import gabriel_pb2
-from google.protobuf.any_pb2 import Any
 from openrtist_protocol import openrtist_pb2
-from abc import abstractmethod
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +47,9 @@ class OpenrtistEngine(cognitive_engine.Engine):
         self.adapter = adapter
 
         # The waterMark is of dimension 30x120
-        wtr_mrk4 = cv2.imread('../wtrMrk.png',-1)
+        wtr_mrk4 = cv2.imread("../wtrMrk.png", -1)
 
-         # The RGB channels are equivalent
+        # The RGB channels are equivalent
         self.mrk, _, _, mrk_alpha = cv2.split(wtr_mrk4)
 
         self.alpha = mrk_alpha.astype(float) / 255
@@ -84,7 +81,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         image = self.process_image(from_client.payload)
         image = self._apply_watermark(image)
 
-        _, jpeg_img=cv2.imencode('.jpg', image, self.compression_params)
+        _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
         img_data = jpeg_img.tostring()
 
         result = gabriel_pb2.ResultWrapper.Result()
@@ -112,9 +109,9 @@ class OpenrtistEngine(cognitive_engine.Engine):
     def process_image(self, image):
 
         # Preprocessing steps used by both engines
-        np_data=np.fromstring(image, dtype=np.uint8)
-        img=cv2.imdecode(np_data, cv2.IMREAD_COLOR)
-        img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        np_data = np.fromstring(image, dtype=np.uint8)
+        img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         preprocessed = self.adapter.preprocessing(img)
         post_inference = self.inference(preprocessed)
@@ -126,12 +123,12 @@ class OpenrtistEngine(cognitive_engine.Engine):
         return self.adapter.inference(preprocessed)
 
     def _apply_watermark(self, image):
-        img_mrk = image[-30:,-120:] # The waterMark is of dimension 30x120
-        img_mrk[:,:,0] = (1-self.alpha)*img_mrk[:,:,0] + self.alpha*self.mrk
-        img_mrk[:,:,1] = (1-self.alpha)*img_mrk[:,:,1] + self.alpha*self.mrk
-        img_mrk[:,:,2] = (1-self.alpha)*img_mrk[:,:,2] + self.alpha*self.mrk
-        image[-30:,-120:] = img_mrk
-        img_out = image.astype('uint8')
-        img_out = cv2.cvtColor(img_out,cv2.COLOR_RGB2BGR)
+        img_mrk = image[-30:, -120:]  # The waterMark is of dimension 30x120
+        img_mrk[:, :, 0] = (1-self.alpha)*img_mrk[:, :, 0] + self.alpha*self.mrk
+        img_mrk[:, :, 1] = (1-self.alpha)*img_mrk[:, :, 1] + self.alpha*self.mrk
+        img_mrk[:, :, 2] = (1-self.alpha)*img_mrk[:, :, 2] + self.alpha*self.mrk
+        image[-30:, -120:] = img_mrk
+        img_out = image.astype("uint8")
+        img_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2BGR)
 
         return img_out

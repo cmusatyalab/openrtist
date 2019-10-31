@@ -1,4 +1,4 @@
-3# OpenRTiST
+# OpenRTiST
 #   - Real-time Style Transfer
 #
 #   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
@@ -61,7 +61,7 @@ class TorchAdapter(OpenrtistAdapter):
         else:
             models_dir = 'models'
         self.path = os.path.join(os.getcwd(), '..', models_dir)
-        #self._update_model_style(default_style)
+        # self._update_model_style(default_style)
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
@@ -73,8 +73,7 @@ class TorchAdapter(OpenrtistAdapter):
         # first real image.
         ones = np.ones(STARTUP_ONES_SIZE, np.uint8)
         preprocessed = self.preprocessing(ones)
-        post_inference = self.inference(preprocessed)
-
+        _ = self.inference(preprocessed)
 
     def set_style(self, new_style):
         if super().set_style(new_style):
@@ -99,4 +98,3 @@ class TorchAdapter(OpenrtistAdapter):
         self.style_model.load_state_dict(torch.load(model))
         if not self.cpu_only:
             self.style_model.cuda()
-

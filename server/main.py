@@ -3,7 +3,6 @@
 from gabriel_server.local_engine import runner
 from openrtist_engine import OpenrtistEngine
 from timing_engine import TimingEngine
-import timing_engine
 import logging
 import cv2
 import argparse
@@ -60,7 +59,7 @@ def create_adapter(openvino, cpu_only, force_torch):
             adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE)
             return adapter
 
-    logger.info('Using Toch with CPU')
+    logger.info("Using Torch with CPU")
     from torch_adapter import TorchAdapter
     return TorchAdapter(True, DEFAULT_STYLE)
 
