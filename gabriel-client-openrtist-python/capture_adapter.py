@@ -2,8 +2,6 @@ from adapter import Adapter
 from gabriel_client.server_comm import WebsocketClient
 import config
 import cv2
-import os
-import random
 
 
 class CaptureAdapter:
@@ -17,7 +15,7 @@ class CaptureAdapter:
 
     def preprocess(self, frame):
         style_array = self.adapter.get_styles()
-        if len(style_array)>0 and self.current_style_frames >= self.style_interval:
+        if len(style_array) > 0 and self.current_style_frames >= self.style_interval:
             self.style_num = (self.style_num + 1) % len(style_array)
             self.adapter.set_style(
                 style_array[self.style_num])
