@@ -126,8 +126,9 @@ pip install -r requirements.txt
 
 ### Android Client
 
-<a href='https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist'><img height='125px' width='323px' alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
-Google Play and the Google Play logo are trademarks of Google LLC.
+You can download the client from the [Google Play Store](https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist). 
+
+Alternatively, you can build the client yourself using [Android Studio](https://developer.android.com/studio). The source code for the client is located in the `gabriel-client-openrtist-android` directory. You should use the standardDebug [build variant](https://developer.android.com/studio/run#changing-variant).
 
 #### Managing Servers
 
