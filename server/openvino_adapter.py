@@ -61,7 +61,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
         self.path = os.path.join(os.getcwd(), '..', models_dir)
         model_xml = os.path.join(self.path, '{}.xml'.format(model_xml_num))
-        self.use_reshape = False #True #cpu_only
+        self.use_reshape = False  # True  # cpu_only
 
         self.conf = {}
         if cpu_only:
@@ -76,12 +76,12 @@ class OpenvinoAdapter(OpenrtistAdapter):
         elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0"):
             config_file = os.path.join(
                 os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
-            self.plugin.set_config({'CONFIG_FILE' : config_file})
+            self.plugin.set_config({"CONFIG_FILE": config_file})
 
         self.nets = {}
-        names = [
-            n[:-len(model_bin_suff)] for n in os.listdir(self.path) if n.endswith(model_bin_suff)
-        ]
+        names = [n[:-len(model_bin_suff)]
+                 for n in os.listdir(self.path) if n.endswith(model_bin_suff)]
+
         for name in names:
             model_bin = os.path.join(self.path, name + model_bin_suff)
             m_xml = os.path.join(self.path, name+".xml")
@@ -99,9 +99,11 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 ]
 
                 if len(not_supported_layers) != 0:
-                    logger.error('Following layers are not supported by the plugin for'+
-                          ' specified device'+self.plugin.device+':\n'+
-                          ', '.join(not_supported_layers))
+                    logger.error(
+                        "Following layers are not supported by the plugin "
+                        "for specified device %s:\n%s",
+                        self.plugin.device, ", ".join(not_supported_layers)
+                    )
                     sys.exit(1)
 
             self.input_blob = next(iter(net.inputs))
@@ -111,31 +113,32 @@ class OpenvinoAdapter(OpenrtistAdapter):
             if not self.use_reshape:
                 # Loading model to the plugin
                 logger.info("Loading model to the plugin")
-                self.nets[name] = ( net, self.plugin.load(network=net, config=self.conf) )
+                self.nets[name] = (net, self.plugin.load(network=net, config=self.conf))
             else:
-                self.nets[name] = (net, None )
+                self.nets[name] = (net, None)
             self.add_supported_style(name)
 
     def preprocessing(self, img):
         net, exec_net = self.nets[self.get_style()]
         h, w = net.inputs[self.input_blob].shape[2:]
-        reshaped=False
+        reshaped = False
         if img.shape[:-1] != (h, w):
             if self.use_reshape:
-                logger.warning('Network reshaped to '+str(img.shape[:-1]))
-                net.reshape( {self.input_blob: (1,3,img.shape[0],img.shape[1])} )
+                logger.warning("Network reshaped to %s", str(img.shape[:-1]))
+                net.reshape({self.input_blob: (1, 3, img.shape[0], img.shape[1])})
                 reshaped = True
             else:
-                logger.warning('Image is resized from '+str(img.shape[:-1])+' to '+
-                           str((h, w)) )
-                img = cv2.resize(img,(w, h))
+                logger.warning("Image is resized from %s to %s",
+                               str(img.shape[:-1]), str((h, w)))
+                img = cv2.resize(img, (w, h))
         if exec_net is None or reshaped:
             logger.info("Loading model to the plugin")
-            self.nets[self.get_style()] = ( net, self.plugin.load(network=net, config=self.conf) )
+            self.nets[self.get_style()] = \
+                (net, self.plugin.load(network=net, config=self.conf))
             if exec_net is not None:
                 del exec_net
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
-        return [ img ]
+        return [img]
 
     def inference(self, preprocessed):
         return self.nets[self.get_style()][1].infer(
@@ -143,8 +146,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
     def postprocessing(self, post_inference):
         img_out = post_inference[self.out_blob][0]
-        img_out = img_out.transpose(1,2,0)
-        img_out = np.clip( img_out, 0, 255 )
+        img_out = img_out.transpose(1, 2, 0)
+        img_out = np.clip(img_out, 0, 255)
 
         return img_out
-
