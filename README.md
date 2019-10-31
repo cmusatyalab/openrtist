@@ -34,7 +34,7 @@ OpenRTiST supports Android and standalone Python clients.  We have tested the An
 
 ## Server Installation using Docker
 
-The quickest way to set up an OpenRTiST server is to download and run our pre-built Docker container.  This build supports execution on NVIDIA GPUs, Intel integrated GPUs, and execution on the CPU.  All of the following steps must be executed as root.  
+The quickest way to set up an OpenRTiST server is to download and run our pre-built Docker container.  This build supports execution on NVIDIA GPUs, Intel integrated GPUs, and execution on the CPU. All of the following steps must be executed as root. We tested these steps using Docker 19.03.
 
 ### Step 1. Install Docker
 
