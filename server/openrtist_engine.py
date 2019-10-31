@@ -124,9 +124,9 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
     def _apply_watermark(self, image):
         img_mrk = image[-30:, -120:]  # The waterMark is of dimension 30x120
-        img_mrk[:, :, 0] = (1-self.alpha)*img_mrk[:, :, 0] + self.alpha*self.mrk
-        img_mrk[:, :, 1] = (1-self.alpha)*img_mrk[:, :, 1] + self.alpha*self.mrk
-        img_mrk[:, :, 2] = (1-self.alpha)*img_mrk[:, :, 2] + self.alpha*self.mrk
+        img_mrk[:, :, 0] = (1 - self.alpha) * img_mrk[:, :, 0] + self.alpha * self.mrk
+        img_mrk[:, :, 1] = (1 - self.alpha) * img_mrk[:, :, 1] + self.alpha * self.mrk
+        img_mrk[:, :, 2] = (1 - self.alpha) * img_mrk[:, :, 2] + self.alpha * self.mrk
         image[-30:, -120:] = img_mrk
         img_out = image.astype("uint8")
         img_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2BGR)
