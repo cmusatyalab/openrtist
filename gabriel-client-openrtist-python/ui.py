@@ -20,12 +20,11 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPainter
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QImage
 import capture_adapter
-import sys  # We need sys so that we can pass argv to QApplication
+import sys     # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
 import logging
 
@@ -36,30 +35,32 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)  # This is defined in design.py file automatically
 
     def set_image(self, frame, str_name, style_image):
-        img = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QtGui.QImage.Format_RGB888)
+        img = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0],
+                     QtGui.QImage.Format_RGB888)
 
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
 
-        #w = self.label_image.maximumWidth();
-        #h = self.label_image.maximumHeight();
-        #pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
+        # w = self.label_image.maximumWidth();
+        # h = self.label_image.maximumHeight();
+        # pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
         if style_image is not None:
-            img = QImage(style_image, style_image.shape[1], style_image.shape[0], style_image.strides[0], QtGui.QImage.Format_RGB888)
+            img = QImage(style_image, style_image.shape[1], style_image.shape[0],
+                         style_image.strides[0], QtGui.QImage.Format_RGB888)
             pixmap = QPixmap.fromImage(img)
         else:
             pixmap = QPixmap()
             pixmap.load('style-image/'+str_name)
-        #print("UI STYLE {}".format('style-image/'+str_name))
+        # print("UI STYLE {}".format('style-image/'+str_name))
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
-        painter.begin(pix);
-        painter.drawPixmap(0, 0, pixmap);
+        painter.begin(pix)
+        painter.drawPixmap(0, 0, pixmap)
         painter.setPen(Qt.red)
-        painter.drawRect(0,0,pixmap.width(),pixmap.height());
+        painter.drawRect(0, 0, pixmap.width(), pixmap.height())
         painter.end()
         self.label_image.setPixmap(pix)
-        self.label_image.setScaledContents(True);
+        self.label_image.setScaledContents(True)
 
 
 class ClientThread(QThread):

@@ -46,9 +46,8 @@ def main():
             style_image = style_name_to_image[style]
             style_im_h, style_im_w, _ = style_image.shape
             rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
-            cv2.rectangle(
-                rgb_frame, (0,0), (int(style_im_w), int(style_im_h)), (255,0,0),
-                3)
+            cv2.rectangle(rgb_frame, (0, 0), (int(style_im_w),
+                          int(style_im_h)), (255, 0, 0), 3)
             rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
             rgbpipe.write(rgb_frame_enlarged.tostring())
 
