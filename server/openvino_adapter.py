@@ -37,7 +37,6 @@ from cpuinfo import get_cpu_info
 import numpy as np
 import logging
 import os
-import sys
 import cv2
 from distutils.version import LooseVersion
 
@@ -67,13 +66,13 @@ class OpenvinoAdapter(OpenrtistAdapter):
         if cpu_only:
             cpuinf = get_cpu_info()
             if 'avx512' in cpuinf['flags']:
-                self.plugin.add_cpu_extension("libcpu_extension_avx512.so")
+                self.plugin.add_cpu_extension('libcpu_extension_avx512.so')
             elif 'avx2' in cpuinf['flags']:
-                self.plugin.add_cpu_extension("libcpu_extension_avx2.so")
+                self.plugin.add_cpu_extension('libcpu_extension_avx2.so')
             else:
-                self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
+                self.plugin.add_cpu_extension('libcpu_extension_sse4.so')
             self.conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
-        elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0"):
+        elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion('2.0'):
             config_file = os.path.join(
                 os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
             self.plugin.set_config({"CONFIG_FILE": config_file})
@@ -100,11 +99,10 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
                 if len(not_supported_layers) != 0:
                     logger.error(
-                        "Following layers are not supported by the plugin "
-                        "for specified device %s:\n%s",
-                        self.plugin.device, ", ".join(not_supported_layers)
-                    )
-                    sys.exit(1)
+                        'Following layers are not supported by the plugin'
+                        ' for specified device %s:\n%s',
+                        self.plugin.device, ', '.join(not_supported_layers))
+                    raise Exception()
 
             self.input_blob = next(iter(net.inputs))
             self.out_blob = next(iter(net.outputs))
@@ -112,7 +110,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
             if not self.use_reshape:
                 # Loading model to the plugin
-                logger.info("Loading model to the plugin")
+                logger.info('Loading model to the plugin')
                 self.nets[name] = (net, self.plugin.load(network=net, config=self.conf))
             else:
                 self.nets[name] = (net, None)
@@ -124,17 +122,17 @@ class OpenvinoAdapter(OpenrtistAdapter):
         reshaped = False
         if img.shape[:-1] != (h, w):
             if self.use_reshape:
-                logger.warning("Network reshaped to %s", str(img.shape[:-1]))
+                logger.warning('Network reshaped to %s', str(img.shape[:-1]))
                 net.reshape({self.input_blob: (1, 3, img.shape[0], img.shape[1])})
                 reshaped = True
             else:
-                logger.warning("Image is resized from %s to %s",
+                logger.warning('Image is resized from %s to %s',
                                str(img.shape[:-1]), str((h, w)))
                 img = cv2.resize(img, (w, h))
         if exec_net is None or reshaped:
-            logger.info("Loading model to the plugin")
-            self.nets[self.get_style()] = \
-                (net, self.plugin.load(network=net, config=self.conf))
+            logger.info('Loading model to the plugin')
+            self.nets[self.get_style()] = (
+                net, self.plugin.load(network=net, config=self.conf))
             if exec_net is not None:
                 del exec_net
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
