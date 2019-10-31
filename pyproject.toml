@@ -1,0 +1,14 @@
+[tool.black]
+#skip-string-normalization = true
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+     \.git
+   | \.venv
+  )/
+  # don't rewrite generated files
+  | gabriel-client-openrtist-python/design.py
+  | protocol/openrtist_pb2.py
+)
+'''

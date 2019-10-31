@@ -1,3 +1,4 @@
 .idea/
+.venv/
 model-app/__pycache__/
 server/__pycache__/

@@ -31,7 +31,7 @@ class OpenrtistAdapter(ABC):
             with open(os.path.join(self.path, '{}.txt'.format(new_style)), "r") as f:
                 info_text = f.read()
         except IOError:
-            info_text = new_style+" -- Unknown"
+            info_text = new_style + " -- Unknown"
         self.supported_styles[new_style] = info_text
         if self._style is None:
             self.set_style(new_style)

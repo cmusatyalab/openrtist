@@ -84,12 +84,12 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
         for name in names:
             model_bin = os.path.join(self.path, name + model_bin_suff)
-            m_xml = os.path.join(self.path, name+".xml")
+            m_xml = os.path.join(self.path, name + ".xml")
             if not os.path.isfile(m_xml):
                 m_xml = model_xml
 
             # Read IR
-            logger.info('Loading network files:\n\t'+m_xml+'\n\t'+model_bin)
+            logger.info('Loading network files:\n\t%s\n\t%s', m_xml, model_bin)
             net = IENetwork(model=m_xml, weights=model_bin)
 
             if cpu_only:

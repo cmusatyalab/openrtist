@@ -24,6 +24,7 @@ from PyQt5.QtGui import QPainter
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QImage
 import capture_adapter
+import os
 import sys     # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
 import logging
@@ -50,8 +51,8 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             pixmap = QPixmap.fromImage(img)
         else:
             pixmap = QPixmap()
-            pixmap.load('style-image/'+str_name)
-        # print("UI STYLE {}".format('style-image/'+str_name))
+            pixmap.load(os.path.join('style-image', str_name))
+        # print("UI STYLE {}".format('style-image/' + str_name))
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix)
