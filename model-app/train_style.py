@@ -30,7 +30,6 @@
 
 import argparse
 import os
-import sys
 import time
 import random
 import torch
@@ -79,16 +78,13 @@ class Vgg16(torch.nn.Module):
         return out
 
 def check_paths(args):
-    try:
-        if not os.path.exists(args.save_model_dir):
-            os.makedirs(args.save_model_dir)
-        if args.checkpoint_model_dir is not None and not (os.path.exists(args.checkpoint_model_dir)):
-            os.makedirs(args.checkpoint_model_dir)
-    except OSError as e:
-        print(e)
-        sys.exit(1)
+    # This may raise an OSError exception
+    if not os.path.exists(args.save_model_dir):
+        os.makedirs(args.save_model_dir)
+    if (args.checkpoint_model_dir is not None) and (not os.path.exists(args.checkpoint_model_dir)):
+        os.makedirs(args.checkpoint_model_dir)
 
-def get_args(args):
+def get_args():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
     parser.add_argument("--epochs", type=int, default=2,
                         help="number of training epochs, default is 2")
@@ -126,7 +122,7 @@ def get_args(args):
     parser.add_argument("--checkpoint-interval", type=int, default=2000,
                                   help="number of batches after which a checkpoint of the trained model will be created")
 
-    return parser.parse_args(args)
+    return parser.parse_args()
 
 
 def train(args, progress_callback):
@@ -257,10 +253,9 @@ def log_progress(epoch, num_epochs, count, num_images, content, style, flicker, 
 
 def main():
     if not torch.cuda.is_available():
-        print("ERROR: cuda is not available")
-        sys.exit(1)
+        raise Exception("Cuda is not available")
 
-    args = get_args(sys.argv[1:])
+    args = get_args()
     check_paths(args)
     train(args, log_progress)
 
