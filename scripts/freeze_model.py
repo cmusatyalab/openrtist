@@ -44,6 +44,8 @@ import fire
 import torch
 from torchvision import transforms
 
+import sys
+sys.path.append('.')
 from server.transformer_net import TransformerNet
 
 
