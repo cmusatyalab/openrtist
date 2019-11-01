@@ -72,7 +72,8 @@ if __name__ == "__main__":
         print("Use to convert pytorch .model files to openvino .xml and .bin files")
         print("Usage:  convert file1.model [file2.model ...]")
         print(
-            "   Note: requires opentorch, openvino, and onnx prerequisites for openvino are installed"
+            "   Note: requires opentorch, openvino, and onnx prerequisites "
+            "for openvino are installed"
         )
     else:
         for model in sys.argv[1:]:

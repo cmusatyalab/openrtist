@@ -43,11 +43,10 @@ import cv2
 import fire
 import torch
 from torchvision import transforms
-
 import sys
 
 sys.path.append(".")
-from server.transformer_net import TransformerNet
+from server.transformer_net import TransformerNet  # noqa: E402
 
 
 class Tracer:
@@ -74,7 +73,8 @@ class Tracer:
         weight_file_path="models_1p0/starry-night.model",
         output_file_path="starry-night-quantized.pt",
     ):
-        """Quantize and freeze a pytorch weight file for fast inference on mobile devices.
+        """Quantize and freeze a pytorch weight file for fast inference on
+        mobile devices.
 
         Only fully-connected layers are quantized. See more in pytorch's
         torch.quantization.quantize_dynamic API.

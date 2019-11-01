@@ -113,8 +113,11 @@ def run_training(self, dataset, filepath, model_dir, image):
     def log_progress(
         epoch, num_epochs, count, num_images, content, style, flicker, total
     ):
-        message = "Epoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}\n".format(
-            epoch + 1, count, num_images, content, style, flicker, total
+        message = (
+            "Epoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\t"
+            "flicker: {:.6f}\ttotal: {:.6f}\n".format(
+                epoch + 1, count, num_images, content, style, flicker, total
+            )
         )
         self.update_state(
             meta={
