@@ -17,8 +17,7 @@ class CaptureAdapter:
         style_array = self.adapter.get_styles()
         if len(style_array) > 0 and self.current_style_frames >= self.style_interval:
             self.style_num = (self.style_num + 1) % len(style_array)
-            self.adapter.set_style(
-                style_array[self.style_num])
+            self.adapter.set_style(style_array[self.style_num])
 
             self.current_style_frames = 0
         else:
@@ -30,10 +29,10 @@ class CaptureAdapter:
         return frame
 
     def __init__(self, consume_rgb_frame_style):
-        '''
+        """
         consume_rgb_frame_style should take one rgb_frame parameter and one
         style parameter.
-        '''
+        """
 
         self.style_num = 0
         self.style_interval = config.STYLE_DISPLAY_INTERVAL
@@ -47,15 +46,15 @@ class CaptureAdapter:
             consume_rgb_frame_style(rgb_frame, style, style_image)
 
         self.adapter = Adapter(
-            self.preprocess, consume_frame_style, video_capture, start_style='?')
+            self.preprocess, consume_frame_style, video_capture, start_style="?"
+        )
 
 
 def create_client(server_ip, consume_rgb_frame_style):
-    '''
+    """
     consume_rgb_frame_style should take one rgb_frame parameter and one
     style parameter.
-    '''
+    """
 
     adapter = CaptureAdapter(consume_rgb_frame_style)
-    return WebsocketClient(
-        server_ip, config.PORT, adapter.producer, adapter.consumer)
+    return WebsocketClient(server_ip, config.PORT, adapter.producer, adapter.consumer)

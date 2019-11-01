@@ -37,25 +37,43 @@ import subprocess
 import torch
 from server.transformer_net import TransformerNet
 
+
 def convert(model):
-	model_out = model if not model.endswith('.model') else model[:-6]
-	style_model = TransformerNet()
-	style_model.load_state_dict(torch.load(model))
-	dummy_input = torch.randn(1, 3, 240, 320)
-	input_names = ['Input']
-	output_names = ['Output']
-	torch.onnx.export(style_model, dummy_input, "tmp.onnx",
-					  verbose=False, input_names=input_names, output_names=output_names)
-	subprocess.call(['/opt/intel/openvino/deployment_tools/model_optimizer/mo_onnx.py',
-					 '--input_model', 'tmp.onnx', '--data_type', 'FP16',
-					 '--model_name', model_out])
-	os.remove("tmp.onnx")
+    model_out = model if not model.endswith(".model") else model[:-6]
+    style_model = TransformerNet()
+    style_model.load_state_dict(torch.load(model))
+    dummy_input = torch.randn(1, 3, 240, 320)
+    input_names = ["Input"]
+    output_names = ["Output"]
+    torch.onnx.export(
+        style_model,
+        dummy_input,
+        "tmp.onnx",
+        verbose=False,
+        input_names=input_names,
+        output_names=output_names,
+    )
+    subprocess.call(
+        [
+            "/opt/intel/openvino/deployment_tools/model_optimizer/mo_onnx.py",
+            "--input_model",
+            "tmp.onnx",
+            "--data_type",
+            "FP16",
+            "--model_name",
+            model_out,
+        ]
+    )
+    os.remove("tmp.onnx")
+
 
 if __name__ == "__main__":
-	if len(sys.argv) == 1:
-		print("Use to convert pytorch .model files to openvino .xml and .bin files")
-		print("Usage:  convert file1.model [file2.model ...]")
-		print("   Note: requires opentorch, openvino, and onnx prerequisites for openvino are installed")
-	else:
-		for model in sys.argv[1:]:
-			convert(model)
+    if len(sys.argv) == 1:
+        print("Use to convert pytorch .model files to openvino .xml and .bin files")
+        print("Usage:  convert file1.model [file2.model ...]")
+        print(
+            "   Note: requires opentorch, openvino, and onnx prerequisites for openvino are installed"
+        )
+    else:
+        for model in sys.argv[1:]:
+            convert(model)

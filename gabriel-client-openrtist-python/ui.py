@@ -25,7 +25,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QImage
 import capture_adapter
 import os
-import sys     # We need sys so that we can pass argv to QApplication
+import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
 import logging
 
@@ -36,8 +36,13 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)  # This is defined in design.py file automatically
 
     def set_image(self, frame, str_name, style_image):
-        img = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0],
-                     QtGui.QImage.Format_RGB888)
+        img = QImage(
+            frame,
+            frame.shape[1],
+            frame.shape[0],
+            frame.strides[0],
+            QtGui.QImage.Format_RGB888,
+        )
 
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
@@ -46,12 +51,17 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         # h = self.label_image.maximumHeight();
         # pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
         if style_image is not None:
-            img = QImage(style_image, style_image.shape[1], style_image.shape[0],
-                         style_image.strides[0], QtGui.QImage.Format_RGB888)
+            img = QImage(
+                style_image,
+                style_image.shape[1],
+                style_image.shape[0],
+                style_image.strides[0],
+                QtGui.QImage.Format_RGB888,
+            )
             pixmap = QPixmap.fromImage(img)
         else:
             pixmap = QPixmap()
-            pixmap.load(os.path.join('style-image', str_name))
+            pixmap.load(os.path.join("style-image", str_name))
         # print("UI STYLE {}".format('style-image/' + str_name))
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
@@ -72,8 +82,8 @@ class ClientThread(QThread):
 
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
-        self._client = capture_adapter.create_client(
-            server_ip, consume_rgb_frame_style)
+
+        self._client = capture_adapter.create_client(server_ip, consume_rgb_frame_style)
 
     def run(self):
         self._client.launch()
@@ -86,8 +96,9 @@ def main():
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("server_ip", action="store",
-                        help="IP address for Openrtist Server")
+    parser.add_argument(
+        "server_ip", action="store", help="IP address for Openrtist Server"
+    )
     inputs = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)
@@ -101,5 +112,5 @@ def main():
     sys.exit(app.exec())  # return Dialog Code
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -46,40 +46,44 @@ logger = logging.getLogger(__name__)
 class OpenvinoAdapter(OpenrtistAdapter):
     def __init__(self, cpu_only, default_style):
         super().__init__(default_style)
-        device = 'CPU' if cpu_only else 'GPU'
+        device = "CPU" if cpu_only else "GPU"
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
         if LooseVersion(openvino.inference_engine.__version__) >= LooseVersion("2.0"):
-            models_dir = 'models_1p0'
-            model_xml_num = '16'
-            model_bin_suff = '.bin'
+            models_dir = "models_1p0"
+            model_xml_num = "16"
+            model_bin_suff = ".bin"
         else:
-            models_dir = 'models'
-            model_xml_num = '32' if cpu_only else '16v2'
-            model_bin_suff = '-32.bin' if cpu_only else '-16.bin'
+            models_dir = "models"
+            model_xml_num = "32" if cpu_only else "16v2"
+            model_bin_suff = "-32.bin" if cpu_only else "-16.bin"
 
-        self.path = os.path.join(os.getcwd(), '..', models_dir)
-        model_xml = os.path.join(self.path, '{}.xml'.format(model_xml_num))
+        self.path = os.path.join(os.getcwd(), "..", models_dir)
+        model_xml = os.path.join(self.path, "{}.xml".format(model_xml_num))
         self.use_reshape = False  # True  # cpu_only
 
         self.conf = {}
         if cpu_only:
             cpuinf = get_cpu_info()
-            if 'avx512' in cpuinf['flags']:
-                self.plugin.add_cpu_extension('libcpu_extension_avx512.so')
-            elif 'avx2' in cpuinf['flags']:
-                self.plugin.add_cpu_extension('libcpu_extension_avx2.so')
+            if "avx512" in cpuinf["flags"]:
+                self.plugin.add_cpu_extension("libcpu_extension_avx512.so")
+            elif "avx2" in cpuinf["flags"]:
+                self.plugin.add_cpu_extension("libcpu_extension_avx2.so")
             else:
-                self.plugin.add_cpu_extension('libcpu_extension_sse4.so')
-            self.conf['CPU_THREADS_NUM'] = str(cpuinf['count'])
-        elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion('2.0'):
+                self.plugin.add_cpu_extension("libcpu_extension_sse4.so")
+            self.conf["CPU_THREADS_NUM"] = str(cpuinf["count"])
+        elif LooseVersion(openvino.inference_engine.__version__) < LooseVersion("2.0"):
             config_file = os.path.join(
-                os.getcwd(), '..', 'clkernels', 'mvn_custom_layer.xml')
+                os.getcwd(), "..", "clkernels", "mvn_custom_layer.xml"
+            )
             self.plugin.set_config({"CONFIG_FILE": config_file})
 
         self.nets = {}
-        names = [n[:-len(model_bin_suff)]
-                 for n in os.listdir(self.path) if n.endswith(model_bin_suff)]
+        names = [
+            n[: -len(model_bin_suff)]
+            for n in os.listdir(self.path)
+            if n.endswith(model_bin_suff)
+        ]
 
         for name in names:
             model_bin = os.path.join(self.path, name + model_bin_suff)
@@ -88,7 +92,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 m_xml = model_xml
 
             # Read IR
-            logger.info('Loading network files:\n\t%s\n\t%s', m_xml, model_bin)
+            logger.info("Loading network files:\n\t%s\n\t%s", m_xml, model_bin)
             net = IENetwork(model=m_xml, weights=model_bin)
 
             if cpu_only:
@@ -99,9 +103,11 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
                 if len(not_supported_layers) != 0:
                     logger.error(
-                        'Following layers are not supported by the plugin'
-                        ' for specified device %s:\n%s',
-                        self.plugin.device, ', '.join(not_supported_layers))
+                        "Following layers are not supported by the plugin"
+                        " for specified device %s:\n%s",
+                        self.plugin.device,
+                        ", ".join(not_supported_layers),
+                    )
                     raise Exception()
 
             self.input_blob = next(iter(net.inputs))
@@ -110,7 +116,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
             if not self.use_reshape:
                 # Loading model to the plugin
-                logger.info('Loading model to the plugin')
+                logger.info("Loading model to the plugin")
                 self.nets[name] = (net, self.plugin.load(network=net, config=self.conf))
             else:
                 self.nets[name] = (net, None)
@@ -122,17 +128,20 @@ class OpenvinoAdapter(OpenrtistAdapter):
         reshaped = False
         if img.shape[:-1] != (h, w):
             if self.use_reshape:
-                logger.warning('Network reshaped to %s', str(img.shape[:-1]))
+                logger.warning("Network reshaped to %s", str(img.shape[:-1]))
                 net.reshape({self.input_blob: (1, 3, img.shape[0], img.shape[1])})
                 reshaped = True
             else:
-                logger.warning('Image is resized from %s to %s',
-                               str(img.shape[:-1]), str((h, w)))
+                logger.warning(
+                    "Image is resized from %s to %s", str(img.shape[:-1]), str((h, w))
+                )
                 img = cv2.resize(img, (w, h))
         if exec_net is None or reshaped:
-            logger.info('Loading model to the plugin')
+            logger.info("Loading model to the plugin")
             self.nets[self.get_style()] = (
-                net, self.plugin.load(network=net, config=self.conf))
+                net,
+                self.plugin.load(network=net, config=self.conf),
+            )
             if exec_net is not None:
                 del exec_net
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
@@ -140,7 +149,8 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
     def inference(self, preprocessed):
         return self.nets[self.get_style()][1].infer(
-            inputs={self.input_blob: preprocessed})
+            inputs={self.input_blob: preprocessed}
+        )
 
     def postprocessing(self, post_inference):
         img_out = post_inference[self.out_blob][0]

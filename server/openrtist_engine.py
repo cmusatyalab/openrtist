@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenrtistEngine(cognitive_engine.Engine):
-    ENGINE_NAME = 'openrtist'
+    ENGINE_NAME = "openrtist"
 
     def __init__(self, compression_params, adapter):
         self.compression_params = compression_params
@@ -56,25 +56,25 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         # TODO support server display
 
-        logger.info('FINISHED INITIALISATION')
+        logger.info("FINISHED INITIALISATION")
 
     def handle(self, from_client):
-        if (from_client.payload_type != gabriel_pb2.PayloadType.IMAGE):
-            return cognitive_engine.wrong_input_format_error(
-                from_client.frame_id)
+        if from_client.payload_type != gabriel_pb2.PayloadType.IMAGE:
+            return cognitive_engine.wrong_input_format_error(from_client.frame_id)
 
         engine_fields = cognitive_engine.unpack_engine_fields(
-            openrtist_pb2.EngineFields, from_client)
+            openrtist_pb2.EngineFields, from_client
+        )
 
         new_style = False
         send_style_list = False
-        if engine_fields.style == '?':
+        if engine_fields.style == "?":
             new_style = True
             send_style_list = True
 
         elif engine_fields.style != self.adapter.get_style():
             self.adapter.set_style(engine_fields.style)
-            logger.info('New Style: %s', engine_fields.style)
+            logger.info("New Style: %s", engine_fields.style)
             new_style = True
 
         style = self.adapter.get_style()
@@ -119,7 +119,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         return img_out
 
     def inference(self, preprocessed):
-        '''Allow timing engine to override this'''
+        """Allow timing engine to override this"""
         return self.adapter.inference(preprocessed)
 
     def _apply_watermark(self, image):
