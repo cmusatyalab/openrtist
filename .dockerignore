@@ -1,0 +1,6 @@
+.git/
+.gradle/
+.idea/
+.venv/
+__pycache__/
+**/app/build/
