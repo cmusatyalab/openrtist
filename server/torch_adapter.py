@@ -57,16 +57,16 @@ class TorchAdapter(OpenrtistAdapter):
         self.style_model = TransformerNet()
 
         if LooseVersion(torch.__version__) >= LooseVersion("1.0"):
-            models_dir = 'models_1p0'
+            models_dir = "models_1p0"
         else:
-            models_dir = 'models'
-        self.path = os.path.join(os.getcwd(), '..', models_dir)
+            models_dir = "models"
+        self.path = os.path.join(os.getcwd(), "..", models_dir)
         # self._update_model_style(default_style)
 
         self.content_transform = transforms.Compose([transforms.ToTensor()])
 
         for name in os.listdir(self.path):
-            if name.endswith('.model'):
+            if name.endswith(".model"):
                 self.add_supported_style(name[:-6])
 
         # Feed network an array of all ones. This makes it run faster on the
@@ -94,7 +94,7 @@ class TorchAdapter(OpenrtistAdapter):
         return post_inference.transpose(1, 2, 0)
 
     def _update_model_style(self, new_style):
-        model = os.path.join(self.path, '{}.model'.format(new_style))
+        model = os.path.join(self.path, "{}.model".format(new_style))
         self.style_model.load_state_dict(torch.load(model))
         if not self.cpu_only:
             self.style_model.cuda()

@@ -17,5 +17,5 @@ STYLE_DISPLAY_INTERVAL = 300  # Number of frames
 CAM_FPS = 30
 IMG_WIDTH = 480
 IMG_HEIGHT = 360
-START_STYLE_STRING = 'udnie'
-ENGINE_NAME = 'openrtist'
+START_STYLE_STRING = "udnie"
+ENGINE_NAME = "openrtist"

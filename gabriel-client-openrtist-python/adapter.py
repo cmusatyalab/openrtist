@@ -35,11 +35,16 @@ class Adapter:
     def get_styles(self):
         return self.available_styles
 
-    def __init__(self, preprocess, consume_frame_style, video_capture,
-                 start_style=config.START_STYLE_STRING):
-        '''
+    def __init__(
+        self,
+        preprocess,
+        consume_frame_style,
+        video_capture,
+        start_style=config.START_STYLE_STRING,
+    ):
+        """
         consume_frame_style takes one frame parameter and one style parameter
-        '''
+        """
 
         self._style = start_style
         self.available_styles = []
@@ -59,14 +64,14 @@ class Adapter:
                 self.available_styles = list(engine_fields.style_list.keys())
                 random.shuffle(self.available_styles)
                 # print (self.available_styles)
-            if engine_fields.HasField('style_image'):
+            if engine_fields.HasField("style_image"):
                 if len(engine_fields.style_image.value) == 0:
                     self.style_image = None
                     # print("got empty style image")
                 else:
                     self.style_image = cv2.imdecode(
                         np.fromstring(engine_fields.style_image.value, dtype=np.uint8),
-                        cv2.IMREAD_COLOR
+                        cv2.IMREAD_COLOR,
                     )
                     self.style_image = cv2.cvtColor(self.style_image, cv2.COLOR_BGR2RGB)
                     # print ("got style image")
@@ -74,5 +79,9 @@ class Adapter:
             consume_frame_style(frame, engine_fields.style, self.style_image)
 
         self._opencv_adapter = OpencvAdapter(
-            preprocess, produce_engine_fields, consume_frame, video_capture,
-            config.ENGINE_NAME)
+            preprocess,
+            produce_engine_fields,
+            consume_frame,
+            video_capture,
+            config.ENGINE_NAME,
+        )
