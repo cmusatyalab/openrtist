@@ -4,3 +4,4 @@
 .venv/
 __pycache__/
 **/app/build/
+**/app/src/main/assets/
