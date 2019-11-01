@@ -68,6 +68,7 @@ distclean: clean
 	mkdir -p .venv/tmp
 	wget -O .venv/tmp/protobuf.zip $(PROTOC_DIST)
 	unzip -o .venv/tmp/protobuf.zip -d .venv bin/protoc
+	touch .venv
 
 %.py: %.ui .venv
 	.venv/bin/pyuic5 -x $< -o $@
