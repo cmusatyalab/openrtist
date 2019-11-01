@@ -183,7 +183,8 @@ def get_args():
         "--checkpoint-interval",
         type=int,
         default=2000,
-        help="number of batches after which a checkpoint of the trained model will be created",
+        help="number of batches after which a checkpoint of the trained model "
+        "will be created",
     )
 
     return parser.parse_args()
@@ -231,7 +232,7 @@ def train(args, progress_callback):
             noiseimg = torch.zeros([3, args.image_size, args.image_size])
 
             # prepare a noise image
-            for ii in range(args.noise_count):
+            for _ in range(args.noise_count):
                 xx = random.randrange(args.image_size)
                 yy = random.randrange(args.image_size)
 
@@ -332,8 +333,11 @@ def train(args, progress_callback):
 
 
 def log_progress(epoch, num_epochs, count, num_images, content, style, flicker, total):
-    mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\tflicker: {:.6f}\ttotal: {:.6f}".format(
-        time.ctime(), epoch + 1, count, num_images, content, style, flicker, total
+    mesg = (
+        "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\t"
+        "flicker: {:.6f}\ttotal: {:.6f}".format(
+            time.ctime(), epoch + 1, count, num_images, content, style, flicker, total
+        )
     )
     print(mesg)
 
