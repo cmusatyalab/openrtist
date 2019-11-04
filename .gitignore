@@ -6,5 +6,3 @@ __pycache__/
 local.properties
 **/app/build/
 **/app/src/main/assets/
-gabriel-client-openrtist-python/design.py
-protocol/openrtist_pb2.py
