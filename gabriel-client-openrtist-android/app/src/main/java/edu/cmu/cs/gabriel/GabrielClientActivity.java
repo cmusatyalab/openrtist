@@ -147,13 +147,27 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
 
     private ArrayAdapter<String> spinner_adapter = null;
-    private List<String> styleDescriptions = new ArrayList<>(Arrays.asList("Clear Display"));
+    private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
+            "Clear Display",
+            "Going to Work (L.S. Lowry)",
+            "Mosaic (Unknown)",
+            "The Scream (Edvard Munch)",
+            "Starry Night (Vincent Van Gogh)",
+            "Weeping Woman (Pablo Picasso)"
+            ));
 
     public List<String> getStyleDescriptions() {
         return styleDescriptions;
     }
 
-    private List<String> styleIds = new ArrayList<>(Arrays.asList("none"));
+    private List<String> styleIds = new ArrayList<>(Arrays.asList(
+            "none",
+            "going_to_work",
+            "mosaic",
+            "the_scream",
+            "starry-night",
+            "weeping_woman"
+            ));
 
     public List<String> getStyleIds() {
         return styleIds;
@@ -374,6 +388,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // setup local execution if needed
         if (Const.SERVER_IP.equals(getString(R.string.local_execution_dns_placeholder))) {
             runLocally = true;
+            Const.STYLES_RETRIEVED = true;
             localRunner = new LocalTransfer(
                     Const.IMAGE_WIDTH,
                     Const.IMAGE_HEIGHT
@@ -425,6 +440,24 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 if (++position == styleIds.size())
                     position = 1;
                 style_type = styleIds.get(position);
+                    localRunnerThreadHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                localRunner.load(getApplicationContext(),
+                                        String.format("%s.pt", style_type));
+                            } catch (FileNotFoundException e) {
+                                style_type = "none";
+                                AlertDialog.Builder builder = new AlertDialog.Builder(
+                                        GabrielClientActivity.this,
+                                        AlertDialog.THEME_HOLO_DARK);
+                                builder.setMessage("Style Not Found Locally")
+                                        .setTitle("Failed to Load Style");
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
+                        }
+                    });
                 Toast.makeText(getApplicationContext(), styleDescriptions.get(position),
                         Toast.LENGTH_SHORT).show();
                 if (Const.STEREO_ENABLED) {
@@ -775,7 +808,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 Camera.Parameters parameters = mCamera.getParameters();
 
                 if(style_type.equals("?") || !style_type.equals("none")) {
-                    if (runLocally) {
+                    if (runLocally && !style_type.equals("?")) {
                         if (!localRunnerBusy){
                             //local execution
                             long st = SystemClock.elapsedRealtime();
@@ -1152,7 +1185,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 }
             }
 
-            if (runLocally) {
+            if (!style_type.equals("?") && runLocally) {
                 localRunnerThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
