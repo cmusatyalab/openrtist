@@ -70,8 +70,8 @@ public class BaseComm {
                             SortedMap<String, String> styles = new TreeMap<>(ef.getStyleListMap());
                             for (Map.Entry<String, String> entry : styles.entrySet()) {
                                 Log.v(TAG, String.format("style: %s, desc: [%s]", entry.getKey(), entry.getValue()));
-                                ((GabrielClientActivity) activity).getStyleDescriptions().add(entry.getValue());
-                                ((GabrielClientActivity) activity).getStyleIds().add(entry.getKey());
+                                ((GabrielClientActivity) activity).getStyleDescriptions().add(entry.getValue().trim());
+                                ((GabrielClientActivity) activity).getStyleIds().add(entry.getKey().trim());
                             }
                         }
                     }
