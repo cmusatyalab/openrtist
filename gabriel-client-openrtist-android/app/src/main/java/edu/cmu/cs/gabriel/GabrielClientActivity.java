@@ -440,6 +440,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 if (++position == styleIds.size())
                     position = 1;
                 style_type = styleIds.get(position);
+                if(runLocally) {
                     localRunnerThreadHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -458,6 +459,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                             }
                         }
                     });
+                }
                 Toast.makeText(getApplicationContext(), styleDescriptions.get(position),
                         Toast.LENGTH_SHORT).show();
                 if (Const.STEREO_ENABLED) {
