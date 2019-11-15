@@ -60,7 +60,7 @@ public class ServerListActivity extends AppCompatActivity  {
     }
 
     ServerListAdapter createServerListAdapter() {
-        return new ServerListAdapter(getApplicationContext(), ItemModelList);
+        return new ServerListAdapter(this, ItemModelList);
     }
 
     //activity menu

@@ -22,6 +22,11 @@
     <string name="error_invalidURI">Server address is an invalid URI.</string>
     <string name="error_exists">A server by that name already exists.</string>
     <string name="server_removed">Removed server: </string>
+    <string name="server_kept">Server retained.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="server_delete_prompt">Are you sure you wish to delete this server?</string>
+    <string name="server_delete_title">Remove %s?</string>
     <string name="server_add_hovertext">Add Server</string>
     <string name="interval_set_toast">Interval set to %d seconds.</string>
     <string name="interval_label">Delay (sec)</string>
