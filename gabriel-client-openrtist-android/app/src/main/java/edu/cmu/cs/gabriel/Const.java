@@ -55,6 +55,8 @@ public class Const {
     public static boolean SENSOR_AUDIO = false;
 
     public static String SYNC_BASE = "video";
+    public static boolean STYLES_RETRIEVED = false;
+    public static final int REFERENCE_IMAGE = 99;
 
     /************************ In both demo and experiment mode *******************/
     // directory for all application related files (input + output)

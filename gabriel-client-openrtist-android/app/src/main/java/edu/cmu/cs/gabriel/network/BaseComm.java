@@ -7,14 +7,26 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.graphics.ImageDecoder;
+import android.graphics.ImageDecoder.Source;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import edu.cmu.cs.gabriel.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.function.Consumer;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
+import edu.cmu.cs.openrtist.Protos.EngineFields;
 import edu.cmu.cs.gabriel.client.comm.ServerCommCore;
 import edu.cmu.cs.openrtist.R;
+import edu.cmu.cs.gabriel.Const;
 
 public class BaseComm {
     private static String TAG = "OpenrtistComm";
@@ -36,6 +48,36 @@ public class BaseComm {
                 }
 
                 ResultWrapper.Result result = resultWrapper.getResults(0);
+                try {
+                    EngineFields ef = EngineFields.parseFrom(resultWrapper.getEngineFields().getValue());
+                    if (Const.DISPLAY_REFERENCE && ef.hasStyleImage()) {
+                        Bitmap refImage = null;
+                        if (ef.getStyleImage().getValue().toByteArray().length > 0) {
+                            refImage = BitmapFactory.decodeByteArray(ef.getStyleImage().getValue().toByteArray(), 0, ef.getStyleImage().getValue().toByteArray().length);
+                            if (refImage == null)
+                                Log.e(TAG, String.format("decodeByteArray returned null!"));
+
+                        }
+
+                        Message msg = Message.obtain();
+                        msg.what = Const.REFERENCE_IMAGE;
+                        msg.obj = refImage;
+                        returnMsgHandler.sendMessage(msg);
+                    }
+                    if (!Const.STYLES_RETRIEVED) {
+                        if (ef.getStyleListCount() > 0) {
+                            Const.STYLES_RETRIEVED = true;
+                            SortedMap<String, String> styles = new TreeMap<>(ef.getStyleListMap());
+                            for (Map.Entry<String, String> entry : styles.entrySet()) {
+                                Log.v(TAG, String.format("style: %s, desc: [%s]", entry.getKey(), entry.getValue()));
+                                ((GabrielClientActivity) activity).getStyleDescriptions().add(entry.getValue());
+                                ((GabrielClientActivity) activity).getStyleIds().add(entry.getKey());
+                            }
+                        }
+                    }
+                }  catch (InvalidProtocolBufferException e) {
+                    e.printStackTrace();
+                }
 
                 if (result.getPayloadType() != PayloadType.IMAGE) {
                     Log.e(TAG, "Got result of type " + result.getPayloadType().name());

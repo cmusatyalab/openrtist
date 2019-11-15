@@ -21,7 +21,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,6 +32,7 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -51,6 +54,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.MediaController;
@@ -77,6 +81,7 @@ import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
+import edu.cmu.cs.openrtist.Protos;
 import edu.cmu.cs.openrtist.R;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
@@ -91,8 +96,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     // major components for streaming sensor data and receiving information
     String serverIP = null;
-    private String style_type = "udnie";
-    private String prev_style_type = "udnie";
+    private String style_type = "?";
 
     BaseComm comm;
 
@@ -140,6 +144,20 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private EngineInput engineInput;
     final private Object engineInputLock = new Object();
     private FrameSupplier frameSupplier = new FrameSupplier(this);
+
+
+    private ArrayAdapter<String> spinner_adapter = null;
+    private List<String> styleDescriptions = new ArrayList<>(Arrays.asList("Clear Display"));
+
+    public List<String> getStyleDescriptions() {
+        return styleDescriptions;
+    }
+
+    private List<String> styleIds = new ArrayList<>(Arrays.asList("none"));
+
+    public List<String> getStyleIds() {
+        return styleIds;
+    }
 
     // Background threads based on
     // https://github.com/googlesamples/android-Camera2Basic/blob/master/Application/src/main/java/com/example/android/camera2basic/Camera2BasicFragment.java#L652
@@ -215,105 +233,22 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private volatile boolean localRunnerBusy = false;
     private RenderScript rs = null;
     private Bitmap localRunnerBitmapCache = null;
-    //List of Styles
-
-//    String[] itemname ={
-//            "udnie",
-//            "candy",
-//            "mosaic",
-//            "femmes_d_alger",
-//            "sunday_afternoon",
-//            "dido_carthage",
-//            "the_scream",
-//            "impression_sunrise",
-//            "starry_night"
-//    };
-//
-//    int[] imgid={
-//            R.drawable.udnie,
-//            R.drawable.candy,
-//            R.drawable.mosaic,
-//            R.drawable.femmes_d_alger,
-//            R.drawable.sunday_afternoon,
-//            R.drawable.dido_carthage,
-//            R.drawable.the_scream,
-//            R.drawable.impression_sunrise,
-//            R.drawable.starry_night
-//    };
-
-    String[] itemname ={
-            "Clear Display",
-            "udnie",
-            "candy",
-            "mosaic",
-            "rain_princess",
-            "femmes_d_alger",
-            "sunday_afternoon",
-            "dido_carthage",
-            "the_scream",
-	        "starry-night",
-            "cafe_gogh",
-            "fall_icarus",
-            "monet",
-            "weeping_woman",
-            "going_to_work",
-            "david_vaughan"
-    };
-
-
-    String[] display_names ={
-            "Clear Display",
-            "Udnie (Francis Picabia)",
-            "Candy (Unknown)",
-            "Mosaic painting (Unknown)",
-            "Rain Princess (Leonid Afremov)",
-            "Les Femmes d'Alger (Pablo Picasso)",
-            "A Sunday Afternoon on the Island of La Grande Jatte (Georges Seurat)",
-            "The Rise of the Carthaginian Empire (J.M.W. Turner)",
-            "The Scream (Edvard Munch)",
-            "The Starry Night (Vincent Van Gogh)",
-            "Cafe Terrace at Night (Vincent Van Gogh)",
-            "Landscape with the Fall of Icarus (Pieter Bruegel the Elder)",
-            "Bain à la Grenouillère (Claude Monet)",
-            "Weeping Woman (Pablo Picasso)",
-            "Going to Work (L.S. Lowry)",
-            "Painting 015 (David Vaughan)"
-    };
-
-    int[] imgid={
-            R.drawable.ic_delete_black_24dp,
-            R.drawable.udnie,
-            R.drawable.candy,
-            R.drawable.mosaic,
-            R.drawable.rain_princess,
-            R.drawable.femmes_d_alger,
-            R.drawable.sunday_afternoon,
-            R.drawable.dido_carthage,
-            R.drawable.the_scream,
-            R.drawable.starry_night,
-            R.drawable.cafe_gogh,
-            R.drawable.fall_icarus,
-            R.drawable.monet,
-            R.drawable.weeping_woman,
-            R.drawable.going_to_work,
-            R.drawable.david_vaughan
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.v(LOG_TAG, "++onCreate");
         super.onCreate(savedInstanceState);
-
+        Const.STYLES_RETRIEVED = false;
         if(Const.STEREO_ENABLED) {
             setContentView(R.layout.activity_stereo);
         } else {
             setContentView(R.layout.activity_main);
             // Spinner element
             Spinner spinner = (Spinner) findViewById(R.id.spinner);
+            spinner_adapter = new ArrayAdapter<String>(this, R.layout.mylist, styleDescriptions);
             // Spinner click listener
             spinner.setOnItemSelectedListener(this);
-            CustomAdapter customAdapter=new CustomAdapter(getApplicationContext(),imgid,display_names);
-            spinner.setAdapter(customAdapter);
+            spinner.setAdapter(spinner_adapter);
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED+
@@ -374,7 +309,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             //otherwise we should hold off on iterating until onActivityResult is called
             //and let the user know this is the case
             if(!Const.SHOW_RECORDER) {
-                iterationHandler.postDelayed(styleIterator, 1000 * Const.ITERATE_INTERVAL);
+                iterationHandler.postDelayed(styleIterator, 100);
             } else {
                 Toast.makeText(this, R.string.iteration_delayed, Toast.LENGTH_LONG).show();
             }
@@ -486,27 +421,29 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         @Override
         public void run() {
-            Spinner spinner = (Spinner) findViewById(R.id.spinner);
-            if(++position == itemname.length)
-                position = 1;
-            style_type = itemname[position];
-            Toast.makeText(getApplicationContext(), display_names[position],
-                    Toast.LENGTH_SHORT).show();
-            if(Const.STEREO_ENABLED) {
-                if (stereoView1.getVisibility() == View.INVISIBLE) {
-                    stereoView1.setVisibility(View.VISIBLE);
-                    stereoView2.setVisibility(View.VISIBLE);
+            if(Const.STYLES_RETRIEVED) { //wait until styles are retrieved before iterating
+                if (++position == styleIds.size())
+                    position = 1;
+                style_type = styleIds.get(position);
+                Toast.makeText(getApplicationContext(), styleDescriptions.get(position),
+                        Toast.LENGTH_SHORT).show();
+                if (Const.STEREO_ENABLED) {
+                    if (stereoView1.getVisibility() == View.INVISIBLE) {
+                        stereoView1.setVisibility(View.VISIBLE);
+                        stereoView2.setVisibility(View.VISIBLE);
+                    }
+                } else {
+                    if (Const.DISPLAY_REFERENCE) {
+                        iconView.setVisibility(View.VISIBLE);
+                    }
+                    if (imgView.getVisibility() == View.INVISIBLE) {
+                        imgView.setVisibility(View.VISIBLE);
+                    }
                 }
+                iterationHandler.postDelayed(this, 1000 * Const.ITERATE_INTERVAL);
             } else {
-                if(Const.DISPLAY_REFERENCE) {
-                    iconView.setVisibility(View.VISIBLE);
-                    iconView.setImageResource(imgid[position]);
-                }
-                if (imgView.getVisibility() == View.INVISIBLE) {
-                    imgView.setVisibility(View.VISIBLE);
-                }
+                iterationHandler.postDelayed(this, 100);
             }
-            iterationHandler.postDelayed(this, 1000 * Const.ITERATE_INTERVAL);
         }
     };
 
@@ -837,7 +774,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             if (isRunning) {
                 Camera.Parameters parameters = mCamera.getParameters();
 
-                if(!style_type.equals("none")) {
+                if(style_type.equals("?") || !style_type.equals("none")) {
                     if (runLocally) {
                         if (!localRunnerBusy){
                             //local execution
@@ -878,6 +815,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         }
                     } else if (GabrielClientActivity.this.comm != null) { // cloudlet execution
                         synchronized (GabrielClientActivity.this.engineInputLock) {
+                            Log.i("STYLE", style_type);
                             GabrielClientActivity.this.engineInput = new EngineInput(
                                     frame, parameters, style_type);
                             GabrielClientActivity.this.engineInputLock.notify();
@@ -946,9 +884,27 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 }
 
             }
+            else if (msg.what == Const.REFERENCE_IMAGE) {
+                if (!Const.STEREO_ENABLED) {
+                    Bitmap refImage = null;
+                    if (msg.obj != null) {
+                        Log.v(LOG_TAG, "Setting reference image.");
+                        refImage = (Bitmap) msg.obj;
+                        iconView.setImageBitmap(refImage);
+                    }
+                    else
+                        iconView.setImageResource(R.drawable.ic_question_mark);
+                }
+            }
             if (msg.what == NetworkProtocol.NETWORK_RET_IMAGE) {
                 if (GabrielClientActivity.this.style_type.equals("none")) {
                     return;
+                }
+
+                if (!Const.STEREO_ENABLED && GabrielClientActivity.this.style_type.equals("?")) {
+                    Spinner spinner = (Spinner) findViewById(R.id.spinner);
+                    ((ArrayAdapter<String>) spinner.getAdapter()).notifyDataSetChanged();
+                    GabrielClientActivity.this.style_type = "none";
                 }
 
                 cleared = false;
@@ -965,7 +921,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     imgView = (ImageView) findViewById(R.id.guidance_image);
                     imgView.setVisibility(View.VISIBLE);
                     imgView.setImageBitmap(feedbackImg);
-
                 }
                 framesProcessed++;
             }
@@ -1166,21 +1121,22 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     //Performing action onItemSelected and onNothing selected
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position,long id) {
-
-        //Toast.makeText(getApplicationContext(), itemname[position], Toast.LENGTH_LONG).show();
-        if(itemname[position] == "Clear Display"){
-            style_type = "none";
+        if(styleIds.get(position) == "none"){
+            if(!Const.STYLES_RETRIEVED)
+                style_type = "?";
+            else
+                style_type = "none";
             if(Const.STEREO_ENABLED) {
                 stereoView1.setVisibility(View.INVISIBLE);
                 stereoView2.setVisibility(View.INVISIBLE);
             } else {
                 imgView.setVisibility(View.INVISIBLE);
-                if(Const.DISPLAY_REFERENCE)
+                if(Const.DISPLAY_REFERENCE) {
                     iconView.setVisibility(View.INVISIBLE);
+                }
             }
-        }
-        else {
-            style_type = itemname[position];
+        } else {
+            style_type = styleIds.get(position);
 
             if(Const.STEREO_ENABLED) {
                 if (stereoView1.getVisibility() == View.INVISIBLE) {
@@ -1190,7 +1146,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             } else {
                 if(Const.DISPLAY_REFERENCE) {
                     iconView.setVisibility(View.VISIBLE);
-                    iconView.setImageResource(imgid[position]);
                 }
                 if (imgView.getVisibility() == View.INVISIBLE) {
                     imgView.setVisibility(View.VISIBLE);
@@ -1218,31 +1173,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 });
             }
         }
-//        styleView.setImageResource(imgid[position]);
-//        style_type = itemname[position];
-//        Log.i(LOG_TAG, "NEW STYLE TYPE: " + style_type);
-//        switch (position) {
-//            case 0:
-//                style_type = "udnie";
-//                break;
-//            case 1:
-//                style_type = "candy";
-//                break;
-//            case 2:
-//                style_type = "mosaic";
-//                break;
-//            case 3:
-//                style_type = "starry-night";
-//                break;
-//            default:
-//                style_type = "udnie";
-//                break;
-//        };
+
     }
 
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
-        // TODO Auto-generated method stub
     }
 
     /**************** End of onItemSelected ****************/
