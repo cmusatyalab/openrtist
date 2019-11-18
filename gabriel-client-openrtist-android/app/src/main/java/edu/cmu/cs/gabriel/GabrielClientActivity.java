@@ -148,12 +148,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     private ArrayAdapter<String> spinner_adapter = null;
     private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
-            "Clear Display",
-            "Going to Work (L.S. Lowry)",
-            "Mosaic (Unknown)",
-            "The Scream (Edvard Munch)",
-            "Starry Night (Vincent Van Gogh)",
-            "Weeping Woman (Pablo Picasso)"
+            "Clear Display"
             ));
 
     public List<String> getStyleDescriptions() {
@@ -161,12 +156,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     private List<String> styleIds = new ArrayList<>(Arrays.asList(
-            "none",
-            "going_to_work",
-            "mosaic",
-            "the_scream",
-            "starry-night",
-            "weeping_woman"
+            "none"
             ));
 
     public List<String> getStyleIds() {
@@ -388,6 +378,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // setup local execution if needed
         if (Const.SERVER_IP.equals(getString(R.string.local_execution_dns_placeholder))) {
             runLocally = true;
+            styleDescriptions.add("Going to Work (L.S. Lowry)");
+            styleDescriptions.add("Mosaic (Unknown)");
+            styleDescriptions.add("The Scream (Edvard Munch)");
+            styleDescriptions.add("Starry Night (Vincent Van Gogh)");
+            styleDescriptions.add("Weeping Woman (Pablo Picasso)");
+            styleIds.add("going_to_work");
+            styleIds.add("mosaic");
+            styleIds.add("the_scream");
+            styleIds.add("starry-night");
+            styleIds.add("weeping_woman");
             Const.STYLES_RETRIEVED = true;
             localRunner = new LocalTransfer(
                     Const.IMAGE_WIDTH,
