@@ -49,14 +49,9 @@ class OpenvinoAdapter(OpenrtistAdapter):
         device = "CPU" if cpu_only else "GPU"
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
-        if LooseVersion(openvino.inference_engine.__version__) >= LooseVersion("2.0"):
-            models_dir = "models_1p0"
-            model_xml_num = "16"
-            model_bin_suff = ".bin"
-        else:
-            models_dir = "models"
-            model_xml_num = "32" if cpu_only else "16v2"
-            model_bin_suff = "-32.bin" if cpu_only else "-16.bin"
+        models_dir = "models_1p0"
+        model_xml_num = "16"
+        model_bin_suff = ".bin"
 
         self.path = os.path.join(os.getcwd(), "..", models_dir)
         model_xml = os.path.join(self.path, "{}.xml".format(model_xml_num))
