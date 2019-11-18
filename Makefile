@@ -26,11 +26,11 @@ LOCAL_EXECUTION_MODELS = \
 	udnie.model \
 	weeping_woman.model
 
-LOCAL_EXEC_ASSET_DIR = gabriel-client-openrtist-android/app/src/main/assets
+LOCAL_EXEC_ASSET_DIR = android-client/app/src/main/assets
 
 GENERATED_FILES = \
 	$(LOCAL_EXECUTION_MODELS:%.model=$(LOCAL_EXEC_ASSET_DIR)/%.pt) \
-	gabriel-client-openrtist-python/design.py \
+	python-client/design.py \
 	protocol/openrtist_pb2.py
 
 REQUIREMENTS = \
@@ -72,7 +72,6 @@ distclean: clean
 
 %.py: %.ui .venv
 	.venv/bin/pyuic5 -x $< -o $@
-
 %_pb2.py: %.proto .venv
 	cd $(dir $<) && $(PWD)/.venv/bin/protoc --python_out=. $(notdir $<)
 
