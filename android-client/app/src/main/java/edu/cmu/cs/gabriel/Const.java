@@ -173,7 +173,9 @@ public class Const {
                 b = new Boolean(value.toString());
                 Const.STEREO_ENABLED = b;
                 if(b) {
-
+                    Const.SHOW_FPS = false;
+                    Const.SHOW_RECORDER = false;
+                    Const.DISPLAY_REFERENCE = false;
                     SharedPreferences.Editor editor = PreferenceManager
                             .getDefaultSharedPreferences(c)
                             .edit();
