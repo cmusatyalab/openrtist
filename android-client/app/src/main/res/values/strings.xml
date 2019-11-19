@@ -43,6 +43,7 @@
     <string name="demo_dns">openrtist-demo.cmusatyalab.org</string>
     <string name="local_execution">Local</string>
     <string name="local_execution_dns_placeholder">Run on Mobile Device (pytorch_android)</string>
+    <string name="dropdown_prompt">Select Style</string>
 
     <string name="about_menu">About&#8230;</string>
     <string name="settings_menu">Settings&#8230;</string>
