@@ -70,6 +70,7 @@ docker run --gpus all --rm -it -p 9099:9099 cmusatyalab/openrtist
 ```
 
 For Intel iGPU support, run:
+
 ```sh
 docker run --device /dev/dri:/dev/dri --rm -it -p 9099:9099 cmusatyalab/openrtist
 ```
@@ -108,27 +109,51 @@ sudo reboot
 
 ## Client Installation
 
-The client requires Python 3.5 or later.
+### Python Client in Docker
 
-### Step 1. Setup a virtualenv and install dependencies
+The docker image for the server component also includes the Python client which can be run on a non-Android machine. __The python client requires that a USB webcam is connected to the machine.__
 
-Navigate to the `gabriel-client-openrtist-python` directory. Setup a Python 3 [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/). Install dependencies by running:
+#### Step 1. Install Docker
 
-```bash
-pip install -r requirements.txt
+If you do not already have Docker installed, install as follows:
+
+``` bash
+apt-get update
+apt-get upgrade
+apt-get install docker.io
 ```
 
-### Step 2. Launch the Python client UI specifying the server's IP address
+Alternatively, you can follow the steps in [this Docker install guide](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/) or use the following convenience script:
+
+```sh
+curl -fsSL get.docker.com -o get-docker.sh
+sh get-docker.sh
+```
+
+#### Step 2. Obtain OpenRTiST Docker image
 
 ```bash
+docker pull cmusatyalab/openrtist
+```
+
+#### Step 3. Launch the container with the appropriate arguments
+
+```bash
+docker run --entrypoint /bin/bash --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" --device /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro --rm -it  cmusatyalab/openrtist
+```
+
+#### Step 4. Launch the Python client UI specifying the server's IP address
+
+```bash
+cd /openrtist/python-client
 ./ui.py <server ip address>
 ```
 
 ### Android Client
 
-You can download the client from the [Google Play Store](https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist). 
+You can download the client from the [Google Play Store](https://play.google.com/store/apps/details?id=edu.cmu.cs.openrtist).
 
-Alternatively, you can build the client yourself using [Android Studio](https://developer.android.com/studio). The source code for the client is located in the `gabriel-client-openrtist-android` directory. You should use the standardDebug [build variant](https://developer.android.com/studio/run#changing-variant).
+Alternatively, you can build the client yourself using [Android Studio](https://developer.android.com/studio). The source code for the client is located in the `android-client` directory. You should use the standardDebug [build variant](https://developer.android.com/studio/run#changing-variant).
 
 #### Managing Servers
 
@@ -241,20 +266,20 @@ pip install -r requirements.txt
 With your virtual environment activated, start the server like this:
 
 ```bash
-$ cd <openrtist-repo>/server/
-$ python main.py
+$cd <openrtist-repo>/server/
+$python main.py
 ```
 
 __Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.  This is not the case for OpenVINO on CPU, or with PyTorch.  Once initialized, the server is ready for clients at this point.__
 
 With either PyTorch or OpenVINO, you can run the server in CPU-only mode by passing the --cpu CLI flag. By default, OpenRTiST tries to detect and use OpenVINO, and fails over to PyTorch.  To force it to use one system, pass the --openvino or --torch CLI flags.
 
-### 4.  Run a python or mobile client using source code at gabriel-client-style-(client_type), or the Android client from the Google Play Store
+### 4.  Run a python or mobile client using source code at python-client or the Android client from the Google Play Store
 
 To run the python client:
 
 ```bash
-cd <openrtist-repo>/gabriel-client-openrtist-python
+cd <openrtist-repo>/python-client
 ./ui.py <server ip address>
 ```
 

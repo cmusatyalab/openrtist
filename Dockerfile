@@ -21,18 +21,21 @@ RUN echo "deb http://ppa.launchpad.net/intel-opencl/intel-opencl/ubuntu bionic m
     ocl-icd-libopencl1 \
     python3 \
     python3-pip \
+    python3-pyqt5 \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install PyTorch and Gabriel's external dependencies
 RUN python3 -m pip install --no-cache-dir \
+    'gabriel-client==0.0.4' \
+    'gabriel-server==0.0.9' \
     'opencv-python<5' \
     protobuf \
     py-cpuinfo \
+    PyQt5 \
     pyzmq \
     'torchvision<0.5' \
     websockets \
-    zmq \
-    'gabriel-server==0.0.9'
+    zmq 
 
 # Prevent NVIDIA libOpenCL.so from being loaded
 RUN mv /usr/local/cuda-10.1/targets/x86_64-linux/lib/libOpenCL.so.1 \
