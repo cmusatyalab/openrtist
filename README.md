@@ -139,6 +139,7 @@ docker pull cmusatyalab/openrtist
 #### Step 3. Launch the container with the appropriate arguments
 
 ```bash
+xhost +local:docker
 docker run --entrypoint /bin/bash --env DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" --device /dev/video0:/dev/video0 -v /tmp/.X11-unix:/tmp/.X11-unix:ro --rm -it  cmusatyalab/openrtist
 ```
 
