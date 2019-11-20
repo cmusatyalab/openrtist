@@ -31,7 +31,7 @@ In the root directory
 
 ```python
 python scripts/freeze_model.py freeze \
---weight-file-path='models_1p0/starry-night.model' \
+--weight-file-path='models/starry-night.model' \
 --output-file-path='starry-night.pt'
 ```
 
@@ -55,7 +55,7 @@ class Tracer:
 
     def freeze(
         self,
-        weight_file_path="models_1p0/starry-night.model",
+        weight_file_path="models/starry-night.model",
         output_file_path="starry-night.pt",
     ):
         """Freeze a pytorch model weight file together with model definition.
@@ -70,7 +70,7 @@ class Tracer:
 
     def quantize_and_freeze(
         self,
-        weight_file_path="models_1p0/starry-night.model",
+        weight_file_path="models/starry-night.model",
         output_file_path="starry-night-quantized.pt",
     ):
         """Quantize and freeze a pytorch weight file for fast inference on
@@ -87,7 +87,7 @@ class Tracer:
         traced_model = torch.jit.trace(self._model, model_input)
         traced_model.save(output_file_path)
 
-    def verify_on_livestream(self, weight_file_path="models_1p0/starry-night.model"):
+    def verify_on_livestream(self, weight_file_path="models/starry-night.model"):
         self._model.load_state_dict(torch.load(weight_file_path))
         preprocess = transforms.Compose([transforms.ToTensor()])
         _cam = cv2.VideoCapture(0)

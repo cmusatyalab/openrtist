@@ -49,7 +49,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
         device = "CPU" if cpu_only else "GPU"
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
-        models_dir = "models_1p0"
+        models_dir = "models"
         model_xml_num = "16"
         model_bin_suff = ".bin"
 

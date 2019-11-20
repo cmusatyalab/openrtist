@@ -75,7 +75,7 @@ distclean: clean
 %_pb2.py: %.proto .venv
 	cd $(dir $<) && $(PWD)/.venv/bin/protoc --python_out=. $(notdir $<)
 
-$(LOCAL_EXEC_ASSET_DIR)/%.pt: models_1p0/%.model .venv
+$(LOCAL_EXEC_ASSET_DIR)/%.pt: models/%.model .venv
 	mkdir -p $(LOCAL_EXEC_ASSET_DIR)
 	.venv/bin/python scripts/freeze_model.py freeze --weight-file-path='$<' --output-file-path='$@'
 
