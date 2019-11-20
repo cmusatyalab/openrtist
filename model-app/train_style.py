@@ -343,8 +343,7 @@ def log_progress(epoch, num_epochs, count, num_images, content, style, flicker, 
 
 
 def main():
-    if not torch.cuda.is_available():
-        raise Exception("Cuda is not available")
+    assert torch.cuda.is_available(), "Cuda is not available"
 
     args = get_args()
     check_paths(args)
