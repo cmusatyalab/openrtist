@@ -248,7 +248,7 @@ sudo apt-get install intel-opencl-icd
 Setup environment variables and paths to use OpenVINO in the current shell:
 
 ```sh
-$source /opt/intel/openvino/bin/setupvars.sh
+source /opt/intel/openvino/bin/setupvars.sh
 ```
 
 ### 2. Install Openrtist Dependencies
@@ -266,8 +266,8 @@ pip install -r requirements.txt
 With your virtual environment activated, start the server like this:
 
 ```bash
-$cd <openrtist-repo>/server/
-$python main.py
+cd <openrtist-repo>/server/
+python main.py
 ```
 
 __Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.  This is not the case for OpenVINO on CPU, or with PyTorch.  Once initialized, the server is ready for clients at this point.__
