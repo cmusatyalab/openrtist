@@ -23,7 +23,7 @@
 
 
     <EditTextPreference
-        android:defaultValue="sepia"
+        android:defaultValue="latest"
         android:key="mex_tag"
         android:title="@string/pref_mex_tag" />
 
