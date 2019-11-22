@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="edu.cmu.cs.openrtist"
-    android:versionCode="11"
-    android:versionName="2.0">
+    android:versionCode="12"
+    android:versionName="2.0.1">
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature
@@ -23,6 +24,7 @@
         android:largeHeap="true"
         android:theme="@style/MyGabrielMaterialTheme"
         android:usesCleartextTraffic="true">
+        <!-- tools:node="remove" -->
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -32,6 +34,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="edu.cmu.cs.openrtist.ServerListActivity" />
         </activity>
+        <!-- tools:node="remove" -->
         <activity
             android:name=".ServerListActivity"
             android:label="@string/title_activity_main"
