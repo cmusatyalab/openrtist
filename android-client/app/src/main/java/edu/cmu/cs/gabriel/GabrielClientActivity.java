@@ -270,7 +270,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
 
         if(Const.SHOW_RECORDER) {
-            ImageView recButton = (ImageView) findViewById(R.id.imgRecord);
+            final ImageView recButton = (ImageView) findViewById(R.id.imgRecord);
             recButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -287,18 +287,21 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         initRecorder();
                         shareScreen();
                     }
+                    recButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
-            ImageView screenshotButton = (ImageView) findViewById(R.id.imgScreenshot);
+            final ImageView screenshotButton = (ImageView) findViewById(R.id.imgScreenshot);
             screenshotButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Bitmap b = Screenshot.takescreenshotOfRootView(imgView);
                     storeScreenshot(b,getOutputMediaFile(MEDIA_TYPE_IMAGE).getPath());
+                    screenshotButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
 
                     }
 
             });
+
         } else if(!Const.STEREO_ENABLED){
             //this view doesn't exist when stereo is enabled (activity_stereo.xml)
             findViewById(R.id.imgRecord).setVisibility(View.GONE);
@@ -306,17 +309,29 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         if(Const.ITERATE_STYLES) {
+            final ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
+            playpauseButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(Const.ITERATION_STARTED == false) {
+                        Const.ITERATION_STARTED = true;
+                        playpauseButton.setImageResource(R.drawable.ic_pause);
+
+                        Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_started), Toast.LENGTH_LONG).show();
+                    } else {
+                        Const.ITERATION_STARTED = false;
+                        playpauseButton.setImageResource(R.drawable.ic_play);
+                        Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_stopped), Toast.LENGTH_LONG).show();
+                    }
+                    playpauseButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+
+                }
+
+            });
             if(!Const.STEREO_ENABLED)
                 findViewById(R.id.spinner).setVisibility(View.GONE);
             iterationHandler = new Handler();
-            //start iterating immediately if recording is not enabled,
-            //otherwise we should hold off on iterating until onActivityResult is called
-            //and let the user know this is the case
-            if(!Const.SHOW_RECORDER) {
-                iterationHandler.postDelayed(styleIterator, 100);
-            } else {
-                Toast.makeText(this, R.string.iteration_delayed, Toast.LENGTH_LONG).show();
-            }
+            iterationHandler.postDelayed(styleIterator, 100);
         }
         if(!Const.STEREO_ENABLED) {
             //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
@@ -326,6 +341,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             camButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    camButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
                     mCamera.setPreviewCallback(null);
                     CameraClose();
                     if (cameraId > 0) {
@@ -345,6 +361,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     mCamera.setPreviewCallbackWithBuffer(previewCallback);
                     reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
                     mCamera.addCallbackBuffer(reusedBuffer);
+
                 }
             });
 
@@ -356,6 +373,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
                     if (style_type.equals("none"))
                         preview.setRotation(180 - preview.getRotation());
+                    rotateButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
         }
@@ -436,7 +454,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         @Override
         public void run() {
-            if(Const.STYLES_RETRIEVED) { //wait until styles are retrieved before iterating
+            if(Const.STYLES_RETRIEVED && Const.ITERATION_STARTED) { //wait until styles are retrieved before iterating
                 if (++position == styleIds.size())
                     position = 1;
                 style_type = styleIds.get(position);
@@ -590,7 +608,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         mMediaRecorder.start();
         capturingScreen = true;
         if(Const.ITERATE_STYLES)
-            iterationHandler.postDelayed(styleIterator, 1000 * Const.ITERATE_INTERVAL);
+            iterationHandler.postDelayed(styleIterator, 100 * Const.ITERATE_INTERVAL);
     }
 
     private void shareScreen() {
