@@ -45,6 +45,7 @@ public class Const {
     public static boolean STEREO_ENABLED = false;
     public static boolean DISPLAY_REFERENCE = false;
     public static boolean ITERATE_STYLES = false;
+    public static boolean ITERATION_STARTED = false;
     public static int ITERATE_INTERVAL = 2;
     public static boolean SHOW_RECORDER = false;
     public static boolean SHOW_FPS = false;
