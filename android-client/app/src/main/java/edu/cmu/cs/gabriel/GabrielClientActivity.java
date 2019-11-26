@@ -243,6 +243,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "++onCreate");
         super.onCreate(savedInstanceState);
         Const.STYLES_RETRIEVED = false;
+        Const.ITERATION_STARTED = false;
         if(Const.STEREO_ENABLED) {
             setContentView(R.layout.activity_stereo);
         } else {
@@ -309,29 +310,39 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         }
 
         if(Const.ITERATE_STYLES) {
-            final ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
-            playpauseButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(Const.ITERATION_STARTED == false) {
-                        Const.ITERATION_STARTED = true;
-                        playpauseButton.setImageResource(R.drawable.ic_pause);
+            if (!Const.STEREO_ENABLED) {
+                final ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
+                playpauseButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (Const.ITERATION_STARTED == false) {
+                            Const.ITERATION_STARTED = true;
+                            playpauseButton.setImageResource(R.drawable.ic_pause);
 
-                        Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_started), Toast.LENGTH_LONG).show();
-                    } else {
-                        Const.ITERATION_STARTED = false;
-                        playpauseButton.setImageResource(R.drawable.ic_play);
-                        Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_stopped), Toast.LENGTH_LONG).show();
+                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_started), Toast.LENGTH_LONG).show();
+                        } else {
+                            Const.ITERATION_STARTED = false;
+                            playpauseButton.setImageResource(R.drawable.ic_play);
+                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_stopped), Toast.LENGTH_LONG).show();
+                        }
+                        playpauseButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+
                     }
-                    playpauseButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
 
-                }
+                });
 
-            });
-            if(!Const.STEREO_ENABLED)
                 findViewById(R.id.spinner).setVisibility(View.GONE);
+            } else {
+                //artificially start iteration since we don't display
+                //any buttons in stereo view
+                Const.ITERATION_STARTED = true;
+            }
+
             iterationHandler = new Handler();
             iterationHandler.postDelayed(styleIterator, 100);
+        } else {
+            ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
+            playpauseButton.setVisibility(View.GONE);
         }
         if(!Const.STEREO_ENABLED) {
             //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
