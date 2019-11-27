@@ -19,8 +19,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def create_adapter(openvino, cpu_only, force_torch):
+def create_adapter(openvino, cpu_only, force_torch, use_myriad):
     """Create the best adapter based on constraints passed as CLI arguments."""
+
+    if use_myriad:
+       openvino=True
+       if cpu_only:
+           raise Exception("Cannot run with both cpu-only and Myriad options")
 
     if force_torch and openvino:
         raise Exception("Cannot run with both Torch and OpenVINO")
@@ -46,7 +51,7 @@ def create_adapter(openvino, cpu_only, force_torch):
             if openvino:
                 raise Exception("No suitable engine")
         else:
-            if not cpu_only:
+            if not cpu_only and not use_myriad:
                 from openvino.inference_engine import IEPlugin
 
                 try:
@@ -58,9 +63,10 @@ def create_adapter(openvino, cpu_only, force_torch):
 
             logger.info("Using OpenVINO")
             logger.info("CPU Only: %s", cpu_only)
+            logger.info("Use Myriad: %s", use_myriad)
             from openvino_adapter import OpenvinoAdapter
 
-            adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE)
+            adapter = OpenvinoAdapter(cpu_only, DEFAULT_STYLE, use_myriad=use_myriad)
             return adapter
 
     logger.info("Using Torch with CPU")
@@ -96,6 +102,11 @@ def main():
         "OpenVINO may be used.",
     )
     parser.add_argument(
+        "--myriad",
+        action="store_true",
+        help="Set this flag to use Myriad VPU (implies use OpenVino).",
+    )
+    parser.add_argument(
         "--timing", action="store_true", help="Print timing information"
     )
     parser.add_argument(
@@ -104,7 +115,7 @@ def main():
     args = parser.parse_args()
 
     def engine_setup():
-        adapter = create_adapter(args.openvino, args.cpu_only, args.torch)
+        adapter = create_adapter(args.openvino, args.cpu_only, args.torch, args.myriad)
 
         if args.timing:
             engine = TimingEngine(COMPRESSION_PARAMS, adapter)

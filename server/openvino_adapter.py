@@ -44,9 +44,9 @@ logger = logging.getLogger(__name__)
 
 
 class OpenvinoAdapter(OpenrtistAdapter):
-    def __init__(self, cpu_only, default_style):
+    def __init__(self, cpu_only, default_style, use_myriad=False, max_lru=4):
         super().__init__(default_style)
-        device = "CPU" if cpu_only else "GPU"
+        device = "MYRIAD" if use_myriad else ("CPU" if cpu_only else "GPU")
         self.plugin = IEPlugin(device=device, plugin_dirs=None)
 
         models_dir = "models"
@@ -58,7 +58,9 @@ class OpenvinoAdapter(OpenrtistAdapter):
         self.use_reshape = False  # True  # cpu_only
 
         self.conf = {}
-        if cpu_only:
+        if use_myriad:
+           pass
+        elif cpu_only:
             cpuinf = get_cpu_info()
             if "avx512" in cpuinf["flags"]:
                 self.plugin.add_cpu_extension("libcpu_extension_avx512.so")
@@ -90,7 +92,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
             logger.info("Loading network files:\n\t%s\n\t%s", m_xml, model_bin)
             net = IENetwork(model=m_xml, weights=model_bin)
 
-            if cpu_only:
+            if not use_myriad and cpu_only:
                 supported_layers = self.plugin.get_supported_layers(net)
                 not_supported_layers = [
                     l for l in net.layers.keys() if l not in supported_layers
@@ -109,16 +111,19 @@ class OpenvinoAdapter(OpenrtistAdapter):
             self.out_blob = next(iter(net.outputs))
             net.batch_size = 1
 
-            if not self.use_reshape:
+            if self.use_reshape or use_myriad:
+                self.nets[name] = (net, None)
+            else:
                 # Loading model to the plugin
                 logger.info("Loading model to the plugin")
                 self.nets[name] = (net, self.plugin.load(network=net, config=self.conf))
-            else:
-                self.nets[name] = (net, None)
             self.add_supported_style(name)
+            self.lru_style= []
+            self.max_lru=max_lru
 
     def preprocessing(self, img):
-        net, exec_net = self.nets[self.get_style()]
+        style=self.get_style()
+        net, exec_net = self.nets[style]
         h, w = net.inputs[self.input_blob].shape[2:]
         reshaped = False
         if img.shape[:-1] != (h, w):
@@ -132,6 +137,13 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 )
                 img = cv2.resize(img, (w, h))
         if exec_net is None or reshaped:
+            if len(self.lru_style)==0 or self.lru_style[0] != style:
+                if style in self.lru_style:
+                    self.lru_style.remove(style)
+                self.lru_style.insert(0,style)
+            if len(self.lru_style)>self.max_lru:
+                oldstyle = self.lru_style.pop()
+                self.nets[oldstyle] = ( self.nets[oldstyle][0], None )
             logger.info("Loading model to the plugin")
             self.nets[self.get_style()] = (
                 net,
@@ -140,6 +152,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
             if exec_net is not None:
                 del exec_net
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
+        img = np.float32(img)*(1.0/255.0)   # convert to float
         return [img]
 
     def inference(self, preprocessed):
