@@ -6,7 +6,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.android.tools.build:gradle:3.5.3'
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.10'
 
         // JFrog Artifactory:
@@ -16,6 +16,7 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         jcenter()
         google()
     }

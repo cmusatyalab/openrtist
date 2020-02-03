@@ -81,8 +81,9 @@ import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
-import edu.cmu.cs.openrtist.Protos;
 import edu.cmu.cs.openrtist.R;
+
+import static edu.cmu.cs.gabriel.client.Util.ValidateEndpoint;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
 
@@ -774,7 +775,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     void setupComm() {
-        this.comm = new OpenrtistComm(this.serverIP, Const.PORT, this,
+        String serverURL = ValidateEndpoint(this.serverIP, Const.PORT);
+
+        this.comm = new OpenrtistComm(serverURL, this,
                 returnMsgHandler, Const.TOKEN_LIMIT);
     }
 
@@ -793,7 +796,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     public void run() {
                         // end condition
                         if (ipIndex == Const.SERVER_IP_LIST.length) {
-                            Log.d(LOG_TAG, "Finish all experiemets");
+                            Log.d(LOG_TAG, "Finish all experiments");
 
                             initPerRun(null); // just to get another set of ping results
 

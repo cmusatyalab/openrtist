@@ -28,7 +28,6 @@ import android.widget.ListView;
 import android.widget.ImageView;
 import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
-import android.util.Patterns;
 import android.Manifest;
 import android.os.Build;
 import androidx.core.app.ActivityCompat;
@@ -37,11 +36,11 @@ import android.content.Context;
 import android.hardware.camera2.CameraManager;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import java.util.Map;
 
 import edu.cmu.cs.gabriel.Const;
+
+import static edu.cmu.cs.gabriel.client.Util.ValidateEndpoint;
 
 
 public class ServerListActivity extends AppCompatActivity  {
@@ -125,7 +124,7 @@ public class ServerListActivity extends AppCompatActivity  {
         initServerList();
     }
 
-    void requestPremissionHelper(String permissions[]) {
+    void requestPermissionHelper(String permissions[]) {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             ActivityCompat.requestPermissions(this,
                     permissions,
@@ -137,7 +136,7 @@ public class ServerListActivity extends AppCompatActivity  {
         String permissions[] = {Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         };
-        this.requestPremissionHelper(permissions);
+        this.requestPermissionHelper(permissions);
     }
 
 
@@ -167,24 +166,13 @@ public class ServerListActivity extends AppCompatActivity  {
         serverListAdapter.notifyDataSetChanged();
     }
 
-    /**
-     * This is used to check the given URL is valid or not.
-     * @param url
-     * @return true if url is valid, false otherwise.
-     */
-    private boolean isValidUrl(String url) {
-        Pattern p = Patterns.WEB_URL;
-        Matcher m = p.matcher(url.toLowerCase());
-        return m.matches();
-    }
-
     public void addValue(View v) {
         String name = serverName.getText().toString();
         String endpoint = serverAddress.getText().toString();
         if (name.isEmpty() || endpoint.isEmpty()) {
             Toast.makeText(getApplicationContext(), R.string.error_empty ,
                     Toast.LENGTH_SHORT).show();
-        } else if(!isValidUrl(endpoint)) {
+        } else if (ValidateEndpoint(endpoint, -1) == null) {
             Toast.makeText(getApplicationContext(), R.string.error_invalidURI,
                     Toast.LENGTH_SHORT).show();
         }  else if(mSharedPreferences.contains("server:".concat(name))) {
