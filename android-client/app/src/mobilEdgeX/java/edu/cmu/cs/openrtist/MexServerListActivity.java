@@ -62,7 +62,7 @@ public class MexServerListActivity extends ServerListActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_FINE_LOCATION
         };
-        this.requestPremissionHelper(permissions);
+        this.requestPermissionHelper(permissions);
     }
 
     @Override

@@ -104,7 +104,7 @@ public class Const {
 
     /************************ Demo mode only *************************************/
     // server IP
-    public static String SERVER_IP = "128.2.208.111";  // Cloudlet
+    public static String SERVER_IP;  // Cloudlet
 
     // token size
     public static String TOKEN_LIMIT = "None";
