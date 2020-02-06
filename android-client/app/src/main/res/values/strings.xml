@@ -18,6 +18,7 @@
     <string name="address_subheading">Address</string>
     <string name="name_hint">Server Name</string>
     <string name="address_hint" translatable="false">10.0.0.2[:9099]</string>
+    <string name="backend_instructions">OpenRTiST requires a backend server to connect to. The cmu-demo-server can be used to test. You can setup your own backend server by following the instructions at https://github.com/cmusatyalab/openrtist to launch the cmusatyalab/openrtist Docker container.</string>
     <string name="error_empty">Name and address are required.</string>
     <string name="error_invalidURI">Server address is an invalid URI.</string>
     <string name="error_exists">A server by that name already exists.</string>
