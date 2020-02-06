@@ -167,6 +167,7 @@ public class ServerListActivity extends AppCompatActivity  {
     }
 
     public void addValue(View v) {
+        add.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
         String name = serverName.getText().toString();
         String endpoint = serverAddress.getText().toString();
         if (name.isEmpty() || endpoint.isEmpty()) {
