@@ -172,7 +172,7 @@ public class ServerListActivity extends AppCompatActivity  {
         if (name.isEmpty() || endpoint.isEmpty()) {
             Toast.makeText(getApplicationContext(), R.string.error_empty ,
                     Toast.LENGTH_SHORT).show();
-        } else if (ValidateEndpoint(endpoint, -1) == null) {
+        } else if (ValidateEndpoint(endpoint, Const.PORT) == null) {
             Toast.makeText(getApplicationContext(), R.string.error_invalidURI,
                     Toast.LENGTH_SHORT).show();
         }  else if(mSharedPreferences.contains("server:".concat(name))) {
