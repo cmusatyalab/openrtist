@@ -83,9 +83,10 @@
 
             <ImageView
                 android:id="@+id/imgViewAdd"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/colorPrimary"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:tint="@color/colorPrimary"
+                android:hapticFeedbackEnabled="true"
                 android:contentDescription="@string/server_add_hovertext"
                 android:onClick="addValue"
                 android:src="@android:drawable/ic_menu_add" />
