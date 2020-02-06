@@ -17,7 +17,7 @@
     <string name="name_subheading">Name</string>
     <string name="address_subheading">Address</string>
     <string name="name_hint">Server Name</string>
-    <string name="address_hint" translatable="false">192.168.0.1</string>
+    <string name="address_hint" translatable="false">10.0.0.2[:9099]</string>
     <string name="error_empty">Name and address are required.</string>
     <string name="error_invalidURI">Server address is an invalid URI.</string>
     <string name="error_exists">A server by that name already exists.</string>
