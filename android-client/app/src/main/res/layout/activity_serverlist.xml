@@ -98,5 +98,28 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:dividerHeight="2dp" />
+        android:dividerHeight="2dp"
+        android:scrollbars="vertical">
+
+    </ListView>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#ccc"/>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:background="@color/card_shadow_1"
+        android:drawableTop="@android:color/black"
+        android:fontFamily="sans-serif-thin"
+        android:gravity="center"
+        android:text="@string/backend_instructions"
+        android:textAlignment="center"
+        android:textColor="@color/navigationBarColor"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
 </LinearLayout>
