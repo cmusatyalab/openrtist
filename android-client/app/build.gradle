@@ -42,6 +42,7 @@ android {
     flavorDimensions "version"
     productFlavors {
         standard {
+            isDefault = true
             minSdkVersion 21
         }
         timing {
