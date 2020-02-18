@@ -8,16 +8,16 @@ import edu.cmu.cs.gabriel.client.comm.TimingServerComm;
 public class TimingComm extends BaseComm {
     TimingServerComm timingServerComm;
 
-    public TimingComm(String serverIP, int port, final Activity activity,
+    public TimingComm(String serverURL, final Activity activity,
                       final Handler returnMsgHandler, String tokenLimit) {
         super(activity, returnMsgHandler);
 
         if (tokenLimit.equals("None")) {
-            this.timingServerComm = new TimingServerComm(this.consumer, this.onDisconnect, serverIP,
-                    port, activity.getApplication());
+            this.timingServerComm = new TimingServerComm(this.consumer, this.onDisconnect,
+                    serverURL, activity.getApplication());
         } else {
-            this.timingServerComm = new TimingServerComm(this.consumer, this.onDisconnect, serverIP,
-                    port, activity.getApplication(), Integer.parseInt(tokenLimit));
+            this.timingServerComm = new TimingServerComm(this.consumer, this.onDisconnect,
+                    serverURL, activity.getApplication(), Integer.parseInt(tokenLimit));
         }
 
         this.serverCommCore = timingServerComm;
