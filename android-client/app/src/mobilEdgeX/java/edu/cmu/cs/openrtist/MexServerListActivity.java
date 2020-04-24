@@ -12,6 +12,8 @@ import android.location.LocationManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
 
 import com.mobiledgex.matchingengine.MatchingEngine;
 
@@ -60,7 +62,8 @@ public class MexServerListActivity extends ServerListActivity {
     void requestPermission() {
         String permissions[] = {Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.READ_PHONE_STATE
         };
         this.requestPermissionHelper(permissions);
     }
@@ -69,24 +72,29 @@ public class MexServerListActivity extends ServerListActivity {
     void initServerList() {
         super.initServerList();
 
-        //Always add MobiledgeX server so that it refreshes each time the serverlist activity is instantiated
-        //but we don't need to persist it in the prefs as a result
-        try {
-            if(registerClient()) {
-                // Now that we are registered, let's find the closest cloudlet
-                findCloudlet();
-            }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermission();
+        } else {
+            //Always add MobiledgeX server so that it refreshes each time the serverlist activity is instantiated
+            //but we don't need to persist it in the prefs as a result
+            try {
+                if (registerClient()) {
+                    // Now that we are registered, let's find the closest cloudlet
+                    findCloudlet();
+                }
 
-            // Add mex server if there are no other servers present
-            Server s = new Server(String.format("%1$s (%2$s, %3$s)",getString(R.string.mex_server), mClosestCloudlet.getCloudletLocation().getLatitude(),mClosestCloudlet.getCloudletLocation().getLongitude()), mClosestCloudlet.getFqdn());
-            ItemModelList.add(s);
-            serverListAdapter.notifyDataSetChanged();
-        } catch (ExecutionException | InterruptedException | io.grpc.StatusRuntimeException e) {
-            e.printStackTrace();
-            statusText = "MobiledgeX Registration Failed. Exception="+e.getLocalizedMessage();
-            Log.e(TAG, statusText);
-            Toast.makeText(getApplicationContext(), statusText,
-                    Toast.LENGTH_LONG).show();
+                // Add mex server if there are no other servers present
+                Server s = new Server(String.format("%1$s (%2$s, %3$s)", getString(R.string.mex_server), mClosestCloudlet.getCloudletLocation().getLatitude(), mClosestCloudlet.getCloudletLocation().getLongitude()), mClosestCloudlet.getFqdn());
+                ItemModelList.add(s);
+                serverListAdapter.notifyDataSetChanged();
+            } catch (ExecutionException | InterruptedException | io.grpc.StatusRuntimeException e) {
+                e.printStackTrace();
+                statusText = "MobiledgeX Registration Failed. Exception=" + e.getLocalizedMessage();
+                Log.e(TAG, statusText);
+                Toast.makeText(getApplicationContext(), statusText,
+                        Toast.LENGTH_LONG).show();
+            }
         }
     }
 

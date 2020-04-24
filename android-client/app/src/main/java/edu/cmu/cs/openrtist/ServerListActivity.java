@@ -79,7 +79,8 @@ public class ServerListActivity extends AppCompatActivity  {
         switch (id) {
             case R.id.about:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.about_message)
+
+                builder.setMessage(this.getString(R.string.about_message, BuildConfig.VERSION_NAME))
                         .setTitle(R.string.about_title);
                 AlertDialog dialog = builder.create();
                 dialog.show();
