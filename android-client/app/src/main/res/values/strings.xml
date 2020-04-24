@@ -51,7 +51,7 @@
     <string name="settings_menu">Settings&#8230;</string>
     <string name="tokenSize">Gabriel Token Size</string>
     <string name="about_title" translatable="false">OpenRTiST: Real-Time Style Transfer</string>
-    <string name="about_message" translatable="false">Copyright &#169; 2017-2020\nCarnegie Mellon University\nThis is a developing project.\n\nAll source code and documentation are under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)</string>
+    <string name="about_message" translatable="false">version: %s\nCopyright &#169; 2017-2020\nCarnegie Mellon University\nThis is a developing project.\n\nAll source code and documentation are under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)</string>
 
 
     <!-- Glass Launch-related strings. -->
