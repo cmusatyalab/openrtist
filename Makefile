@@ -6,6 +6,7 @@
 BLACK_VERSION = 19.10b0
 PYQT5_VERSION = 5.13.1
 TORCH_VERSION = 1.3
+TORCHVISION_VERSION = 0.4.2
 PROTOC_DIST = https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
 
 
@@ -38,7 +39,7 @@ REQUIREMENTS = \
 	'opencv-python' \
 	'fire' \
 	'torch==$(TORCH_VERSION)' \
-	'torchvision' \
+	'torchvision==$(TORCHVISION_VERSION)' \
 	'black==$(BLACK_VERSION)' \
 	flake8 \
 	flake8-bugbear
