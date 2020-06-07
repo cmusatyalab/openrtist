@@ -68,11 +68,11 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         new_style = False
         send_style_list = False
-        if engine_fields.style == "?":
+        if extras.style == "?":
             new_style = True
             send_style_list = True
 
-        elif engine_fields.style != self.adapter.get_style():
+        elif extras.style != self.adapter.get_style():
             self.adapter.set_style(extras.style)
             logger.info("New Style: %s", extras.style)
             new_style = True
