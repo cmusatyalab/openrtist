@@ -25,7 +25,7 @@ def main():
 
     if args.display:
 
-        def consume_frame_style(frame, style):
+        def consume_frame_style(frame, style, style_image):
             cv2.imshow("Result from server", frame)
             cv2.waitKey(1)
 
