@@ -1,2 +1,2 @@
-gabriel-client==0.0.6
+gabriel-client==0.0.7
 PyQt5
