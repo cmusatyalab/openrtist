@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenrtistEngine(cognitive_engine.Engine):
-    ENGINE_NAME = "openrtist"
+    FILTER_NAME = "openrtist"
 
     def __init__(self, compression_params, adapter):
         self.compression_params = compression_params
@@ -62,7 +62,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         if from_client.payload_type != gabriel_pb2.PayloadType.IMAGE:
             return cognitive_engine.wrong_input_format_error(from_client.frame_id)
 
-        engine_fields = cognitive_engine.unpack_engine_fields(
+        extras = cognitive_engine.unpack_extras(
             openrtist_pb2.EngineFields, from_client
         )
 
@@ -73,12 +73,12 @@ class OpenrtistEngine(cognitive_engine.Engine):
             send_style_list = True
 
         elif engine_fields.style != self.adapter.get_style():
-            self.adapter.set_style(engine_fields.style)
-            logger.info("New Style: %s", engine_fields.style)
+            self.adapter.set_style(extras.style)
+            logger.info("New Style: %s", extras.style)
             new_style = True
 
         style = self.adapter.get_style()
-        image = self.process_image(from_client.payload)
+        image = self.process_image(from_client.payloads_for_frame[0])
         image = self._apply_watermark(image)
 
         _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
@@ -86,23 +86,23 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         result = gabriel_pb2.ResultWrapper.Result()
         result.payload_type = gabriel_pb2.PayloadType.IMAGE
-        result.engine_name = self.ENGINE_NAME
         result.payload = img_data
 
-        engine_fields = openrtist_pb2.EngineFields()
-        engine_fields.style = style
+        extras = openrtist_pb2.EngineFields()
+        extras.style = style
 
         if new_style:
-            engine_fields.style_image.value = self.adapter.get_style_image()
+            extras.style_image.value = self.adapter.get_style_image()
         if send_style_list:
             for k, v in self.adapter.get_all_styles().items():
-                engine_fields.style_list[k] = v
+                extras.style_list[k] = v
 
         result_wrapper = gabriel_pb2.ResultWrapper()
+        result_wrapper.filter_passed = self.FILTER_NAME
         result_wrapper.frame_id = from_client.frame_id
         result_wrapper.status = gabriel_pb2.ResultWrapper.Status.SUCCESS
         result_wrapper.results.append(result)
-        result_wrapper.engine_fields.Pack(engine_fields)
+        result_wrapper.extras.Pack(extras)
 
         return result_wrapper
 
