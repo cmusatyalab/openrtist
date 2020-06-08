@@ -21,7 +21,7 @@ import edu.cmu.cs.gabriel.client.function.Supplier;
 
 public class FrameSupplier implements Supplier<FromClient.Builder> {
 
-    private static String ENGINE_NAME = "openrtist";
+    private static String FILTER_PASSED = "openrtist";
 
     private GabrielClientActivity gabrielClientActivity;
 
@@ -60,8 +60,8 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
 
         FromClient.Builder fromClientBuilder = FromClient.newBuilder();
         fromClientBuilder.setPayloadType(PayloadType.IMAGE);
-        fromClientBuilder.setEngineName(ENGINE_NAME);
-        fromClientBuilder.setPayload(ByteString.copyFrom(frame));
+        fromClientBuilder.setFilterPassed(FILTER_PASSED);
+        fromClientBuilder.addPayloadsForFrame(ByteString.copyFrom(frame));
 
         EngineFields.Builder engineFieldsBuilder = EngineFields.newBuilder();
         engineFieldsBuilder.setStyle(engineInput.style_type);
@@ -69,7 +69,7 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
 
         // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:
         // fromClientBuilder.setEngineFields(Any.pack(engineFields));
-        fromClientBuilder.setEngineFields(FrameSupplier.pack(engineFields));
+        fromClientBuilder.setExtras(FrameSupplier.pack(engineFields));
 
         return fromClientBuilder;
     }
