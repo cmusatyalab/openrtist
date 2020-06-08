@@ -7,14 +7,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.graphics.ImageDecoder;
-import android.graphics.ImageDecoder.Source;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -30,7 +26,7 @@ import edu.cmu.cs.gabriel.Const;
 
 public class BaseComm {
     private static String TAG = "OpenrtistComm";
-    private static String ENGINE_NAME = "openrtist";
+    private static String FILTER_PASSED = "openrtist";
 
     ServerCommCore serverCommCore;
     Consumer<ResultWrapper> consumer;
@@ -47,9 +43,15 @@ public class BaseComm {
                     return;
                 }
 
+                if (!resultWrapper.getFilterPassed().equals(FILTER_PASSED)) {
+                    Log.e(TAG, "Got result that passed filter " +
+                            resultWrapper.getFilterPassed());
+                    return;
+                }
+
                 ResultWrapper.Result result = resultWrapper.getResults(0);
                 try {
-                    EngineFields ef = EngineFields.parseFrom(resultWrapper.getEngineFields().getValue());
+                    EngineFields ef = EngineFields.parseFrom(resultWrapper.getExtras().getValue());
                     if (Const.DISPLAY_REFERENCE && ef.hasStyleImage()) {
                         Bitmap refImage = null;
                         if (ef.getStyleImage().getValue().toByteArray().length > 0) {
@@ -81,11 +83,6 @@ public class BaseComm {
 
                 if (result.getPayloadType() != PayloadType.IMAGE) {
                     Log.e(TAG, "Got result of type " + result.getPayloadType().name());
-                    return;
-                }
-
-                if (!result.getEngineName().equals(ENGINE_NAME)) {
-                    Log.e(TAG, "Got result from engine " + result.getEngineName());
                     return;
                 }
 
@@ -128,7 +125,7 @@ public class BaseComm {
     }
 
     public void sendSupplier(FrameSupplier frameSupplier) {
-        this.serverCommCore.sendSupplier(frameSupplier);
+        this.serverCommCore.sendSupplier(frameSupplier, FILTER_PASSED);
     }
 
     public void stop() {
