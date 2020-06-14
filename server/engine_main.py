@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 
-from gabriel_server import network_engine
+from gabriel_server.network_engine import engine_runner
 from openrtist_engine import OpenrtistEngine
-from timing_engine import TimingEngine
 import logging
 import cv2
-import argparse
 import importlib
 
-DEFAULT_PORT = 9099
-DEFAULT_NUM_TOKENS = 2
-INPUT_QUEUE_MAXSIZE = 60
+
 DEFAULT_STYLE = "the_scream"
 COMPRESSION_PARAMS = [cv2.IMWRITE_JPEG_QUALITY, 67]
 
@@ -76,15 +72,10 @@ def create_adapter(openvino, cpu_only, force_torch, use_myriad):
 
 
 def main():
-    adapter = create_adapter(args.openvino, args.cpu_only, args.torch, args.myriad)
+    adapter = create_adapter(False, False, False, False)
+    openrtist_engine = OpenrtistEngine(COMPRESSION_PARAMS, adapter)
 
-    if args.timing:
-        engine = TimingEngine(COMPRESSION_PARAMS, adapter)
-    else:
-        engine = OpenrtistEngine(COMPRESSION_PARAMS, adapter)
-
-    network_engine.engine.run(
-        engine, OpenrtistEngine.FILTER_NAME, 'tcp://*:5555')
+    engine_runner.run(openrtist_engine, OpenrtistEngine.FILTER_NAME, 'tcp://localhost:5555')
 
 if __name__ == "__main__":
     main()
