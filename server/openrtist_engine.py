@@ -61,7 +61,8 @@ class OpenrtistEngine(cognitive_engine.Engine):
     def handle(self, from_client):
         if from_client.payload_type != gabriel_pb2.PayloadType.IMAGE:
             status = gabriel_pb2.ResultWrapper.Status.WRONG_INPUT_FORMAT
-            return cognitive_engine.error_result_wrapper(from_client.frame_id, status)
+            return cognitive_engine.error_result_wrapper(
+                from_client.frame_id, status, filter_name)
 
         extras = cognitive_engine.unpack_extras(
             openrtist_pb2.EngineFields, from_client
