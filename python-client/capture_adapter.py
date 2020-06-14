@@ -2,6 +2,7 @@ from adapter import Adapter
 from gabriel_client.server_comm import WebsocketClient
 import config
 import cv2
+import gabriel_client
 
 
 class CaptureAdapter:
