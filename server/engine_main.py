@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gabriel_server import local_engine
+from gabriel_server import network_engine
 from openrtist_engine import OpenrtistEngine
 from timing_engine import TimingEngine
 import logging
@@ -76,62 +76,15 @@ def create_adapter(openvino, cpu_only, force_torch, use_myriad):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-    parser.add_argument(
-        "-t", "--tokens", type=int, default=DEFAULT_NUM_TOKENS, help="number of tokens"
-    )
-    parser.add_argument(
-        "-o",
-        "--openvino",
-        action="store_true",
-        help="Pass this flag to force the use of OpenVINO."
-        "Otherwise Torch may be used",
-    )
-    parser.add_argument(
-        "-c",
-        "--cpu-only",
-        action="store_true",
-        help="Pass this flag to prevent the GPU from being used.",
-    )
-    parser.add_argument(
-        "--torch",
-        action="store_true",
-        help="Set this flag to force the use of torch. Otherwise"
-        "OpenVINO may be used.",
-    )
-    parser.add_argument(
-        "--myriad",
-        action="store_true",
-        help="Set this flag to use Myriad VPU (implies use OpenVino).",
-    )
-    parser.add_argument(
-        "--timing", action="store_true", help="Print timing information"
-    )
-    parser.add_argument(
-        "-p", "--port", type=int, default=DEFAULT_PORT, help="Set port number"
-    )
-    args = parser.parse_args()
+    adapter = create_adapter(args.openvino, args.cpu_only, args.torch, args.myriad)
 
-    def engine_setup():
-        adapter = create_adapter(args.openvino, args.cpu_only, args.torch, args.myriad)
+    if args.timing:
+        engine = TimingEngine(COMPRESSION_PARAMS, adapter)
+    else:
+        engine = OpenrtistEngine(COMPRESSION_PARAMS, adapter)
 
-        if args.timing:
-            engine = TimingEngine(COMPRESSION_PARAMS, adapter)
-        else:
-            engine = OpenrtistEngine(COMPRESSION_PARAMS, adapter)
-
-        return engine
-
-    local_engine.run(
-        engine_setup,
-        OpenrtistEngine.FILTER_NAME,
-        INPUT_QUEUE_MAXSIZE,
-        args.port,
-        args.tokens,
-    )
-
+    network_engine.engine.run(
+        engine, OpenrtistEngine.FILTER_NAME, 'tcp://*:5555')
 
 if __name__ == "__main__":
     main()
