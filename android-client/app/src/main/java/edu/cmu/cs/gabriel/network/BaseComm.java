@@ -16,25 +16,28 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import edu.cmu.cs.gabriel.GabrielClientActivity;
+import edu.cmu.cs.gabriel.client.comm.ErrorType;
+import edu.cmu.cs.gabriel.client.comm.SendSupplierResult;
 import edu.cmu.cs.gabriel.client.function.Consumer;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
 import edu.cmu.cs.openrtist.Protos.EngineFields;
 import edu.cmu.cs.gabriel.client.comm.ServerCommCore;
-import edu.cmu.cs.openrtist.R;
 import edu.cmu.cs.gabriel.Const;
+import edu.cmu.cs.openrtist.R;
 
-public class BaseComm {
+public abstract class BaseComm {
     private static String TAG = "OpenrtistComm";
     private static String FILTER_PASSED = "openrtist";
 
     ServerCommCore serverCommCore;
     Consumer<ResultWrapper> consumer;
-    Runnable onDisconnect;
+    Consumer<ErrorType> onDisconnect;
     private boolean shownError;
+    private Handler returnMsgHandler;
+    private Activity activity;
 
     public BaseComm(final Activity activity, final Handler returnMsgHandler) {
-
         this.consumer = new Consumer<ResultWrapper>() {
             @Override
             public void accept(ResultWrapper resultWrapper) {
@@ -55,7 +58,9 @@ public class BaseComm {
                     if (Const.DISPLAY_REFERENCE && ef.hasStyleImage()) {
                         Bitmap refImage = null;
                         if (ef.getStyleImage().getValue().toByteArray().length > 0) {
-                            refImage = BitmapFactory.decodeByteArray(ef.getStyleImage().getValue().toByteArray(), 0, ef.getStyleImage().getValue().toByteArray().length);
+                            refImage = BitmapFactory.decodeByteArray(
+                                    ef.getStyleImage().getValue().toByteArray(), 0,
+                                    ef.getStyleImage().getValue().toByteArray().length);
                             if (refImage == null)
                                 Log.e(TAG, String.format("decodeByteArray returned null!"));
 
@@ -98,34 +103,61 @@ public class BaseComm {
             }
         };
 
-        this.onDisconnect = new Runnable() {
+        this.onDisconnect = new Consumer<ErrorType>() {
             @Override
-            public void run() {
-                Log.i(TAG, "Disconnected");
-                String message = BaseComm.this.serverCommCore.isRunning()
-                        ? activity.getResources().getString(R.string.server_disconnected)
-                        : activity.getResources().getString(R.string.could_not_connect);
-
-                if (BaseComm.this.shownError) {
-                    return;
+            public void accept(ErrorType errorType) {
+                int stringId;
+                switch (errorType) {
+                    case SERVER_ERROR:
+                        stringId = R.string.server_error;
+                        break;
+                    case SERVER_DISCONNECTED:
+                        stringId = R.string.server_disconnected;
+                        break;
+                    case COULD_NOT_CONNECT:
+                        stringId = R.string.could_not_connect;
+                        break;
+                    default:
+                        stringId = R.string.unspecified_error;
                 }
-
-                BaseComm.this.shownError = true;
-
-                Message msg = Message.obtain();
-                msg.what = NetworkProtocol.NETWORK_RET_FAILED;
-                Bundle data = new Bundle();
-                data.putString("message", message);
-                msg.setData(data);
-                returnMsgHandler.sendMessage(msg);
+                BaseComm.this.showErrorMessage(stringId);
             }
         };
 
         this.shownError = false;
+        this.activity = activity;
+        this.returnMsgHandler = returnMsgHandler;
+    }
+
+    public void showErrorMessage(int stringId) {
+        if (this.shownError) {
+            return;
+        }
+
+        BaseComm.this.shownError = true;
+        Log.i(TAG, "Disconnected");
+        Message msg = Message.obtain();
+        msg.what = NetworkProtocol.NETWORK_RET_FAILED;
+        Bundle data = new Bundle();
+        data.putString("message", activity.getResources().getString(stringId));
+        msg.setData(data);
+        returnMsgHandler.sendMessage(msg);
     }
 
     public void sendSupplier(FrameSupplier frameSupplier) {
-        this.serverCommCore.sendSupplier(frameSupplier, FILTER_PASSED);
+        if (!this.serverCommCore.isRunning()) {
+            return;
+        }
+
+        SendSupplierResult sendSupplierResult = this.serverCommCore.sendSupplier(
+                frameSupplier, FILTER_PASSED);
+        if (sendSupplierResult == SendSupplierResult.ERROR_GETTING_TOKEN) {
+            this.showErrorMessage(R.string.toekn_error);
+        }
+    }
+
+    public boolean acceptsOpenrtist() {
+        return this.serverCommCore.acceptsInputForFilter(FILTER_PASSED);
     }
 
     public void stop() {
