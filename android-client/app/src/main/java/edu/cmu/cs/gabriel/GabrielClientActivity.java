@@ -191,6 +191,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
      * Stops the background thread and its {@link Handler}.
      */
     private void stopBackgroundThread() {
+        comm.stop();
         backgroundThread.quitSafely();
         try {
             backgroundThread.join();
