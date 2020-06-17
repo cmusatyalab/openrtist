@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -81,7 +82,8 @@ import edu.cmu.cs.openrtist.R;
 
 import static edu.cmu.cs.gabriel.client.Util.ValidateEndpoint;
 
-public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
+public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,
+        TextureView.SurfaceTextureListener {
     private static final String LOG_TAG = "GabrielClientActivity";
     private static final int REQUEST_CODE = 1000;
     private static int DISPLAY_WIDTH = 640;
@@ -99,7 +101,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
 
-    //private CameraPreview preview = null;
     private Camera mCamera = null;
     private List<int[]> supportingFPS = null;
     private List<Camera.Size> supportingSize = null;
@@ -120,8 +121,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private boolean capturingScreen = false;
     private boolean recordingInitiated = false;
     private String mOutputPath = null;
-
-    private FileWriter controlLogWriter = null;
 
     // views
     private ImageView imgView = null;
@@ -193,7 +192,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             backgroundThread = null;
             backgroundHandler = null;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, "Problem stopping background thread", e);
         }
     }
 
@@ -247,7 +246,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             setContentView(R.layout.activity_main);
             // Spinner element
             Spinner spinner = (Spinner) findViewById(R.id.spinner);
-            spinner_adapter = new ArrayAdapter<String>(this, R.layout.mylist, styleDescriptions);
+            spinner_adapter = new ArrayAdapter<String>(
+                    this, R.layout.mylist, styleDescriptions);
             // Spinner click listener
             spinner.setOnItemSelectedListener(this);
             spinner.setAdapter(spinner_adapter);
@@ -273,7 +273,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 @Override
                 public void onClick(View v) {
                     if(capturingScreen) {
-                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_videocam_24px));
+                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().
+                                getDrawable(R.drawable.ic_baseline_videocam_24px));
                         stopRecording();
                         MediaActionSound m = new MediaActionSound();
                         m.play(MediaActionSound.STOP_VIDEO_RECORDING);
@@ -281,11 +282,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         recordingInitiated = true;
                         MediaActionSound m = new MediaActionSound();
                         m.play(MediaActionSound.START_VIDEO_RECORDING);
-                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_videocam_off_24px));
+                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().
+                                getDrawable(R.drawable.ic_baseline_videocam_off_24px));
                         initRecorder();
                         shareScreen();
                     }
-                    recButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                    recButton.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
             final ImageView screenshotButton = (ImageView) findViewById(R.id.imgScreenshot);
@@ -294,7 +297,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 public void onClick(View v) {
                     Bitmap b = Screenshot.takescreenshotOfRootView(imgView);
                     storeScreenshot(b,getOutputMediaFile(MEDIA_TYPE_IMAGE).getPath());
-                    screenshotButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                    screenshotButton.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.LONG_PRESS);
 
                     }
 
@@ -316,13 +320,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                             Const.ITERATION_STARTED = true;
                             playpauseButton.setImageResource(R.drawable.ic_pause);
 
-                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_started), Toast.LENGTH_LONG).show();
+                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_started),
+                                    Toast.LENGTH_LONG).show();
                         } else {
                             Const.ITERATION_STARTED = false;
                             playpauseButton.setImageResource(R.drawable.ic_play);
-                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_stopped), Toast.LENGTH_LONG).show();
+                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_stopped),
+                                    Toast.LENGTH_LONG).show();
                         }
-                        playpauseButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                        playpauseButton.performHapticFeedback(
+                                android.view.HapticFeedbackConstants.LONG_PRESS);
 
                     }
 
@@ -349,16 +356,19 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             camButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    camButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                    camButton.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.LONG_PRESS);
                     mCamera.setPreviewCallback(null);
                     CameraClose();
                     if (cameraId > 0) {
-                        camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_front_24px));
+                        camButton.setImageDrawable(getResources().getDrawable(
+                                R.drawable.ic_baseline_camera_front_24px));
                         Const.USING_FRONT_CAMERA = false;
                         cameraId = 0;
                         rotateButton.setVisibility(View.GONE);
                     } else {
-                        camButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_camera_rear_24px));
+                        camButton.setImageDrawable(getResources().getDrawable(
+                                R.drawable.ic_baseline_camera_rear_24px));
                         cameraId = findFrontFacingCamera();
                         Const.USING_FRONT_CAMERA = true;
                         rotateButton.setVisibility(View.VISIBLE);
@@ -381,7 +391,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
                     if (style_type.equals("none"))
                         preview.setRotation(180 - preview.getRotation());
-                    rotateButton.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                    rotateButton.performHapticFeedback(
+                            android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
         }
@@ -433,11 +444,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             out = new FileOutputStream(imageFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
-            sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,Uri.fromFile(imageFile)));
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                    Uri.fromFile(imageFile)));
             Toast.makeText(this, getString(R.string.screenshot_taken, path), Toast.LENGTH_LONG).show();
             out.close();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "IOException when attempting to store screenshot: " + e.getMessage());
+            Log.e(LOG_TAG, "IOException when attempting to store screenshot", e);
         }
     }
 
@@ -462,7 +474,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         @Override
         public void run() {
-            if(Const.STYLES_RETRIEVED && Const.ITERATION_STARTED) { //wait until styles are retrieved before iterating
+            if(Const.STYLES_RETRIEVED && Const.ITERATION_STARTED) {
+                //wait until styles are retrieved before iterating
                 if (++position == styleIds.size())
                     position = 1;
                 style_type = styleIds.get(position);
@@ -639,7 +652,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             mMediaRecorder.prepare();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, "Problem with recorder", e);
         }
     }
 
@@ -649,7 +662,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "Recording Stopped");
         Toast.makeText(this,
                 getString(R.string.recording_complete, mOutputPath), Toast.LENGTH_LONG).show();
-        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,Uri.fromFile(new File(mOutputPath))));
+        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                Uri.fromFile(new File(mOutputPath))));
         mMediaProjection = null;
         stopScreenSharing();
     }
@@ -675,7 +689,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     /**
-     * Does initialization for the entire application. Called only once even for multiple experiments.
+     * Does initialization for the entire application.
      */
     private void initOnce() {
         Log.v(LOG_TAG, "++initOnce");
@@ -705,7 +719,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     /**
      * Does initialization before each run (connecting to a specific server).
-     * Called once before each experiment.
      */
     private void initPerRun(String serverIP) {
         Log.v(LOG_TAG, "++initPerRun");
@@ -809,7 +822,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     Log.v(LOG_TAG, "Display Cleared");
                     if(Const.STEREO_ENABLED) {
                         byte[] bytes = yuvToJPEGBytes(frame, parameters);
-                        final Bitmap camView = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        final Bitmap camView = BitmapFactory.decodeByteArray(
+                                bytes, 0, bytes.length);
                         stereoView1.setVisibility(View.INVISIBLE);
                         stereoView2.setVisibility(View.INVISIBLE);
                         camView2.setImageBitmap(camView);
@@ -844,27 +858,40 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     /**
      * Handles messages passed from streaming threads and result receiving threads.
      */
-    Handler returnMsgHandler = new Handler() {
+    Handler returnMsgHandler = new ReturnHandler(this);
+
+    static class ReturnHandler extends Handler {
+        private final WeakReference<GabrielClientActivity> mGabrielClientActivity;
+
+        ReturnHandler(GabrielClientActivity gabrielClientActivity) {
+            this.mGabrielClientActivity = new WeakReference<GabrielClientActivity>(
+                    gabrielClientActivity);
+        }
+
         public void handleMessage(Message msg) {
+            final GabrielClientActivity gabrielClientActivity = this.mGabrielClientActivity.get();
+            if (gabrielClientActivity == null) {
+                return;
+            }
+
             if (msg.what == NetworkProtocol.NETWORK_RET_FAILED) {
-                //terminate();
-                if (!recordingInitiated) {  //suppress this error when screen recording as we have to temporarily leave this activity causing a network disruption
-                    AlertDialog.Builder builder = new AlertDialog.Builder(GabrielClientActivity.this, AlertDialog.THEME_HOLO_DARK);
+                //suppress this error when screen recording as we have to temporarily leave this
+                // activity causing a network disruption
+                if (!gabrielClientActivity.recordingInitiated) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            gabrielClientActivity, AlertDialog.THEME_HOLO_DARK);
                     builder.setMessage(msg.getData().getString("message"))
                             .setTitle(R.string.connection_error)
-                            .setNegativeButton(R.string.back_button, new DialogInterface.OnClickListener() {
+                            .setNegativeButton(R.string.back_button,
+                                    new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            GabrielClientActivity.this.finish();
+                                            gabrielClientActivity.finish();
                                         }
-                                    }
-                            )
-                            .setCancelable(false);
-
+                                    }).setCancelable(false);
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 }
-
             }
             else if (msg.what == Const.REFERENCE_IMAGE) {
                 if (!Const.STEREO_ENABLED) {
@@ -872,42 +899,47 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     if (msg.obj != null) {
                         Log.v(LOG_TAG, "Setting reference image.");
                         refImage = (Bitmap) msg.obj;
-                        iconView.setImageBitmap(refImage);
+                        gabrielClientActivity.iconView.setImageBitmap(refImage);
                     }
-                    else
-                        iconView.setImageResource(R.drawable.ic_question_mark);
+                    else {
+                        gabrielClientActivity.iconView.setImageResource(
+                                R.drawable.ic_question_mark);
+                    }
                 }
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_IMAGE) {
-                if (GabrielClientActivity.this.style_type.equals("none")) {
+                if (gabrielClientActivity.style_type.equals("none")) {
                     return;
                 }
 
-                if (!Const.STEREO_ENABLED && GabrielClientActivity.this.style_type.equals("?")) {
-                    Spinner spinner = (Spinner) findViewById(R.id.spinner);
+                if (!Const.STEREO_ENABLED && gabrielClientActivity.style_type.equals("?")) {
+                    Spinner spinner = (Spinner)gabrielClientActivity.findViewById(R.id.spinner);
                     ((ArrayAdapter<String>) spinner.getAdapter()).notifyDataSetChanged();
-                    GabrielClientActivity.this.style_type = "none";
+                    gabrielClientActivity.style_type = "none";
                 }
 
-                cleared = false;
-
+                gabrielClientActivity.cleared = false;
                 Bitmap feedbackImg = (Bitmap) msg.obj;
-                if (Const.STEREO_ENABLED) {
-                    stereoView1 = (ImageView) findViewById(R.id.guidance_image1);
-                    stereoView1.setVisibility(View.VISIBLE);
-                    stereoView1.setImageBitmap(feedbackImg);
-                    stereoView2 = (ImageView) findViewById(R.id.guidance_image2);
-                    stereoView2.setVisibility(View.VISIBLE);
-                    stereoView2.setImageBitmap(feedbackImg);
-                } else {
-                    imgView = (ImageView) findViewById(R.id.guidance_image);
-                    imgView.setVisibility(View.VISIBLE);
-                    imgView.setImageBitmap(feedbackImg);
-                }
-                framesProcessed++;
+                gabrielClientActivity.set_image(feedbackImg);
+                gabrielClientActivity.framesProcessed++;
             }
         }
-    };
+    }
+
+    public void set_image(Bitmap feedbackImg) {
+        if (Const.STEREO_ENABLED) {
+            this.stereoView1 = (ImageView)this.findViewById(R.id.guidance_image1);
+            this.stereoView1.setVisibility(View.VISIBLE);
+            this.stereoView1.setImageBitmap(feedbackImg);
+            this.stereoView2 = (ImageView)this.findViewById(R.id.guidance_image2);
+            this.stereoView2.setVisibility(View.VISIBLE);
+            this.stereoView2.setImageBitmap(feedbackImg);
+        } else {
+            this.imgView = (ImageView)this.findViewById(R.id.guidance_image);
+            this.imgView.setVisibility(View.VISIBLE);
+            this.imgView.setImageBitmap(feedbackImg);
+        }
+    }
 
     /**
      * Terminates all services.
@@ -969,7 +1001,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             try {
                 mCamera.setPreviewTexture(mSurfaceTexture);
             } catch (IOException exception) {
-                Log.e(LOG_TAG, "Error in setting camera holder: " + exception.getMessage());
+                Log.e(LOG_TAG, "Error in setting camera holder", exception);
                 CameraClose();
             }
 
@@ -998,49 +1030,14 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             parameters.setPreviewFpsRange(range[0], range[1]);
         }
         if (imageSize != null){
-            Log.i(LOG_TAG, "image size configuration : " + imageSize.width + "," + imageSize.height);
+            Log.i(LOG_TAG, "image size configuration : " + imageSize.width + "," +
+                    imageSize.height);
             parameters.setPreviewSize(imageSize.width, imageSize.height);
         }
         //parameters.setPreviewFormat(ImageFormat.JPEG);
 
         mCamera.setParameters(parameters);
     }
-
-    public void surfaceCreated(SurfaceTexture surface) {
-        Log.d(LOG_TAG, "++surfaceCreated");
-        isSurfaceReady = true;
-        if (mCamera == null) {
-            mCamera = Camera.open(cameraId);
-        }
-        if (mCamera != null) {
-            // get fps to capture
-            Camera.Parameters parameters = mCamera.getParameters();
-            this.supportingFPS = parameters.getSupportedPreviewFpsRange();
-            for (int[] range: this.supportingFPS) {
-                Log.i(LOG_TAG, "available fps ranges:" + range[0] + ", " + range[1]);
-            }
-
-            // get resolution
-            this.supportingSize = parameters.getSupportedPreviewSizes();
-            for (Camera.Size size: this.supportingSize) {
-                Log.i(LOG_TAG, "available sizes:" + size.width + ", " + size.height);
-            }
-
-            if (waitingToStart) {
-                waitingToStart = false;
-                try {
-                    mCamera.setPreviewTexture(mSurfaceTexture);
-                } catch (IOException exception) {
-                    Log.e(LOG_TAG, "Error in setting camera holder: " + exception.getMessage());
-                    CameraClose();
-                }
-                updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT);
-            }
-        } else {
-            Log.w(LOG_TAG, "Camera is not open");
-        }
-    }
-
 
     public void updateCameraConfigurations(int targetFps, int imgWidth, int imgHeight) {
         Log.d(LOG_TAG, "updateCameraConfigurations");
@@ -1060,7 +1057,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             int index = 0, fpsDiff = Integer.MAX_VALUE;
             for (int i = 0; i < this.supportingFPS.size(); i++){
                 int[] frameRate = this.supportingFPS.get(i);
-                int diff = Math.abs(Const.CAPTURE_FPS * 1000 - frameRate[0]) + Math.abs(Const.CAPTURE_FPS * 1000 - frameRate[1]);
+                int diff = Math.abs(Const.CAPTURE_FPS * 1000 - frameRate[0]) +
+                        Math.abs(Const.CAPTURE_FPS * 1000 - frameRate[1]);
                 if (diff < fpsDiff){
                     fpsDiff = diff;
                     index = i;
@@ -1073,7 +1071,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             int sizeDiff = Integer.MAX_VALUE;
             for (int i = 0; i < this.supportingSize.size(); i++){
                 Camera.Size size = this.supportingSize.get(i);
-                int diff = Math.abs(size.width - Const.IMAGE_WIDTH) + Math.abs(size.height - Const.IMAGE_HEIGHT);
+                int diff = Math.abs(size.width - Const.IMAGE_WIDTH) +
+                        Math.abs(size.height - Const.IMAGE_HEIGHT);
                 if (diff < sizeDiff){
                     sizeDiff = diff;
                     index = i;
@@ -1147,7 +1146,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 });
             }
         }
-
     }
 
     @Override
@@ -1160,21 +1158,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-
-        /*
-        mCamera = Camera.open(cameraId);
-
-        Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
-        mTextureView.setLayoutParams(new FrameLayout.LayoutParams(
-                previewSize.width, previewSize.height, Gravity.CENTER));
-
-        try {
-            mCamera.setPreviewTexture(surface);
-        } catch (IOException t) {
-        }
-
-        mCamera.startPreview();
-        */
         isSurfaceReady = true;
         if (mCamera == null) {
             mCamera = Camera.open(cameraId);
@@ -1198,10 +1181,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 try {
                     mCamera.setPreviewTexture(surface);
                 } catch (IOException exception) {
-                    Log.e(LOG_TAG, "Error in setting camera holder: " + exception.getMessage());
+                    Log.e(LOG_TAG, "Error in setting camera holder", exception);
                     CameraClose();
                 }
-                updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT);
+                updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH,
+                        Const.IMAGE_HEIGHT);
             }
         } else {
             Log.w(LOG_TAG, "Camera is not open");
