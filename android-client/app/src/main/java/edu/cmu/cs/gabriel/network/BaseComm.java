@@ -156,10 +156,6 @@ public abstract class BaseComm {
         }
     }
 
-    public boolean acceptsOpenrtist() {
-        return this.serverCommCore.acceptsInputForFilter(FILTER_PASSED);
-    }
-
     public void stop() {
         this.serverCommCore.stop();
     }
