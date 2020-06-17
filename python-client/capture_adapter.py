@@ -6,8 +6,8 @@ import cv2
 
 class CaptureAdapter:
     @property
-    def producer(self):
-        return self.adapter.producer
+    def producer_wrappers(self):
+        return self.adapter.producer_wrappers
 
     @property
     def consumer(self):
@@ -57,4 +57,5 @@ def create_client(server_ip, consume_rgb_frame_style):
     """
 
     adapter = CaptureAdapter(consume_rgb_frame_style)
-    return WebsocketClient(server_ip, config.PORT, adapter.producer, adapter.consumer)
+    return WebsocketClient(
+        server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer)

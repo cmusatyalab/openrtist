@@ -22,8 +22,8 @@ import random
 
 class Adapter:
     @property
-    def producer(self):
-        return self._opencv_adapter.producer
+    def producer_wrappers(self):
+        return self._opencv_adapter.get_producer_wrappers()
 
     @property
     def consumer(self):

@@ -46,7 +46,7 @@ def main():
 
     with open(inputs.output_pipe_path, "wb") as rgbpipe:
 
-        def consume_rgb_frame_style(rgb_frame, style):
+        def consume_rgb_frame_style(rgb_frame, style, style_image):
             style_image = style_name_to_image[style]
             style_im_h, style_im_w, _ = style_image.shape
             rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gabriel_server.local_engine import runner
+from gabriel_server import local_engine
 from openrtist_engine import OpenrtistEngine
 from timing_engine import TimingEngine
 import logging
@@ -124,9 +124,9 @@ def main():
 
         return engine
 
-    runner.run(
+    local_engine.run(
         engine_setup,
-        OpenrtistEngine.ENGINE_NAME,
+        OpenrtistEngine.FILTER_NAME,
         INPUT_QUEUE_MAXSIZE,
         args.port,
         args.tokens,
