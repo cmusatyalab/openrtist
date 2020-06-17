@@ -58,7 +58,7 @@ Follow [these instructions](https://github.com/NVIDIA/nvidia-docker#ubuntu-16041
 ### Step 4. Obtain OpenRTiST Docker image
 
 ```sh
-docker pull cmusatyalab/openrtist
+docker pull cmusatyalab/openrtist:stable
 ```
 
 ### Step 5A. Launch the Docker container
