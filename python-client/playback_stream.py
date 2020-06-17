@@ -25,7 +25,7 @@ def main():
 
     if args.display:
 
-        def consume_frame_style(frame, style):
+        def consume_frame_style(frame, style, style_image):
             cv2.imshow("Result from server", frame)
             cv2.waitKey(1)
 
@@ -40,16 +40,16 @@ def main():
 
     if args.timing:
         timing_client = TimingClient(
-            args.server_ip, config.PORT, adapter.producer, adapter.consumer
-        )
+            args.server_ip, config.PORT, adapter.producer_wrappers,
+            adapter.consumer)
         try:
             timing_client.launch()
         except KeyboardInterrupt:
             timing_client.compute_avg_rtt()
     else:
         client = WebsocketClient(
-            args.server_ip, config.PORT, adapter.producer, adapter.consumer
-        )
+            args.server_ip, config.PORT, adapter.producer_wrappers,
+            adapter.consumer)
         client.launch()
 
 

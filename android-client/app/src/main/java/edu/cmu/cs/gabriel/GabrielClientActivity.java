@@ -25,14 +25,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -77,7 +74,6 @@ import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
 import edu.cmu.cs.gabriel.network.BaseComm;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
-import edu.cmu.cs.gabriel.util.ResourceMonitoringService;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
@@ -86,8 +82,7 @@ import edu.cmu.cs.openrtist.R;
 import static edu.cmu.cs.gabriel.client.Util.ValidateEndpoint;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,TextureView.SurfaceTextureListener {
-
-    private static final String LOG_TAG = "Main";
+    private static final String LOG_TAG = "GabrielClientActivity";
     private static final int REQUEST_CODE = 1000;
     private static int DISPLAY_WIDTH = 640;
     private static int DISPLAY_HEIGHT = 480;
@@ -191,6 +186,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
      * Stops the background thread and its {@link Handler}.
      */
     private void stopBackgroundThread() {
+        comm.stop();
         backgroundThread.quitSafely();
         try {
             backgroundThread.join();
@@ -518,19 +514,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG, "++onResume");
         super.onResume();
 
-        // dim the screen
-//        WindowManager.LayoutParams lp = getWindow().getAttributes();
-//        lp.dimAmount = 1.0f;
-//        lp.screenBrightness = 0.01f;
-//        getWindow().setAttributes(lp);
-
         initOnce();
-        if (Const.IS_EXPERIMENT) { // experiment mode
-            runExperiments();
-        } else { // demo mode
-            serverIP = Const.SERVER_IP;
-            initPerRun(serverIP);
-        }
+        serverIP = Const.SERVER_IP;
+        initPerRun(serverIP);
     }
 
 
@@ -578,22 +564,21 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()) {
-                Log.d("CameraSample", "failed to create directory");
+        if (!mediaStorageDir.exists()){
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(LOG_TAG, "failed to create media directory");
                 return null;
             }
         }
 
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        String pattern = "yyyyMMdd_HHmmss";
+        String timeStamp = new SimpleDateFormat(pattern, Locale.US).format(new Date());
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
+            mediaFile = new File(mediaStorageDir.getPath(), "IMG_"+ timeStamp + ".jpg");
         } else if(type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
+            mediaFile = new File(mediaStorageDir.getPath(), "VID_"+ timeStamp + ".mp4");
         } else {
             return null;
         }
@@ -711,17 +696,10 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             mCamera.addCallbackBuffer(reusedBuffer);
         }
 
-        Const.ROOT_DIR.mkdirs();
-        Const.EXP_DIR.mkdirs();
-
-
         // Media controller
         if (mediaController == null) {
             mediaController = new MediaController(this);
         }
-
-        startResourceMonitoring();
-
         isRunning = true;
     }
 
@@ -746,29 +724,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             return;
         }
 
-        if (Const.IS_EXPERIMENT) {
-            if (isFirstExperiment) {
-                isFirstExperiment = false;
-            } else {
-                try {
-                    Thread.sleep(20 * 1000);
-                } catch (InterruptedException e) {}
-                // wait a while for ping to finish...
-                try {
-                    Thread.sleep(5 * 1000);
-                } catch (InterruptedException e) {}
-            }
-        }
-
         if (serverIP == null) return;
-
-        if (Const.IS_EXPERIMENT) {
-            try {
-                controlLogWriter = new FileWriter(Const.CONTROL_LOG_FILE);
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Control log file cannot be properly opened", e);
-            }
-        }
 
         this.setupComm();
         this.startBackgroundThread();
@@ -779,47 +735,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
         this.comm = new OpenrtistComm(serverURL, this,
                 returnMsgHandler, Const.TOKEN_LIMIT);
-    }
-
-    /**
-     * Runs a set of experiments with different server IPs.
-     * IP list is defined in the Const file.
-     */
-    private void runExperiments() {
-        final Timer startTimer = new Timer();
-        TimerTask autoStart = new TimerTask() {
-            int ipIndex = 0;
-            @Override
-            public void run() {
-                GabrielClientActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // end condition
-                        if (ipIndex == Const.SERVER_IP_LIST.length) {
-                            Log.d(LOG_TAG, "Finish all experiments");
-
-                            initPerRun(null); // just to get another set of ping results
-
-                            startTimer.cancel();
-                            terminate();
-                            return;
-                        }
-
-                        // make a new configuration
-                        serverIP = Const.SERVER_IP_LIST[ipIndex];
-
-                        // run the experiment
-                        initPerRun(serverIP);
-
-                        // move to the next experiment
-                        ipIndex++;
-                    }
-                });
-            }
-        };
-
-        // run 5 minutes for each experiment
-        startTimer.schedule(autoStart, 1000, 5*60*1000);
     }
 
     private byte[] yuvToJPEGBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
@@ -882,7 +797,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                         }
                     } else if (GabrielClientActivity.this.comm != null) { // cloudlet execution
                         synchronized (GabrielClientActivity.this.engineInputLock) {
-                            Log.i("STYLE", style_type);
+                            Log.i(LOG_TAG, "style: " + style_type);
                             GabrielClientActivity.this.engineInput = new EngineInput(
                                     frame, parameters, style_type);
                             GabrielClientActivity.this.engineInputLock.notify();
@@ -1032,14 +947,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             preview = null;
             mCamera = null;
         }
-        stopResourceMonitoring();
-        if (Const.IS_EXPERIMENT) {
-            try {
-                controlLogWriter.close();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error in closing control log file");
-            }
-        }
     }
 
     /**************** Camera Preview ***********************/
@@ -1087,11 +994,11 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         Log.v(LOG_TAG , "++changeConfiguration");
         Camera.Parameters parameters = mCamera.getParameters();
         if (range != null){
-            Log.i("Config", "frame rate configuration : " + range[0] + "," + range[1]);
+            Log.i(LOG_TAG, "frame rate configuration : " + range[0] + "," + range[1]);
             parameters.setPreviewFpsRange(range[0], range[1]);
         }
         if (imageSize != null){
-            Log.i("Config", "image size configuration : " + imageSize.width + "," + imageSize.height);
+            Log.i(LOG_TAG, "image size configuration : " + imageSize.width + "," + imageSize.height);
             parameters.setPreviewSize(imageSize.width, imageSize.height);
         }
         //parameters.setPreviewFormat(ImageFormat.JPEG);
@@ -1299,9 +1206,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         } else {
             Log.w(LOG_TAG, "Camera is not open");
         }
-
-
-
     }
 
     @Override
@@ -1322,26 +1226,4 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     /****************End of SurfaceTexture Listener ***********************/
-
-    /**************** Battery recording *************************/
-    /*
-	 * Resource monitoring of the mobile device
-     * Checks battery and CPU usage, as well as device temperature
-	 */
-    Intent resourceMonitoringIntent = null;
-
-    public void startResourceMonitoring() {
-        Log.i(LOG_TAG, "Starting Battery Recording Service");
-        resourceMonitoringIntent = new Intent(this, ResourceMonitoringService.class);
-        startService(resourceMonitoringIntent);
-    }
-
-    public void stopResourceMonitoring() {
-        Log.i(LOG_TAG, "Stopping Battery Recording Service");
-        if (resourceMonitoringIntent != null) {
-            stopService(resourceMonitoringIntent);
-            resourceMonitoringIntent = null;
-        }
-    }
-    /**************** End of battery recording ******************/
 }
