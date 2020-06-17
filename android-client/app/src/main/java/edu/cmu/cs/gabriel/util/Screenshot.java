@@ -17,5 +17,4 @@ public class Screenshot {
         return takescreenshot(v.getRootView());
     }
 
-
 }
