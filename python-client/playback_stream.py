@@ -40,16 +40,16 @@ def main():
 
     if args.timing:
         timing_client = TimingClient(
-            args.server_ip, config.PORT, adapter.producer_wrappers,
-            adapter.consumer)
+            args.server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
+        )
         try:
             timing_client.launch()
         except KeyboardInterrupt:
             timing_client.compute_avg_rtt()
     else:
         client = WebsocketClient(
-            args.server_ip, config.PORT, adapter.producer_wrappers,
-            adapter.consumer)
+            args.server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
+        )
         client.launch()
 
 

@@ -58,4 +58,5 @@ def create_client(server_ip, consume_rgb_frame_style):
 
     adapter = CaptureAdapter(consume_rgb_frame_style)
     return WebsocketClient(
-        server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer)
+        server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
+    )
