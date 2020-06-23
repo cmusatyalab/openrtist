@@ -23,9 +23,9 @@ def create_adapter(openvino, cpu_only, force_torch, use_myriad):
     """Create the best adapter based on constraints passed as CLI arguments."""
 
     if use_myriad:
-       openvino=True
-       if cpu_only:
-           raise Exception("Cannot run with both cpu-only and Myriad options")
+        openvino = True
+        if cpu_only:
+            raise Exception("Cannot run with both cpu-only and Myriad options")
 
     if force_torch and openvino:
         raise Exception("Cannot run with both Torch and OpenVINO")

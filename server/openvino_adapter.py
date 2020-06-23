@@ -59,7 +59,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
 
         self.conf = {}
         if use_myriad:
-           pass
+            pass
         elif cpu_only:
             cpuinf = get_cpu_info()
             if "avx512" in cpuinf["flags"]:
@@ -118,11 +118,11 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 logger.info("Loading model to the plugin")
                 self.nets[name] = (net, self.plugin.load(network=net, config=self.conf))
             self.add_supported_style(name)
-            self.lru_style= []
-            self.max_lru=max_lru
+            self.lru_style = []
+            self.max_lru = max_lru
 
     def preprocessing(self, img):
-        style=self.get_style()
+        style = self.get_style()
         net, exec_net = self.nets[style]
         h, w = net.inputs[self.input_blob].shape[2:]
         reshaped = False
@@ -137,13 +137,13 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 )
                 img = cv2.resize(img, (w, h))
         if exec_net is None or reshaped:
-            if len(self.lru_style)==0 or self.lru_style[0] != style:
+            if len(self.lru_style) == 0 or self.lru_style[0] != style:
                 if style in self.lru_style:
                     self.lru_style.remove(style)
-                self.lru_style.insert(0,style)
-            if len(self.lru_style)>self.max_lru:
+                self.lru_style.insert(0, style)
+            if len(self.lru_style) > self.max_lru:
                 oldstyle = self.lru_style.pop()
-                self.nets[oldstyle] = ( self.nets[oldstyle][0], None )
+                self.nets[oldstyle] = (self.nets[oldstyle][0], None)
             logger.info("Loading model to the plugin")
             self.nets[self.get_style()] = (
                 net,
@@ -152,7 +152,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
             if exec_net is not None:
                 del exec_net
         img = img.transpose((2, 0, 1))  # Change data layout from HWC to CHW
-        img = np.float32(img)*(1.0/255.0)   # convert to float
+        img = np.float32(img) * (1.0 / 255.0)  # convert to float
         return [img]
 
     def inference(self, preprocessed):
