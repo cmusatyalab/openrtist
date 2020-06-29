@@ -77,7 +77,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             new_style = True
 
         style = self.adapter.get_style()
-        image = self.process_image(input_frame.payloads_for_frame[0])
+        image = self.process_image(input_frame.payloads[0])
         image = self._apply_watermark(image)
 
         _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
