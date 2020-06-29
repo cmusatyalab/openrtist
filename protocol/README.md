@@ -1,11 +1,12 @@
-# Updating Protocol
+# Compiling for Python
 
-See notes about getting the protobuf compiler
-[here](https://github.com/cmusatyalab/gabriel-protocol#updating-protocol).
+See
+[notes](https://github.com/cmusatyalab/gabriel/blob/master/protocol/README.md#compiling-for-python)
+about getting the protobuf compiler.
 Then run:
 1. `/path/to/protoc --python_out=. openrtist.proto`
 
-This compiles the proto for the server and the Python client.
+# Compiling for Android
 
 The proto will be compiled for Android the next time the Android client is
-built.
+built in Android Studio.

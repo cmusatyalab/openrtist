@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenrtistEngine(cognitive_engine.Engine):
-    FILTER_NAME = "openrtist"
+    SOURCE_NAME = "openrtist"
 
     def __init__(self, compression_params, adapter):
         self.compression_params = compression_params
@@ -58,28 +58,26 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         logger.info("FINISHED INITIALISATION")
 
-    def handle(self, from_client):
-        if from_client.payload_type != gabriel_pb2.PayloadType.IMAGE:
+    def handle(self, input_frame):
+        if input_frame.payload_type != gabriel_pb2.PayloadType.IMAGE:
             status = gabriel_pb2.ResultWrapper.Status.WRONG_INPUT_FORMAT
-            return cognitive_engine.error_result_wrapper(
-                from_client.frame_id, status, FILTER_NAME
-            )
+            return cognitive_engine.create_result_wrapper(status)
 
-        extras = cognitive_engine.unpack_extras(openrtist_pb2.EngineFields, from_client)
+        extras = cognitive_engine.unpack_extras(openrtist_pb2.Extras,
+                                                input_frame)
 
         new_style = False
         send_style_list = False
         if extras.style == "?":
             new_style = True
             send_style_list = True
-
         elif extras.style != self.adapter.get_style():
             self.adapter.set_style(extras.style)
             logger.info("New Style: %s", extras.style)
             new_style = True
 
         style = self.adapter.get_style()
-        image = self.process_image(from_client.payloads_for_frame[0])
+        image = self.process_image(input_frame.payloads_for_frame[0])
         image = self._apply_watermark(image)
 
         _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
@@ -89,7 +87,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result.payload_type = gabriel_pb2.PayloadType.IMAGE
         result.payload = img_data
 
-        extras = openrtist_pb2.EngineFields()
+        extras = openrtist_pb2.Extras()
         extras.style = style
 
         if new_style:
@@ -98,10 +96,8 @@ class OpenrtistEngine(cognitive_engine.Engine):
             for k, v in self.adapter.get_all_styles().items():
                 extras.style_list[k] = v
 
-        result_wrapper = gabriel_pb2.ResultWrapper()
-        result_wrapper.filter_passed = self.FILTER_NAME
-        result_wrapper.frame_id = from_client.frame_id
-        result_wrapper.status = gabriel_pb2.ResultWrapper.Status.SUCCESS
+        status = gabriel_pb2.ResultWrapper.Status.SUCCESS
+        result_wrapper = cognitive_engine.create_result_wrapper(status)
         result_wrapper.results.append(result)
         result_wrapper.extras.Pack(extras)
 
