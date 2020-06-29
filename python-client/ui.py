@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import asyncio
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
@@ -79,14 +80,17 @@ class ClientThread(QThread):
 
     def __init__(self, server_ip):
         super().__init__()
+        self._server_ip = server_ip
 
+    def run(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
 
-        self._client = capture_adapter.create_client(server_ip, consume_rgb_frame_style)
-
-    def run(self):
-        self._client.launch()
+        client = capture_adapter.create_client(
+            self._server_ip, consume_rgb_frame_style)
+        client.launch()
 
     def stop(self):
         self._client.stop()
@@ -97,8 +101,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "server_ip", action="store", help="IP address for Openrtist Server"
-    )
+        "server_ip", action="store", help="IP address for Openrtist Server")
     inputs = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)
