@@ -1,4 +1,4 @@
-from gabriel_client.timing_client import TimingClient
+from gabriel_client.measurement_client import MeasurementClient
 from gabriel_client.websocket_client import WebsocketClient
 from adapter import Adapter
 import config
@@ -32,8 +32,8 @@ def main():
     adapter = Adapter(preprocess, consume_frame_style, video_capture)
 
     if args.timing:
-        client = TimingClient(args.server_ip, config.PORT,
-                              adapter.producer_wrappers, adapter.consumer)
+        client = MeasurementClient(args.server_ip, config.PORT,
+                                   adapter.producer_wrappers, adapter.consumer)
     else:
         client = WebsocketClient(args.server_ip, config.PORT,
                                  adapter.producer_wrappers, adapter.consumer)
