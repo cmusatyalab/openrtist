@@ -39,8 +39,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import edu.cmu.cs.gabriel.Const;
-
-import static edu.cmu.cs.gabriel.client.Util.ValidateEndpoint;
+import edu.cmu.cs.gabriel.client.socket.SocketWrapper;
 
 
 public class ServerListActivity extends AppCompatActivity  {
@@ -145,7 +144,8 @@ public class ServerListActivity extends AppCompatActivity  {
         Map<String, ?> prefs = mSharedPreferences.getAll();
         for (Map.Entry<String,?> pref : prefs.entrySet())
             if(pref.getKey().startsWith("server:")) {
-                Server s = new Server(pref.getKey().substring("server:".length()), pref.getValue().toString());
+                Server s = new Server(
+                        pref.getKey().substring("server:".length()), pref.getValue().toString());
                 ItemModelList.add(s);
                 serverListAdapter.notifyDataSetChanged();
             }
@@ -174,7 +174,7 @@ public class ServerListActivity extends AppCompatActivity  {
         if (name.isEmpty() || endpoint.isEmpty()) {
             Toast.makeText(getApplicationContext(), R.string.error_empty ,
                     Toast.LENGTH_SHORT).show();
-        } else if (ValidateEndpoint(endpoint, Const.PORT) == null) {
+        } else if (!SocketWrapper.validUri(endpoint, Const.PORT)) {
             Toast.makeText(getApplicationContext(), R.string.error_invalidURI,
                     Toast.LENGTH_SHORT).show();
         }  else if(mSharedPreferences.contains("server:".concat(name))) {
