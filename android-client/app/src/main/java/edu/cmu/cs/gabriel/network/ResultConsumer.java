@@ -58,8 +58,7 @@ public class ResultConsumer implements Consumer<ResultWrapper> {
             }
             if (!Const.STYLES_RETRIEVED && (extras.getStyleListCount() > 0)) {
                 Const.STYLES_RETRIEVED = true;
-                Map<String, String> styles = new TreeMap<>(extras.getStyleListMap());
-                for (Map.Entry<String, String> entry : styles.entrySet()) {
+                for (Map.Entry<String, String> entry : extras.getStyleListMap().entrySet()) {
                     Log.v(TAG, "style: " + entry.getKey() + ", desc: " + entry.getValue());
                     gabrielClientActivity.getStyleDescriptions().add(entry.getValue().trim());
                     gabrielClientActivity.getStyleIds().add(entry.getKey().trim());
