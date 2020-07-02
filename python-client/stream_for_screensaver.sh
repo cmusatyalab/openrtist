@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 if [[ $# -ne 1 ]]; then
    printf "Usage: stream_for_screensaver.sh openrtist_server_ip\n"
    exit 1;

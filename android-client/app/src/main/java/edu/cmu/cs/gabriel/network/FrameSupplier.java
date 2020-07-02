@@ -11,18 +11,15 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 
 import java.io.ByteArrayOutputStream;
+import java.util.function.Supplier;
 
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.GabrielClientActivity;
-import edu.cmu.cs.gabriel.protocol.Protos.FromClient;
+import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
-import edu.cmu.cs.openrtist.Protos.EngineFields;
-import edu.cmu.cs.gabriel.client.function.Supplier;
+import edu.cmu.cs.openrtist.Protos.Extras;
 
-public class FrameSupplier implements Supplier<FromClient.Builder> {
-
-    private static String FILTER_PASSED = "openrtist";
-
+public class FrameSupplier implements Supplier<InputFrame> {
     private GabrielClientActivity gabrielClientActivity;
 
     public FrameSupplier(GabrielClientActivity gabrielClientActivity) {
@@ -30,8 +27,9 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
     }
 
     private static byte[] createFrameData(EngineInput engineInput) {
-        Camera.Size cameraImageSize = engineInput.parameters.getPreviewSize();
-        YuvImage image = new YuvImage(engineInput.frame, engineInput.parameters.getPreviewFormat(),
+        Camera.Size cameraImageSize = engineInput.getParameters().getPreviewSize();
+        YuvImage image = new YuvImage(
+                engineInput.getFrame(), engineInput.getParameters().getPreviewFormat(),
                 cameraImageSize.width, cameraImageSize.height, null);
         ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
         // chooses quality 67 and it roughly matches quality 5 in avconv
@@ -55,26 +53,21 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
         }
     }
 
-    private static FromClient.Builder convertEngineInput(EngineInput engineInput) {
+    private static InputFrame convertEngineInput(EngineInput engineInput) {
         byte[] frame = FrameSupplier.createFrameData(engineInput);
-
-        FromClient.Builder fromClientBuilder = FromClient.newBuilder();
-        fromClientBuilder.setPayloadType(PayloadType.IMAGE);
-        fromClientBuilder.setFilterPassed(FILTER_PASSED);
-        fromClientBuilder.addPayloadsForFrame(ByteString.copyFrom(frame));
-
-        EngineFields.Builder engineFieldsBuilder = EngineFields.newBuilder();
-        engineFieldsBuilder.setStyle(engineInput.style_type);
-        EngineFields engineFields = engineFieldsBuilder.build();
-
+        Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType()).build();
         // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:
         // fromClientBuilder.setEngineFields(Any.pack(engineFields));
-        fromClientBuilder.setExtras(FrameSupplier.pack(engineFields));
 
-        return fromClientBuilder;
+        InputFrame inputFrame = InputFrame.newBuilder()
+                .setPayloadType(PayloadType.IMAGE)
+                .addPayloads(ByteString.copyFrom(frame))
+                .setExtras(FrameSupplier.pack(extras))
+                .build();
+        return inputFrame;
     }
 
-    public FromClient.Builder get() {
+    public InputFrame get() {
         EngineInput engineInput = this.gabrielClientActivity.getEngineInput();
         if (engineInput == null) {
             return null;
@@ -85,10 +78,10 @@ public class FrameSupplier implements Supplier<FromClient.Builder> {
 
     // Based on
     // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_message.cc#L1387
-    private static Any pack(EngineFields engineFields) {
+    private static Any pack(Extras extras) {
         return Any.newBuilder()
-                .setTypeUrl("type.googleapis.com/openrtist.EngineFields")
-                .setValue(engineFields.toByteString())
+                .setTypeUrl("type.googleapis.com/openrtist.Extras")
+                .setValue(extras.toByteString())
                 .build();
     }
 }

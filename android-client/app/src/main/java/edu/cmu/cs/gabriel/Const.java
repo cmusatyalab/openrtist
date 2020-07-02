@@ -50,6 +50,8 @@ public class Const {
     // token size
     public static String TOKEN_LIMIT = "None";
 
+    public static final String SOURCE_NAME = "openrtist";
+
     public static void loadPref(Context c, String key, Object value) {
         String stringValue = value.toString();
         Boolean b = null;

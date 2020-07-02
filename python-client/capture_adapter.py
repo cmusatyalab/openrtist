@@ -1,5 +1,5 @@
 from adapter import Adapter
-from gabriel_client.server_comm import WebsocketClient
+from gabriel_client.websocket_client import WebsocketClient
 import config
 import cv2
 

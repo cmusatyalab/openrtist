@@ -1,43 +1,46 @@
 package edu.cmu.cs.gabriel.network;
 
-import android.app.Activity;
+import android.app.Application;
 import android.os.Handler;
 
-import edu.cmu.cs.gabriel.client.comm.LogRttFpsConsumer;
+import java.util.function.Consumer;
+
+import edu.cmu.cs.gabriel.Const;
+import edu.cmu.cs.gabriel.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.comm.MeasurementServerComm;
-import edu.cmu.cs.gabriel.client.comm.RttFps;
-import edu.cmu.cs.gabriel.client.function.Consumer;
+import edu.cmu.cs.gabriel.client.consumer.CsvMeasurementConsumer;
+import edu.cmu.cs.gabriel.client.consumer.LogMeasurementConsumer;
+import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
 
-public class MeasurementComm extends BaseComm {
-    MeasurementServerComm measurementServerComm;
+public class MeasurementComm {
+    private final MeasurementServerComm measurementServerComm;
+    private final OpenrtistComm openrtistComm;
 
-    public MeasurementComm(String serverURL, final Activity activity,
-                           final Handler returnMsgHandler, String tokenLimit) {
-        super(activity, returnMsgHandler);
-
-        Consumer<RttFps> intervalReporter = new LogRttFpsConsumer();
-
+    public MeasurementComm(
+            String endpoint, int port, GabrielClientActivity gabrielClientActivity,
+            Handler returnMsgHandler, String tokenLimit) {
+        Consumer<ResultWrapper> consumer = new ResultConsumer(
+                returnMsgHandler, gabrielClientActivity);
+        ErrorConsumer onDisconnect = new ErrorConsumer(returnMsgHandler, gabrielClientActivity);
+        LogMeasurementConsumer logMeasurementConsumer = new LogMeasurementConsumer();
+        Application application = gabrielClientActivity.getApplication();
         if (tokenLimit.equals("None")) {
-            this.measurementServerComm = new MeasurementServerComm(this.consumer, this.onDisconnect,
-                    serverURL, activity.getApplication(), intervalReporter);
+            this.measurementServerComm = MeasurementServerComm.createMeasurementServerComm(
+                    consumer, endpoint, port, application, onDisconnect, logMeasurementConsumer);
         } else {
-            this.measurementServerComm = new MeasurementServerComm(
-                    this.consumer, this.onDisconnect, serverURL, activity.getApplication(),
-                    intervalReporter, Integer.parseInt(tokenLimit));
+            this.measurementServerComm = MeasurementServerComm.createMeasurementServerComm(
+                    consumer, endpoint, port, application, onDisconnect, logMeasurementConsumer,
+                    Integer.parseInt(tokenLimit));
         }
 
-        this.serverCommCore = measurementServerComm;
+        this.openrtistComm = new OpenrtistComm(this.measurementServerComm, onDisconnect);
     }
 
-    public double getOverallAvgRtt() {
-        return this.measurementServerComm.getOverallAvgRtt();
+    public OpenrtistComm getOpenrtistComm() {
+        return openrtistComm;
     }
 
-    public double getOverallFps() {
-        return this.measurementServerComm.getOverallFps();
-    }
-
-    public void clearMeasurements() {
-        this.measurementServerComm.clearMeasurements();
+    public double computeOverallFps() {
+        return this.measurementServerComm.computeOverallFps(Const.SOURCE_NAME);
     }
 }

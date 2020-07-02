@@ -5,7 +5,7 @@ package openrtist;
 option java_package = "edu.cmu.cs.openrtist";
 option java_outer_classname = "Protos";
 
-message EngineFields {
+message Extras {
     // From https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/wrappers.proto#L120
     // TODO: Switch to google.protobuf.BytesValue once MobilEdgeX supports protobuf-javalite
     message BytesValue {

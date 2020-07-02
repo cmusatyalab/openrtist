@@ -25,14 +25,11 @@ STYLE_DIR_PATH = "style-image"
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("server_ip", action="store",
+                        help="IP address for OpenRTiST Server")
     parser.add_argument(
-        "server_ip", action="store", help="IP address for OpenRTiST Server"
-    )
-    parser.add_argument(
-        "output_pipe_path",
-        action="store",
-        help="The linux pipe the style-transferred images will be streamed to",
-    )
+        "output_pipe_path", action="store",
+        help="The linux pipe the style-transferred images will be streamed to")
     inputs = parser.parse_args()
 
     style_name_to_image = {}
@@ -45,14 +42,12 @@ def main():
         os.mkfifo(inputs.output_pipe_path)
 
     with open(inputs.output_pipe_path, "wb") as rgbpipe:
-
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             style_image = style_name_to_image[style]
             style_im_h, style_im_w, _ = style_image.shape
             rgb_frame[0:style_im_h, 0:style_im_w, :] = style_image
-            cv2.rectangle(
-                rgb_frame, (0, 0), (int(style_im_w), int(style_im_h)), (255, 0, 0), 3
-            )
+            cv2.rectangle(rgb_frame, (0, 0), (int(style_im_w), int(style_im_h)),
+                          (255, 0, 0), 3)
             rgb_frame_enlarged = cv2.resize(rgb_frame, (960, 540))
             rgbpipe.write(rgb_frame_enlarged.tostring())
 

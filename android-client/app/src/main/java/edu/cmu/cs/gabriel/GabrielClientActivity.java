@@ -18,10 +18,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -73,14 +73,13 @@ import android.media.MediaActionSound;
 import edu.cmu.cs.gabriel.network.EngineInput;
 import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
-import edu.cmu.cs.gabriel.network.BaseComm;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
+import edu.cmu.cs.gabriel.protocol.Protos;
+import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
 import edu.cmu.cs.openrtist.R;
-
-import static edu.cmu.cs.gabriel.client.Util.ValidateEndpoint;
 
 public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,
         TextureView.SurfaceTextureListener {
@@ -94,9 +93,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     // major components for streaming sensor data and receiving information
     String serverIP = null;
-    private String style_type = "?";
+    private String styleType = "?";
 
-    BaseComm comm;
+    private OpenrtistComm openrtistComm;
 
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
@@ -185,8 +184,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
      * Stops the background thread and its {@link Handler}.
      */
     private void stopBackgroundThread() {
-        comm.stop();
+        openrtistComm.stop();
         backgroundThread.quitSafely();
+
+        // Will stop backgroundThread.join() from blocking if backgroundThread is currently blocked
+        // on a call to wait()
+        backgroundThread.interrupt();
+
         try {
             backgroundThread.join();
             backgroundThread = null;
@@ -197,27 +201,25 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     public EngineInput getEngineInput() {
-        EngineInput engineInput;
         synchronized (this.engineInputLock) {
             try {
                 while (isRunning && this.engineInput == null) {
                     engineInputLock.wait();
                 }
-
-                engineInput = this.engineInput;
+                EngineInput inputToSend = this.engineInput;
                 this.engineInput = null;  // Prevent sending the same frame again
+                return inputToSend;
             } catch (/* InterruptedException */ Exception e) {
                 Log.e(LOG_TAG, "Error waiting for engine input", e);
-                engineInput = null;
+                return null;
             }
         }
-        return engineInput;
     }
 
     private Runnable imageUpload = new Runnable() {
         @Override
         public void run() {
-            comm.sendSupplier(GabrielClientActivity.this.frameSupplier);
+            openrtistComm.sendSupplier(GabrielClientActivity.this.frameSupplier);
 
             if (isRunning) {
                 backgroundHandler.post(imageUpload);
@@ -389,7 +391,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
                     imageRotate = !imageRotate;
                     Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
-                    if (style_type.equals("none"))
+                    if (styleType.equals("none"))
                         preview.setRotation(180 - preview.getRotation());
                     rotateButton.performHapticFeedback(
                             android.view.HapticFeedbackConstants.LONG_PRESS);
@@ -478,16 +480,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 //wait until styles are retrieved before iterating
                 if (++position == styleIds.size())
                     position = 1;
-                style_type = styleIds.get(position);
+                styleType = styleIds.get(position);
                 if(runLocally) {
                     localRunnerThreadHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             try {
                                 localRunner.load(getApplicationContext(),
-                                        String.format("%s.pt", style_type));
+                                        String.format("%s.pt", styleType));
                             } catch (FileNotFoundException e) {
-                                style_type = "none";
+                                styleType = "none";
                                 AlertDialog.Builder builder = new AlertDialog.Builder(
                                         GabrielClientActivity.this,
                                         AlertDialog.THEME_HOLO_DARK);
@@ -743,11 +745,22 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         this.startBackgroundThread();
     }
 
-    void setupComm() {
-        String serverURL = ValidateEndpoint(this.serverIP, Const.PORT);
+    int getPort() {
+        int port = URI.create(this.serverIP).getPort();
+        if (port == -1) {
+            return Const.PORT;
+        }
+        return port;
+    }
 
-        this.comm = new OpenrtistComm(serverURL, this,
-                returnMsgHandler, Const.TOKEN_LIMIT);
+    void setupComm() {
+        int port = getPort();
+        this.openrtistComm = OpenrtistComm.createOpenrtistComm(
+                this.serverIP, port, this, this.returnMsgHandler, Const.TOKEN_LIMIT);
+    }
+
+    void setOpenrtistComm(OpenrtistComm openrtistComm) {
+        this.openrtistComm = openrtistComm;
     }
 
     private byte[] yuvToJPEGBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
@@ -769,8 +782,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             if (isRunning) {
                 Camera.Parameters parameters = mCamera.getParameters();
 
-                if(style_type.equals("?") || !style_type.equals("none")) {
-                    if (runLocally && !style_type.equals("?")) {
+                if(styleType.equals("?") || !styleType.equals("none")) {
+                    if (runLocally && !styleType.equals("?")) {
                         if (!localRunnerBusy){
                             //local execution
                             long st = SystemClock.elapsedRealtime();
@@ -808,11 +821,12 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                                 }
                             });
                         }
-                    } else if (GabrielClientActivity.this.comm != null) { // cloudlet execution
+                    } else if (GabrielClientActivity.this.openrtistComm != null) {
+                        // cloudlet execution
                         synchronized (GabrielClientActivity.this.engineInputLock) {
-                            Log.i(LOG_TAG, "style: " + style_type);
+                            Log.i(LOG_TAG, "style: " + styleType);
                             GabrielClientActivity.this.engineInput = new EngineInput(
-                                    frame, parameters, style_type);
+                                    frame, parameters, styleType);
                             GabrielClientActivity.this.engineInputLock.notify();
                         }
                     }
@@ -908,14 +922,14 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 }
             }
             if (msg.what == NetworkProtocol.NETWORK_RET_IMAGE) {
-                if (gabrielClientActivity.style_type.equals("none")) {
+                if (gabrielClientActivity.styleType.equals("none")) {
                     return;
                 }
 
-                if (!Const.STEREO_ENABLED && gabrielClientActivity.style_type.equals("?")) {
+                if (!Const.STEREO_ENABLED && gabrielClientActivity.styleType.equals("?")) {
                     Spinner spinner = (Spinner)gabrielClientActivity.findViewById(R.id.spinner);
                     ((ArrayAdapter<String>) spinner.getAdapter()).notifyDataSetChanged();
-                    gabrielClientActivity.style_type = "none";
+                    gabrielClientActivity.styleType = "none";
                 }
 
                 gabrielClientActivity.cleared = false;
@@ -968,9 +982,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             this.stopBackgroundThread();
         }
 
-        if (this.comm != null) {
-            this.comm.stop();
-            this.comm = null;
+        if (this.openrtistComm != null) {
+            this.openrtistComm.stop();
+            this.openrtistComm = null;
         }
         if (preview != null) {
             mCamera.setPreviewCallback(null);
@@ -1096,9 +1110,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position,long id) {
         if(styleIds.get(position) == "none"){
             if(!Const.STYLES_RETRIEVED)
-                style_type = "?";
+                styleType = "?";
             else
-                style_type = "none";
+                styleType = "none";
             if(Const.STEREO_ENABLED) {
                 stereoView1.setVisibility(View.INVISIBLE);
                 stereoView2.setVisibility(View.INVISIBLE);
@@ -1109,7 +1123,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 }
             }
         } else {
-            style_type = styleIds.get(position);
+            styleType = styleIds.get(position);
 
             if(Const.STEREO_ENABLED) {
                 if (stereoView1.getVisibility() == View.INVISIBLE) {
@@ -1125,15 +1139,15 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 }
             }
 
-            if (!style_type.equals("?") && runLocally) {
+            if (!styleType.equals("?") && runLocally) {
                 localRunnerThreadHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
                             localRunner.load(getApplicationContext(),
-                                    String.format("%s.pt", style_type));
+                                    String.format("%s.pt", styleType));
                         } catch (FileNotFoundException e) {
-                            style_type = "none";
+                            styleType = "none";
                             AlertDialog.Builder builder = new AlertDialog.Builder(
                                     GabrielClientActivity.this,
                                     AlertDialog.THEME_HOLO_DARK);

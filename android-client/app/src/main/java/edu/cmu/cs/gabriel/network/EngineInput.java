@@ -3,13 +3,25 @@ package edu.cmu.cs.gabriel.network;
 import android.hardware.Camera;
 
 public class EngineInput {
-    byte[] frame;
-    Camera.Parameters parameters;
-    String style_type;
+    final private byte[] frame;
+    final private Camera.Parameters parameters;
+    final private String styleType;
 
-    public EngineInput(byte[] frame, Camera.Parameters parameters, String style_type) {
+    public EngineInput(byte[] frame, Camera.Parameters parameters, String styleType) {
         this.frame = frame;
         this.parameters = parameters;
-        this.style_type = style_type;
+        this.styleType = styleType;
+    }
+
+    public byte[] getFrame() {
+        return frame;
+    }
+
+    public Camera.Parameters getParameters() {
+        return parameters;
+    }
+
+    public String getStyleType() {
+        return styleType;
     }
 }
