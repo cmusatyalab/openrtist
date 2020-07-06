@@ -24,28 +24,22 @@ RUN echo "deb http://ppa.launchpad.net/intel-opencl/intel-opencl/ubuntu bionic m
     python3-pyqt5 \
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install PyTorch and Gabriel's external dependencies
-RUN python3 -m pip install --no-cache-dir \
-    'gabriel-client==0.0.4' \
-    'gabriel-server==0.0.9' \
-    'opencv-python<5' \
-    protobuf \
-    py-cpuinfo \
-    PyQt5 \
-    pyzmq \
-    'torchvision<0.5' \
-    websockets \
-    zmq 
-
 # Prevent NVIDIA libOpenCL.so from being loaded
 RUN mv /usr/local/cuda-10.1/targets/x86_64-linux/lib/libOpenCL.so.1 \
        /usr/local/cuda-10.1/targets/x86_64-linux/lib/libOpenCL.so.1.bak
+
+# Install PyTorch and Gabriel's external dependencies
+COPY python-client/requirements.txt client-requirements.txt
+COPY server/requirements.txt server-requirements.txt
+RUN python3 -m pip install --upgrade pip \
+ && python3 -m pip install --no-cache-dir \
+    -r client-requirements.txt \
+    -r server-requirements.txt
 
 # You can speed up build slightly by reducing build context with
 #     git archive --format=tgz HEAD | docker build -t openrtist -
 COPY . openrtist
 WORKDIR openrtist/server
-RUN python3 -m pip install -r requirements.txt
 
 EXPOSE 5555 9099
 ENTRYPOINT ["./entrypoint.sh"]
