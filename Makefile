@@ -7,7 +7,7 @@ BLACK_VERSION = 19.10b0
 PYQT5_VERSION = 5.13.1
 TORCH_VERSION = 1.3
 TORCHVISION_VERSION = 0.4.2
-PROTOC_DIST = https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
+PROTOC_DIST = https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip
 
 
 LOCAL_EXECUTION_MODELS = \
