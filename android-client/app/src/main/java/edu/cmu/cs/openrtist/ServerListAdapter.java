@@ -76,20 +76,15 @@ public class ServerListAdapter extends BaseAdapter {
             Server s = itemModelList.get(position);
             serverName.setText(s.getName());
             serverAddress.setText(s.getEndpoint());
+
             imgConnect.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Server s = itemModelList.get(position);
-                    Const.SERVER_IP = s.getEndpoint();
-                    Intent intent = new Intent(
-                            context, ServerListAdapter.this.gabrielClientActivityClass());
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    //intent.putExtra("", faceTable);
-                    context.startActivity(intent);
-                    imgConnect.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-                    Toast.makeText(context, R.string.connecting_toast, Toast.LENGTH_SHORT).show();
+                    new PortDiscoveryAsyncTask(context, imgConnect, s.getEndpoint()).execute();
                 }
             });
+
             imgRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

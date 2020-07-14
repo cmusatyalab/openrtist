@@ -99,6 +99,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'edu.cmu.cs.gabriel:client:0.2.0'
+    implementation 'com.android.volley:volley:1.1.1'
 
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
