@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.comm.MeasurementServerComm;
-import edu.cmu.cs.gabriel.client.consumer.CsvMeasurementConsumer;
 import edu.cmu.cs.gabriel.client.consumer.LogMeasurementConsumer;
 import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
 

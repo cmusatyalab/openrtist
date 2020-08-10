@@ -47,7 +47,7 @@ public class OpenrtistComm {
         }
 
         SendSupplierResult sendSupplierResult = this.serverComm.sendSupplier(
-                frameSupplier, Const.SOURCE_NAME);
+                frameSupplier, Const.SOURCE_NAME, /* wait */ true);
         if (sendSupplierResult == SendSupplierResult.ERROR_GETTING_TOKEN) {
             this.onDisconnect.showErrorMessage(R.string.toekn_error);
         }
