@@ -746,7 +746,13 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     int getPort() {
-        int port = URI.create(this.serverIP).getPort();
+        // make sure there is a scheme before we use URI.create()
+        String endpoint = this.serverIP;
+        if (!endpoint.matches("^[a-zA-Z]+://.*$")) {
+            endpoint = "ws://" + endpoint;
+        }
+
+        int port = URI.create(endpoint).getPort();
         if (port == -1) {
             return Const.PORT;
         }
@@ -755,6 +761,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     void setupComm() {
         int port = getPort();
+        Log.v("CHECKHERE endpoint", this.serverIP);
+        Log.v("CHECKHERE port", String.valueOf(port));
         this.openrtistComm = OpenrtistComm.createOpenrtistComm(
                 this.serverIP, port, this, this.returnMsgHandler, Const.TOKEN_LIMIT);
     }
