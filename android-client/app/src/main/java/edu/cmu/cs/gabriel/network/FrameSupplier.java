@@ -26,35 +26,35 @@ public class FrameSupplier implements Supplier<InputFrame> {
         this.gabrielClientActivity = gabrielClientActivity;
     }
 
-    private static byte[] createFrameData(EngineInput engineInput) {
-        Camera.Size cameraImageSize = engineInput.getParameters().getPreviewSize();
-        YuvImage image = new YuvImage(
-                engineInput.getFrame(), engineInput.getParameters().getPreviewFormat(),
-                cameraImageSize.width, cameraImageSize.height, null);
-        ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
-        // chooses quality 67 and it roughly matches quality 5 in avconv
-        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()),
-                67, tmpBuffer);
-        if (Const.USING_FRONT_CAMERA) {
-            byte[] newFrame = tmpBuffer.toByteArray();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(newFrame, 0, newFrame.length);
-            ByteArrayOutputStream rotatedStream = new ByteArrayOutputStream();
-            Matrix matrix = new Matrix();
-            if (Const.FRONT_ROTATION) {
-                matrix.postRotate(180);
-            }
-            matrix.postScale(-1, 1);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
-                    matrix, false);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 67, rotatedStream);
-            return rotatedStream.toByteArray();
-        } else {
-            return tmpBuffer.toByteArray();
-        }
-    }
+//    private static byte[] createFrameData(EngineInput engineInput) {
+//        Camera.Size cameraImageSize = engineInput.getParameters().getPreviewSize();
+//        YuvImage image = engineInput.getImage();
+//        ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
+//        // chooses quality 67 and it roughly matches quality 5 in avconv
+//        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()),
+//                67, tmpBuffer);
+//        if (Const.USING_FRONT_CAMERA) {
+//            byte[] newFrame = tmpBuffer.toByteArray();
+//            Bitmap bitmap = BitmapFactory.decodeByteArray(newFrame, 0, newFrame.length);
+//            ByteArrayOutputStream rotatedStream = new ByteArrayOutputStream();
+//            Matrix matrix = new Matrix();
+//            if (Const.FRONT_ROTATION) {
+//                matrix.postRotate(180);
+//            }
+//            matrix.postScale(-1, 1);
+//            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+//                    matrix, false);
+//            bitmap.compress(Bitmap.CompressFormat.JPEG, 67, rotatedStream);
+//            return rotatedStream.toByteArray();
+//        } else {
+//            return tmpBuffer.toByteArray();
+//        }
+//    }
 
     private static InputFrame convertEngineInput(EngineInput engineInput) {
-        byte[] frame = FrameSupplier.createFrameData(engineInput);
+//        byte[] frame = FrameSupplier.createFrameData(engineInput);
+        byte[] frame = engineInput.getFrame();
+
         Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType()).build();
         // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:
         // fromClientBuilder.setEngineFields(Any.pack(engineFields));

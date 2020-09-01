@@ -77,10 +77,56 @@ class OpenrtistEngine(cognitive_engine.Engine):
             new_style = True
 
         style = self.adapter.get_style()
-        image = self.process_image(input_frame.payloads[0])
-        image = self._apply_watermark(image)
 
-        _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
+        # Preprocessing steps used by both engines
+        np_data = np.fromstring(input_frame.payloads[0], dtype=np.uint8)
+        orig_img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
+        orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
+
+        image = self.process_image(orig_img)
+
+        # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
+        # depth_map = extras.style_image
+        # mask_fg = cv2.inRange(depth_map,200, 255)
+
+        lower_blue = (40,81,30)
+        upper_blue = (120,150,95)
+        mask_fg = cv2.inRange(orig_img,lower_blue,upper_blue)
+
+        # Apply morphology to the thresholded image to remove extraneous white regions and save a mask
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
+        mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_OPEN, kernel)
+        mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_CLOSE, kernel)
+
+        # mask_fg = cv2.merge([mask_fg,mask_fg,mask_fg])
+
+        # get foreground from original image
+        # fg = cv2.bitwise_and(orig_img, mask_fg)
+        fg = cv2.bitwise_and(orig_img,orig_img, mask= mask_fg)
+
+        # get background mask by inversion
+        mask_bg = cv2.bitwise_not(mask_fg)
+
+        # get background from transformed image
+        # bg = cv2.bitwise_and(image,mask_bg)
+        bg = cv2.bitwise_and(image,image, mask= mask_bg)
+
+        height, width, depth = fg.shape
+        height1, width1, depth1 = bg.shape
+        # logger.info("fg dimension %s %s %s", str(height), str(width), str(depth))
+        # logger.info("bg dimension %s %s %s", str(height1), str(width1), str(depth1))
+        # logger.info("data type fg %s", type(fg))
+        # logger.info("data type bg %s", type(bg))
+        # logger.info("fg size %s", str(fg.size))
+        # logger.info("bg size %s", str(bg.size))
+
+        # stitch transformed background and original foreground
+        bg = bg.astype("uint8")
+        final = cv2.bitwise_or(fg, bg)
+
+        final = self._apply_watermark(final)
+
+        _, jpeg_img = cv2.imencode(".jpg", final, self.compression_params)
         img_data = jpeg_img.tostring()
 
         result = gabriel_pb2.ResultWrapper.Result()
@@ -104,13 +150,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         return result_wrapper
 
     def process_image(self, image):
-
-        # Preprocessing steps used by both engines
-        np_data = np.fromstring(image, dtype=np.uint8)
-        img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        preprocessed = self.adapter.preprocessing(img)
+        preprocessed = self.adapter.preprocessing(image)
         post_inference = self.inference(preprocessed)
         img_out = self.adapter.postprocessing(post_inference)
         return img_out
@@ -125,7 +165,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         img_mrk[:, :, 1] = (1 - self.alpha) * img_mrk[:, :, 1] + self.alpha * self.mrk
         img_mrk[:, :, 2] = (1 - self.alpha) * img_mrk[:, :, 2] + self.alpha * self.mrk
         image[-30:, -120:] = img_mrk
-        img_out = image.astype("uint8")
-        img_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2BGR)
+        # img_out = image.astype("uint8")
+        img_out = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         return img_out

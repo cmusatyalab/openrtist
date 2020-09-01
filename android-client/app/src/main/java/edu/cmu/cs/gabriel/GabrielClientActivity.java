@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -33,13 +35,18 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
-import android.hardware.Camera;
-import android.hardware.Camera.PreviewCallback;
-import android.hardware.Camera.Size;
 
+//import android.hardware.camera2.CameraDevice;
+//import android.hardware.camera2.CameraManager;
+//import android.hardware.Camera;
+//import android.hardware.Camera.PreviewCallback;
+//import android.hardware.Camera.Size;
+
+import android.media.Image;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -81,8 +88,36 @@ import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
 import edu.cmu.cs.openrtist.R;
 
-public class GabrielClientActivity extends Activity implements AdapterView.OnItemSelectedListener,
-        TextureView.SurfaceTextureListener {
+
+
+import com.google.ar.core.ArCoreApk;
+import com.google.ar.core.Session;
+import com.google.ar.core.CameraConfig;
+import android.opengl.GLSurfaceView;
+import com.google.ar.core.Config;
+import com.google.ar.core.Frame;
+import com.google.ar.core.exceptions.CameraNotAvailableException;
+import com.google.ar.core.exceptions.NotYetAvailableException;
+import com.google.ar.core.exceptions.UnavailableApkTooOldException;
+import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
+import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
+import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
+import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
+
+import android.opengl.GLES20;
+
+import com.google.ar.sceneform.ArSceneView;
+import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.Scene;
+import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.Renderable;
+import com.google.ar.sceneform.rendering.Texture;
+import com.google.ar.sceneform.ux.ArFragment;
+import com.google.ar.sceneform.ux.AugmentedFaceNode;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class GabrielClientActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = "GabrielClientActivity";
     private static final int REQUEST_CODE = 1000;
     private static int DISPLAY_WIDTH = 640;
@@ -100,9 +135,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
 
-    private Camera mCamera = null;
+//    private Camera mCamera = null;
     private List<int[]> supportingFPS = null;
-    private List<Camera.Size> supportingSize = null;
+//    private List<Camera.Size> supportingSize = null;
     private boolean isSurfaceReady = false;
     private boolean waitingToStart = false;
     private boolean isPreviewing = false;
@@ -140,10 +175,17 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     private FrameSupplier frameSupplier = new FrameSupplier(this);
 
 
+    private Session session;
+    private Config config;
+    private ArFragment arFragment;
+    private ArSceneView sceneView;
+    private Scene scene;
+
+
     private ArrayAdapter<String> spinner_adapter = null;
     private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
             "Clear Display"
-            ));
+    ));
 
     public List<String> getStyleDescriptions() {
         return styleDescriptions;
@@ -151,7 +193,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     private List<String> styleIds = new ArrayList<>(Arrays.asList(
             "none"
-            ));
+    ));
 
     public List<String> getStyleIds() {
         return styleIds;
@@ -302,7 +344,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                     screenshotButton.performHapticFeedback(
                             android.view.HapticFeedbackConstants.LONG_PRESS);
 
-                    }
+                }
 
             });
 
@@ -334,7 +376,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                                 android.view.HapticFeedbackConstants.LONG_PRESS);
 
                     }
-
                 });
 
                 findViewById(R.id.spinner).setVisibility(View.GONE);
@@ -349,54 +390,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         } else {
             ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
             playpauseButton.setVisibility(View.GONE);
-        }
-        if(!Const.STEREO_ENABLED) {
-            //this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-            final ImageView camButton = (ImageView) findViewById(R.id.imgSwitchCam);
-            final ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
-            camButton.setVisibility(View.VISIBLE);
-            camButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    camButton.performHapticFeedback(
-                            android.view.HapticFeedbackConstants.LONG_PRESS);
-                    mCamera.setPreviewCallback(null);
-                    CameraClose();
-                    if (cameraId > 0) {
-                        camButton.setImageDrawable(getResources().getDrawable(
-                                R.drawable.ic_baseline_camera_front_24px));
-                        Const.USING_FRONT_CAMERA = false;
-                        cameraId = 0;
-                        rotateButton.setVisibility(View.GONE);
-                    } else {
-                        camButton.setImageDrawable(getResources().getDrawable(
-                                R.drawable.ic_baseline_camera_rear_24px));
-                        cameraId = findFrontFacingCamera();
-                        Const.USING_FRONT_CAMERA = true;
-                        rotateButton.setVisibility(View.VISIBLE);
-                    }
-                    mSurfaceTexture = preview.getSurfaceTexture();
-                    mCamera = checkCamera();
-                    CameraStart();
-                    mCamera.setPreviewCallbackWithBuffer(previewCallback);
-                    reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
-                    mCamera.addCallbackBuffer(reusedBuffer);
-
-                }
-            });
-
-            rotateButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    imageRotate = !imageRotate;
-                    Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
-                    if (styleType.equals("none"))
-                        preview.setRotation(180 - preview.getRotation());
-                    rotateButton.performHapticFeedback(
-                            android.view.HapticFeedbackConstants.LONG_PRESS);
-                }
-            });
         }
 
         if(Const.SHOW_FPS) {
@@ -434,6 +427,77 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             );
             rs = RenderScript.create(this);
         }
+
+
+        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+
+        sceneView = arFragment.getArSceneView();
+        scene = sceneView.getScene();
+
+
+        //        session = sceneView.getSession();
+//        if (session == null) {
+//            try {
+//                sceneView.setupSession(new Session(this));
+//            } catch (UnavailableArcoreNotInstalledException e) {
+//                e.printStackTrace();
+//            } catch (UnavailableApkTooOldException e) {
+//                e.printStackTrace();
+//            } catch (UnavailableSdkTooOldException e) {
+//                e.printStackTrace();
+//            } catch (UnavailableDeviceNotCompatibleException e) {
+//                e.printStackTrace();
+//            }
+//            session = sceneView.getSession();
+
+
+        scene.addOnUpdateListener(
+                frameTime -> {
+                    if (isRunning) {
+                        // Obtain the current frame from ARSession. When the configuration is set to
+                        Frame frame = sceneView.getArFrame();
+
+                        Image image = null;
+                        try {
+                            image = frame.acquireCameraImage();
+                        } catch (NotYetAvailableException e) {
+                            e.printStackTrace();
+                        }
+                        if (image == null) {
+                            Log.v("FAILEDOHNO", String.valueOf(Const.STEREO_ENABLED));
+                            return;
+                        }
+                        if (image.getFormat() != ImageFormat.YUV_420_888) {
+                            throw new IllegalArgumentException("Expected image in YUV_420_888 format, got format " + image.getFormat());
+                        }
+
+                    //            if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                    //                session.configure(config);
+                    //                Image depth_map = frame.acquireDepthImage();
+                    //                width = depth_map.getWidth();
+                    //                height = depth_map.getHeight();
+                    //
+                    //                depth_map.close();
+                    //            }
+
+
+
+                        if (styleType.equals("?") || !styleType.equals("none")) {
+                            if (GabrielClientActivity.this.openrtistComm != null) {
+                                // cloudlet execution
+                                synchronized (GabrielClientActivity.this.engineInputLock) {
+                                    Log.v("STYLEEEER styleType", styleType);
+                                    Log.v("STYLEEEER getHeight",  String.valueOf(image.getHeight()));
+                                    Log.v("STYLEEEER getWidth", String.valueOf(image.getWidth()));
+                                    GabrielClientActivity.this.engineInput = new EngineInput(
+                                            imageToByte(image), image.getHeight(), image.getWidth(), styleType);
+                                    GabrielClientActivity.this.engineInputLock.notify();
+                                }
+                            }
+                        }
+                        image.close();
+                    }
+                });
     }
 
     private void storeScreenshot(Bitmap bitmap, String path) {
@@ -453,22 +517,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         } catch (IOException e) {
             Log.e(LOG_TAG, "IOException when attempting to store screenshot", e);
         }
-    }
-
-    private int findFrontFacingCamera() {
-        int cameraId = -1;
-        // Search for the front facing camera
-        int numberOfCameras = Camera.getNumberOfCameras();
-        for (int i = 0; i < numberOfCameras; i++) {
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    Log.d(LOG_TAG, "Front facing camera found");
-                    cameraId = i;
-                    break;
-                }
-        }
-        return cameraId;
     }
 
     private Runnable styleIterator = new Runnable() {
@@ -532,6 +580,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         initOnce();
         serverIP = Const.SERVER_IP;
         initPerRun(serverIP);
+        arFragment.getPlaneDiscoveryController().hide();
     }
 
 
@@ -603,6 +652,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != REQUEST_CODE) {
             Log.e(LOG_TAG, "Unknown request code: " + requestCode);
             return;
@@ -619,7 +669,7 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         mVirtualDisplay = createVirtualDisplay();
         mMediaRecorder.start();
         capturingScreen = true;
-        if(Const.ITERATE_STYLES)
+        if (Const.ITERATE_STYLES)
             iterationHandler.postDelayed(styleIterator, 100 * Const.ITERATE_INTERVAL);
     }
 
@@ -702,14 +752,6 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
                 preview = (TextureView) findViewById(R.id.camera_preview1);
             else
                 preview = (TextureView) findViewById(R.id.camera_preview);
-
-            mSurfaceTexture = preview.getSurfaceTexture();
-            preview.setSurfaceTextureListener(this);
-            mCamera = checkCamera();
-            CameraStart();
-            mCamera.setPreviewCallbackWithBuffer(previewCallback);
-            reusedBuffer = new byte[1920 * 1080 * 3 / 2]; // 1.5 bytes per pixel
-            mCamera.addCallbackBuffer(reusedBuffer);
         }
 
         // Media controller
@@ -761,8 +803,8 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     void setupComm() {
         int port = getPort();
-        Log.v("CHECKHERE endpoint", this.serverIP);
-        Log.v("CHECKHERE port", String.valueOf(port));
+        Log.d("Port_discovery ServerIP", serverIP);
+        Log.d("Port_discovery PORT", String.valueOf(port));
         this.openrtistComm = OpenrtistComm.createOpenrtistComm(
                 this.serverIP, port, this, this.returnMsgHandler, Const.TOKEN_LIMIT);
     }
@@ -771,94 +813,42 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
         this.openrtistComm = openrtistComm;
     }
 
-    private byte[] yuvToJPEGBytes(byte[] yuvFrameBytes, Camera.Parameters parameters){
-        Size cameraImageSize = parameters.getPreviewSize();
-        YuvImage image = new YuvImage(yuvFrameBytes,
-                parameters.getPreviewFormat(), cameraImageSize.width,
-                cameraImageSize.height, null);
 
-        ByteArrayOutputStream tmpBuffer = new ByteArrayOutputStream();
-        // chooses quality 67 and it roughly matches quality 5 in avconv
-        image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()),
-                67, tmpBuffer);
-        return tmpBuffer.toByteArray();
+    private static byte[] imageToByte(Image image) {
+        byte[] byteArray = null;
+        byteArray = NV21toJPEG(YUV420toNV21(image), image.getWidth(), image.getHeight(), 100);
+        return byteArray;
     }
 
-    private PreviewCallback previewCallback = new PreviewCallback() {
-        // called whenever a new frame is captured
-        public void onPreviewFrame(byte[] frame, Camera mCamera) {
-            if (isRunning) {
-                Camera.Parameters parameters = mCamera.getParameters();
+    private static byte[] NV21toJPEG(byte[] nv21, int width, int height, int quality) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        YuvImage yuv = new YuvImage(nv21, ImageFormat.NV21, width, height, null);
+        yuv.compressToJpeg(new Rect(0, 0, width, height), quality, out);
+        return out.toByteArray();
+    }
 
-                if(styleType.equals("?") || !styleType.equals("none")) {
-                    if (runLocally && !styleType.equals("?")) {
-                        if (!localRunnerBusy){
-                            //local execution
-                            long st = SystemClock.elapsedRealtime();
-                            final float[] rgbImage = Utils.convertYuvToRgb(
-                                    rs,
-                                    frame,
-                                    parameters.getPreviewSize()
-                            );
-                            Log.d(LOG_TAG, String.format("YuvToRGBA takes %d ms",
-                                    SystemClock.elapsedRealtime() - st));
+    private static byte[] YUV420toNV21(Image image) {
+        byte[] nv21;
+        // Get the three planes.
+        ByteBuffer yBuffer = image.getPlanes()[0].getBuffer();
+        ByteBuffer uBuffer = image.getPlanes()[1].getBuffer();
+        ByteBuffer vBuffer = image.getPlanes()[2].getBuffer();
 
-                            final int imageWidth = parameters.getPreviewSize().width;
-                            final int imageHeight = parameters.getPreviewSize().height;
+        int ySize = yBuffer.remaining();
+        int uSize = uBuffer.remaining();
+        int vSize = vBuffer.remaining();
 
-                            localRunnerThreadHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    localRunnerBusy = true;
-                                    int[] output = localRunner.infer(rgbImage);
-                                    // send results back to UI as Gabriel would
-                                    if (localRunnerBitmapCache == null){
-                                        localRunnerBitmapCache = Bitmap.createBitmap(
-                                                imageWidth,
-                                                imageHeight,
-                                                Bitmap.Config.ARGB_8888
-                                        );
-                                    }
-                                    localRunnerBitmapCache.setPixels(output, 0,
-                                            imageWidth, 0, 0, imageWidth, imageHeight);
-                                    Message msg = Message.obtain();
-                                    msg.what = NetworkProtocol.NETWORK_RET_IMAGE;
-                                    msg.obj = localRunnerBitmapCache;
-                                    returnMsgHandler.sendMessage(msg);
-                                    localRunnerBusy = false;
-                                }
-                            });
-                        }
-                    } else if (GabrielClientActivity.this.openrtistComm != null) {
-                        // cloudlet execution
-                        synchronized (GabrielClientActivity.this.engineInputLock) {
-                            Log.i(LOG_TAG, "style: " + styleType);
-                            GabrielClientActivity.this.engineInput = new EngineInput(
-                                    frame, parameters, styleType);
-                            GabrielClientActivity.this.engineInputLock.notify();
-                        }
-                    }
-                } else if (!cleared) {
-                    GabrielClientActivity.this.engineInput = null;
 
-                    Log.v(LOG_TAG, "Display Cleared");
-                    if(Const.STEREO_ENABLED) {
-                        byte[] bytes = yuvToJPEGBytes(frame, parameters);
-                        final Bitmap camView = BitmapFactory.decodeByteArray(
-                                bytes, 0, bytes.length);
-                        stereoView1.setVisibility(View.INVISIBLE);
-                        stereoView2.setVisibility(View.INVISIBLE);
-                        camView2.setImageBitmap(camView);
-                    } else {
-                        imgView.setVisibility(View.INVISIBLE);
-                    }
+        nv21 = new byte[ySize + uSize + vSize];
 
-                    cleared = true;
-                }
-            }
-            mCamera.addCallbackBuffer(frame);
-        }
-    };
+        //U and V are swapped
+        yBuffer.get(nv21, 0, ySize);
+        vBuffer.get(nv21, ySize, vSize);
+        uBuffer.get(nv21, ySize + vSize, uSize);
+
+        return nv21;
+    }
+
 
     private Runnable fpsCalculator = new Runnable() {
 
@@ -995,117 +985,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
             this.openrtistComm = null;
         }
         if (preview != null) {
-            mCamera.setPreviewCallback(null);
-            CameraClose();
+
             reusedBuffer = null;
             preview = null;
-            mCamera = null;
-        }
-    }
-
-    /**************** Camera Preview ***********************/
-
-    public Camera checkCamera() {
-        Log.v(LOG_TAG , "++checkCamera");
-        if (mCamera == null) {
-            Log.v(LOG_TAG , "!!!!!CAMERA "+cameraId+ " START!!!!");
-            mCamera = Camera.open(cameraId);
-        }
-        return mCamera;
-    }
-
-    public void CameraStart() {
-        Log.v(LOG_TAG , "++start");
-        if (mCamera == null) {
-            mCamera = Camera.open(cameraId);
-        }
-        if (isSurfaceReady) {
-            try {
-                mCamera.setPreviewTexture(mSurfaceTexture);
-            } catch (IOException exception) {
-                Log.e(LOG_TAG, "Error in setting camera holder", exception);
-                CameraClose();
-            }
-
-            updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT);
-
-        } else {
-            waitingToStart = true;
-        }
-    }
-
-    public void CameraClose() {
-        Log.v(LOG_TAG , "++close");
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            isPreviewing = false;
-            mCamera.release();
-            mCamera = null;
-        }
-    }
-
-    public void changeConfiguration(int[] range, Size imageSize) {
-        Log.v(LOG_TAG , "++changeConfiguration");
-        Camera.Parameters parameters = mCamera.getParameters();
-        if (range != null){
-            Log.i(LOG_TAG, "frame rate configuration : " + range[0] + "," + range[1]);
-            parameters.setPreviewFpsRange(range[0], range[1]);
-        }
-        if (imageSize != null){
-            Log.i(LOG_TAG, "image size configuration : " + imageSize.width + "," +
-                    imageSize.height);
-            parameters.setPreviewSize(imageSize.width, imageSize.height);
-        }
-        //parameters.setPreviewFormat(ImageFormat.JPEG);
-
-        mCamera.setParameters(parameters);
-    }
-
-    public void updateCameraConfigurations(int targetFps, int imgWidth, int imgHeight) {
-        Log.d(LOG_TAG, "updateCameraConfigurations");
-        if (mCamera != null) {
-            if (targetFps != -1) {
-                Const.CAPTURE_FPS = targetFps;
-            }
-            if (imgWidth != -1) {
-                Const.IMAGE_WIDTH = imgWidth;
-                Const.IMAGE_HEIGHT = imgHeight;
-            }
-
-            if (isPreviewing)
-                mCamera.stopPreview();
-
-            // set fps to capture
-            int index = 0, fpsDiff = Integer.MAX_VALUE;
-            for (int i = 0; i < this.supportingFPS.size(); i++){
-                int[] frameRate = this.supportingFPS.get(i);
-                int diff = Math.abs(Const.CAPTURE_FPS * 1000 - frameRate[0]) +
-                        Math.abs(Const.CAPTURE_FPS * 1000 - frameRate[1]);
-                if (diff < fpsDiff){
-                    fpsDiff = diff;
-                    index = i;
-                }
-            }
-            int[] targetRange = this.supportingFPS.get(index);
-
-            // set resolution
-            index = 0;
-            int sizeDiff = Integer.MAX_VALUE;
-            for (int i = 0; i < this.supportingSize.size(); i++){
-                Camera.Size size = this.supportingSize.get(i);
-                int diff = Math.abs(size.width - Const.IMAGE_WIDTH) +
-                        Math.abs(size.height - Const.IMAGE_HEIGHT);
-                if (diff < sizeDiff){
-                    sizeDiff = diff;
-                    index = i;
-                }
-            }
-            Camera.Size target_size = this.supportingSize.get(index);
-
-            changeConfiguration(targetRange, target_size);
-
-            mCamera.startPreview();
-            isPreviewing = true;
         }
     }
 
@@ -1172,64 +1054,9 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
 
     @Override
     public void onNothingSelected(AdapterView<?> arg0) {
+
     }
+
+}
 
     /**************** End of onItemSelected ****************/
-
-    /**************** SurfaceTexture Listener ***********************/
-
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        isSurfaceReady = true;
-        if (mCamera == null) {
-            mCamera = Camera.open(cameraId);
-        }
-        if (mCamera != null) {
-            // get fps to capture
-            Camera.Parameters parameters = mCamera.getParameters();
-            this.supportingFPS = parameters.getSupportedPreviewFpsRange();
-            for (int[] range: this.supportingFPS) {
-                Log.i(LOG_TAG, "available fps ranges:" + range[0] + ", " + range[1]);
-            }
-
-            // get resolution
-            this.supportingSize = parameters.getSupportedPreviewSizes();
-            for (Camera.Size size: this.supportingSize) {
-                Log.i(LOG_TAG, "available sizes:" + size.width + ", " + size.height);
-            }
-
-            if (waitingToStart) {
-                waitingToStart = false;
-                try {
-                    mCamera.setPreviewTexture(surface);
-                } catch (IOException exception) {
-                    Log.e(LOG_TAG, "Error in setting camera holder", exception);
-                    CameraClose();
-                }
-                updateCameraConfigurations(Const.CAPTURE_FPS, Const.IMAGE_WIDTH,
-                        Const.IMAGE_HEIGHT);
-            }
-        } else {
-            Log.w(LOG_TAG, "Camera is not open");
-        }
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        // Ignored, the Camera does all the work for us
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        isSurfaceReady = false;
-        CameraClose();
-        return true;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        // Update your view here!
-    }
-
-    /****************End of SurfaceTexture Listener ***********************/
-}
