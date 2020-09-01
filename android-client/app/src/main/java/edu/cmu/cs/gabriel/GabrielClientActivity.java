@@ -114,6 +114,7 @@ import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.Texture;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.AugmentedFaceNode;
+import com.google.ar.sceneform.ux.BaseArFragment;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -180,6 +181,9 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private ArFragment arFragment;
     private ArSceneView sceneView;
     private Scene scene;
+    private Image image;
+    private Image depth_map;
+
 
 
     private ArrayAdapter<String> spinner_adapter = null;
@@ -430,73 +434,97 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+        arFragment.getPlaneDiscoveryController().hide();
 
         sceneView = arFragment.getArSceneView();
         scene = sceneView.getScene();
+        try {
+            session = new Session(this);
+        } catch (UnavailableArcoreNotInstalledException e) {
+            e.printStackTrace();
+        } catch (UnavailableApkTooOldException e) {
+            e.printStackTrace();
+        } catch (UnavailableSdkTooOldException e) {
+            e.printStackTrace();
+        } catch (UnavailableDeviceNotCompatibleException e) {
+            e.printStackTrace();
+        }
+        sceneView.setupSession(session);
 
+        if (session == null)
+            Log.v("CHECKHERE FAILEDOHNO null session", String.valueOf(Const.STEREO_ENABLED));
 
-        //        session = sceneView.getSession();
-//        if (session == null) {
-//            try {
-//                sceneView.setupSession(new Session(this));
-//            } catch (UnavailableArcoreNotInstalledException e) {
-//                e.printStackTrace();
-//            } catch (UnavailableApkTooOldException e) {
-//                e.printStackTrace();
-//            } catch (UnavailableSdkTooOldException e) {
-//                e.printStackTrace();
-//            } catch (UnavailableDeviceNotCompatibleException e) {
-//                e.printStackTrace();
-//            }
-//            session = sceneView.getSession();
+        Config config = new Config(session);
 
+        // ensures that the update listener is called whenever the camera frame updates.
+        config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
+        if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+            config.setDepthMode(Config.DepthMode.AUTOMATIC);
+            Log.v("CHECKHERE setDepthMode SUCCESS", String.valueOf(Const.STEREO_ENABLED));
+
+        } else {
+            Log.v("CHECKHERE setDepthMode FAILED", String.valueOf(Const.STEREO_ENABLED));
+        }
+        session.configure(config);
 
         scene.addOnUpdateListener(
                 frameTime -> {
                     if (isRunning) {
-                        // Obtain the current frame from ARSession. When the configuration is set to
-                        Frame frame = sceneView.getArFrame();
-
-                        Image image = null;
-                        try {
-                            image = frame.acquireCameraImage();
-                        } catch (NotYetAvailableException e) {
-                            e.printStackTrace();
-                        }
-                        if (image == null) {
-                            Log.v("FAILEDOHNO", String.valueOf(Const.STEREO_ENABLED));
-                            return;
-                        }
-                        if (image.getFormat() != ImageFormat.YUV_420_888) {
-                            throw new IllegalArgumentException("Expected image in YUV_420_888 format, got format " + image.getFormat());
-                        }
-
-                    //            if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-                    //                session.configure(config);
-                    //                Image depth_map = frame.acquireDepthImage();
-                    //                width = depth_map.getWidth();
-                    //                height = depth_map.getHeight();
-                    //
-                    //                depth_map.close();
-                    //            }
-
-
-
                         if (styleType.equals("?") || !styleType.equals("none")) {
                             if (GabrielClientActivity.this.openrtistComm != null) {
+
                                 // cloudlet execution
                                 synchronized (GabrielClientActivity.this.engineInputLock) {
-                                    Log.v("STYLEEEER styleType", styleType);
-                                    Log.v("STYLEEEER getHeight",  String.valueOf(image.getHeight()));
-                                    Log.v("STYLEEEER getWidth", String.valueOf(image.getWidth()));
-                                    GabrielClientActivity.this.engineInput = new EngineInput(
-                                            imageToByte(image), image.getHeight(), image.getWidth(), styleType);
-                                    GabrielClientActivity.this.engineInputLock.notify();
+
+                                    Log.v("CHECKHERE entered synchronized", String.valueOf(Const.STEREO_ENABLED));
+                                    // Obtain the current frame from ARSession. When the configuration is set to
+                                    Frame frame = sceneView.getArFrame();
+
+                                    try {
+                                        image = frame.acquireCameraImage();
+                                        if (image == null) {
+                                            Log.v("CHECKHERE FAILEDOHNO: ", "cameraimage null");
+                                            return;
+                                        }
+                                        if (image.getFormat() != ImageFormat.YUV_420_888) {
+                                            Log.v("CHECKHERE FAILEDOHNO: ", "Expected cameraimage in YUV_420_888 format, got format:"+ image.getFormat());
+                                            return;
+                                        }
+                                        byte[] imageBytes = imageToByte(image);
+                                        int imageHeight = image.getHeight();
+                                        int imageWidth = image.getWidth();
+                                        image.close();
+
+
+
+                                        if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                                            depth_map = frame.acquireDepthImage();
+                                            if (depth_map == null) {
+                                                Log.v("CHECKHERE FAILEDOHNO: ", "depth_map null");
+                                                return;
+                                            }
+                                            if (depth_map.getFormat() != ImageFormat.DEPTH16) {
+                                                Log.v("CHECKHERE FAILEDOHNO: ", "Expected depth_map in DEPTH16 format, got format:"+ depth_map.getFormat());
+                                                return;
+                                            }
+
+                                            byte[] depthBytes = DEPTH16toBYTEs(depth_map);
+                                            depth_map.close();
+
+                                            GabrielClientActivity.this.engineInput = new EngineInput(
+                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
+                                            GabrielClientActivity.this.engineInputLock.notify();
+
+                                            Log.v("CHECKHERE passed notify GabrielClientActivity", styleType);
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         }
-                        image.close();
                     }
+
                 });
     }
 
@@ -817,6 +845,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private static byte[] imageToByte(Image image) {
         byte[] byteArray = null;
         byteArray = NV21toJPEG(YUV420toNV21(image), image.getWidth(), image.getHeight(), 100);
+        Log.v("CHECKHERE passed imageToByte", "");
         return byteArray;
     }
 
@@ -847,6 +876,17 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         uBuffer.get(nv21, ySize + vSize, uSize);
 
         return nv21;
+    }
+
+
+    private static byte[] DEPTH16toBYTEs(Image image) {
+        byte[] ans;
+        // DEPTH16 has 1 plane.
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        int size = buffer.position();
+        ans = new byte[size];
+        buffer.get(ans, 0, size);
+        return ans;
     }
 
 
