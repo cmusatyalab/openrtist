@@ -40,12 +40,6 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.YuvImage;
 
-//import android.hardware.camera2.CameraDevice;
-//import android.hardware.camera2.CameraManager;
-//import android.hardware.Camera;
-//import android.hardware.Camera.PreviewCallback;
-//import android.hardware.Camera.Size;
-
 import android.media.Image;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -87,8 +81,6 @@ import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
 import edu.cmu.cs.openrtist.R;
-
-
 
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Session;
@@ -136,9 +128,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private boolean isRunning = false;
     private boolean isFirstExperiment = true;
 
-//    private Camera mCamera = null;
     private List<int[]> supportingFPS = null;
-//    private List<Camera.Size> supportingSize = null;
     private boolean isSurfaceReady = false;
     private boolean waitingToStart = false;
     private boolean isPreviewing = false;
@@ -175,7 +165,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     final private Object engineInputLock = new Object();
     private FrameSupplier frameSupplier = new FrameSupplier(this);
 
-
     private Session session;
     private Config config;
     private ArFragment arFragment;
@@ -183,8 +172,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private Scene scene;
     private Image image;
     private Image depth_map;
-
-
 
     private ArrayAdapter<String> spinner_adapter = null;
     private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
@@ -433,40 +420,34 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         }
 
 
-        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
-        arFragment.getPlaneDiscoveryController().hide();
-
-        sceneView = arFragment.getArSceneView();
-        scene = sceneView.getScene();
+        // get ARFragment instance to use SceneForm functions with ARCore
         try {
+            arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+            arFragment.getPlaneDiscoveryController().hide();
+
+            sceneView = arFragment.getArSceneView();
+            scene = sceneView.getScene();
             session = new Session(this);
-        } catch (UnavailableArcoreNotInstalledException e) {
-            e.printStackTrace();
-        } catch (UnavailableApkTooOldException e) {
-            e.printStackTrace();
-        } catch (UnavailableSdkTooOldException e) {
-            e.printStackTrace();
-        } catch (UnavailableDeviceNotCompatibleException e) {
+            sceneView.setupSession(session);
+
+            if (session == null) {
+                Log.v("CHECKPOINT FAILED: ", "null session");
+            }
+
+            Config config = new Config(session);
+            config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
+            if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                config.setDepthMode(Config.DepthMode.AUTOMATIC);
+            } else {
+                Log.v("CHECKPOINT FAILED: ", "DepthMode NOT Supported");
+            }
+            session.configure(config);
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        sceneView.setupSession(session);
 
-        if (session == null)
-            Log.v("CHECKHERE FAILEDOHNO null session", String.valueOf(Const.STEREO_ENABLED));
-
-        Config config = new Config(session);
-
-        // ensures that the update listener is called whenever the camera frame updates.
-        config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
-        if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-            config.setDepthMode(Config.DepthMode.AUTOMATIC);
-            Log.v("CHECKHERE setDepthMode SUCCESS", String.valueOf(Const.STEREO_ENABLED));
-
-        } else {
-            Log.v("CHECKHERE setDepthMode FAILED", String.valueOf(Const.STEREO_ENABLED));
-        }
-        session.configure(config);
-
+        // ensures that the update listener is called whenever the camera frame updates
         scene.addOnUpdateListener(
                 frameTime -> {
                     if (isRunning) {
@@ -475,19 +456,19 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
                                 // cloudlet execution
                                 synchronized (GabrielClientActivity.this.engineInputLock) {
-
-                                    Log.v("CHECKHERE entered synchronized", String.valueOf(Const.STEREO_ENABLED));
-                                    // Obtain the current frame from ARSession. When the configuration is set to
-                                    Frame frame = sceneView.getArFrame();
-
                                     try {
+                                        // obtain the current frame from ARSession
+                                        Frame frame = sceneView.getArFrame();
+
+                                        // obtain the camera image
                                         image = frame.acquireCameraImage();
+
                                         if (image == null) {
-                                            Log.v("CHECKHERE FAILEDOHNO: ", "cameraimage null");
+                                            Log.v("CHECKPOINT FAILED: ", "cameraimage null");
                                             return;
                                         }
                                         if (image.getFormat() != ImageFormat.YUV_420_888) {
-                                            Log.v("CHECKHERE FAILEDOHNO: ", "Expected cameraimage in YUV_420_888 format, got format:"+ image.getFormat());
+                                            Log.v("CHECKPOINT FAILED: ", "Expected cameraimage in YUV_420_888 format, got format:"+ image.getFormat());
                                             return;
                                         }
                                         byte[] imageBytes = imageToByte(image);
@@ -495,27 +476,27 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                                         int imageWidth = image.getWidth();
                                         image.close();
 
-
-
+                                        // obtain the depth map
                                         if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
                                             depth_map = frame.acquireDepthImage();
                                             if (depth_map == null) {
-                                                Log.v("CHECKHERE FAILEDOHNO: ", "depth_map null");
+                                                Log.v("CHECKPOINT FAILED: ", "depth_map null");
                                                 return;
                                             }
                                             if (depth_map.getFormat() != ImageFormat.DEPTH16) {
-                                                Log.v("CHECKHERE FAILEDOHNO: ", "Expected depth_map in DEPTH16 format, got format:"+ depth_map.getFormat());
+                                                Log.v("CHECKPOINT FAILED: ", "Expected depth_map in DEPTH16 format, got format:"+ depth_map.getFormat());
                                                 return;
                                             }
 
                                             byte[] depthBytes = DEPTH16toBYTEs(depth_map);
                                             depth_map.close();
 
+                                            // create engineInput for generating protobuf later and send data to server
                                             GabrielClientActivity.this.engineInput = new EngineInput(
                                                     imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
                                             GabrielClientActivity.this.engineInputLock.notify();
 
-                                            Log.v("CHECKHERE passed notify GabrielClientActivity", styleType);
+                                            Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
                                         }
                                     } catch (Exception e) {
                                         e.printStackTrace();
@@ -524,7 +505,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                             }
                         }
                     }
-
                 });
     }
 
@@ -831,8 +811,8 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
     void setupComm() {
         int port = getPort();
-        Log.d("Port_discovery ServerIP", serverIP);
-        Log.d("Port_discovery PORT", String.valueOf(port));
+        Log.d("CHECKPOINT: ", "Port_discovery ServerIP " + serverIP);
+        Log.d("CHECKPOINT: ", "Port_discovery PORT: " + port);
         this.openrtistComm = OpenrtistComm.createOpenrtistComm(
                 this.serverIP, port, this, this.returnMsgHandler, Const.TOKEN_LIMIT);
     }
@@ -841,11 +821,13 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         this.openrtistComm = openrtistComm;
     }
 
-
+    /**************** Convert imageformat to Byte arrays ***********************/
+    /**
+     * Convert imageformat YUV_420_888 to Byte arrays.
+     */
     private static byte[] imageToByte(Image image) {
         byte[] byteArray = null;
         byteArray = NV21toJPEG(YUV420toNV21(image), image.getWidth(), image.getHeight(), 100);
-        Log.v("CHECKHERE passed imageToByte", "");
         return byteArray;
     }
 
@@ -878,7 +860,9 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         return nv21;
     }
 
-
+    /**
+     * Convert imageformat DEPTH16 to Byte arrays.
+     */
     private static byte[] DEPTH16toBYTEs(Image image) {
         byte[] ans;
         // DEPTH16 has 1 plane.
@@ -888,6 +872,8 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         buffer.get(ans, 0, size);
         return ans;
     }
+    /**************** End of onItemSelected ****************/
+
 
 
     private Runnable fpsCalculator = new Runnable() {
@@ -1098,5 +1084,4 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     }
 
 }
-
     /**************** End of onItemSelected ****************/

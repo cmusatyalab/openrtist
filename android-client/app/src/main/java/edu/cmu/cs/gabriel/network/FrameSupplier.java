@@ -20,8 +20,6 @@ public class FrameSupplier implements Supplier<InputFrame> {
     private static InputFrame convertEngineInput(EngineInput engineInput) {
         byte[] frame = engineInput.getFrame();
 
-//        Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType()).build();
-
         // extra includes the style type and the depth map
         Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType())
                 .setStyleImage(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(engineInput.getDepth_map())))

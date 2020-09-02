@@ -1,7 +1,5 @@
 package edu.cmu.cs.gabriel.network;
 
-import android.hardware.Camera;
-
 public class EngineInput {
     final private byte[] frame;
     final private byte[] depth_map;
