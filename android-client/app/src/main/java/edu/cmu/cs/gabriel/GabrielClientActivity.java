@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
@@ -474,6 +475,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                                         byte[] imageBytes = imageToByte(image);
                                         int imageHeight = image.getHeight();
                                         int imageWidth = image.getWidth();
+
                                         image.close();
 
                                         // obtain the depth map
@@ -867,7 +869,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         byte[] ans;
         // DEPTH16 has 1 plane.
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        int size = buffer.position();
+        int size = buffer.remaining();
         ans = new byte[size];
         buffer.get(ans, 0, size);
         return ans;
