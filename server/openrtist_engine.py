@@ -86,39 +86,27 @@ class OpenrtistEngine(cognitive_engine.Engine):
         image = self.process_image(orig_img)
 
         # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
-        # depth_map = extras.style_image
-        # mask_fg = cv2.inRange(depth_map,200, 255)
+        depth_map = extras.style_image.value
 
-        lower_blue = (40,81,30)
-        upper_blue = (120,150,95)
-        mask_fg = cv2.inRange(orig_img,lower_blue,upper_blue)
+        # data type conversion from bytes to a scaled-out 2d numpy array (480*640)
+        np_depth_1d = np.frombuffer(depth_map, dtype=np.uint16)
+        np_depth_2d = np.reshape(np_depth_1d, (-1, 160))
+        np_depth_2d = np.kron(np_depth_2d, np.ones((4,4)))
+
+        mask_fg = cv2.inRange(np_depth_2d,0, 2000)
 
         # Apply morphology to the thresholded image to remove extraneous white regions and save a mask
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
         mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_OPEN, kernel)
         mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_CLOSE, kernel)
 
-        # mask_fg = cv2.merge([mask_fg,mask_fg,mask_fg])
-
-        # get foreground from original image
-        # fg = cv2.bitwise_and(orig_img, mask_fg)
         fg = cv2.bitwise_and(orig_img,orig_img, mask= mask_fg)
-
+        
         # get background mask by inversion
         mask_bg = cv2.bitwise_not(mask_fg)
 
         # get background from transformed image
-        # bg = cv2.bitwise_and(image,mask_bg)
         bg = cv2.bitwise_and(image,image, mask= mask_bg)
-
-        height, width, depth = fg.shape
-        height1, width1, depth1 = bg.shape
-        # logger.info("fg dimension %s %s %s", str(height), str(width), str(depth))
-        # logger.info("bg dimension %s %s %s", str(height1), str(width1), str(depth1))
-        # logger.info("data type fg %s", type(fg))
-        # logger.info("data type bg %s", type(bg))
-        # logger.info("fg size %s", str(fg.size))
-        # logger.info("bg size %s", str(bg.size))
 
         # stitch transformed background and original foreground
         bg = bg.astype("uint8")
