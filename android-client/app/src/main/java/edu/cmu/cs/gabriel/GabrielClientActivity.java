@@ -235,23 +235,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         }
     }
 
-    public EngineInput getEngineInput() {
-        synchronized (this.engineInputLock) {
-            try {
-                while (isRunning && this.engineInput == null) {
-                    engineInputLock.wait();
-                }
-                Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity getEngineInput NOTIFIED");
-                EngineInput inputToSend = this.engineInput;
-                this.engineInput = null;  // Prevent sending the same frame again
-                return inputToSend;
-            } catch (/* InterruptedException */ Exception e) {
-                Log.e(LOG_TAG, "Error waiting for engine input", e);
-                return null;
-            }
-        }
-    }
-
     private Runnable imageUpload = new Runnable() {
         @Override
         public void run() {
@@ -753,7 +736,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                                             // create engineInput for generating protobuf later and send data to server
                                             GabrielClientActivity.this.engineInput = new EngineInput(
                                                     imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
-                                            GabrielClientActivity.this.engineInputLock.notify();
+                                            GabrielClientActivity.this.engineInputLock.notifyAll();
 
                                             Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
                                         }
@@ -762,7 +745,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                                     }
                                 }
                             }
-                        } else if (!cleared) {
+                        } else {
                             GabrielClientActivity.this.engineInput = null;
                             Log.v(LOG_TAG, "Display Cleared");
 
@@ -790,6 +773,23 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
             mediaController = new MediaController(this);
         }
         isRunning = true;
+    }
+
+    public EngineInput getEngineInput() {
+        synchronized (this.engineInputLock) {
+            try {
+                while (isRunning && this.engineInput == null) {
+                    engineInputLock.wait();
+                }
+                Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity getEngineInput NOTIFIED");
+                EngineInput inputToSend = this.engineInput;
+                this.engineInput = null;  // Prevent sending the same frame again
+                return inputToSend;
+            } catch (/* InterruptedException */ Exception e) {
+                Log.e(LOG_TAG, "Error waiting for engine input", e);
+                return null;
+            }
+        }
     }
 
     /**
