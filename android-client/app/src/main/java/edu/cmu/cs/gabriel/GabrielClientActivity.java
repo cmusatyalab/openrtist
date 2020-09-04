@@ -173,6 +173,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private Scene scene;
     private Image image;
     private Image depth_map;
+    private Image img;
 
     private ArrayAdapter<String> spinner_adapter = null;
     private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
@@ -240,6 +241,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                 while (isRunning && this.engineInput == null) {
                     engineInputLock.wait();
                 }
+                Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity getEngineInput NOTIFIED");
                 EngineInput inputToSend = this.engineInput;
                 this.engineInput = null;  // Prevent sending the same frame again
                 return inputToSend;
@@ -272,6 +274,8 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        isRunning = true;
+
         Log.v(LOG_TAG, "++onCreate");
         super.onCreate(savedInstanceState);
         Const.STYLES_RETRIEVED = false;
@@ -300,7 +304,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         imgView = (ImageView) findViewById(R.id.guidance_image);
         iconView = (ImageView) findViewById(R.id.style_image);
         fpsLabel = (TextView) findViewById(R.id.fpsLabel);
-
 
 
         if(Const.SHOW_RECORDER) {
@@ -421,93 +424,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         }
 
 
-        // get ARFragment instance to use SceneForm functions with ARCore
-        try {
-            arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
-            arFragment.getPlaneDiscoveryController().hide();
-
-            sceneView = arFragment.getArSceneView();
-            scene = sceneView.getScene();
-            session = new Session(this);
-            sceneView.setupSession(session);
-
-            if (session == null) {
-                Log.v("CHECKPOINT FAILED: ", "null session");
-            }
-
-            Config config = new Config(session);
-            config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
-            if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-                config.setDepthMode(Config.DepthMode.AUTOMATIC);
-            } else {
-                Log.v("CHECKPOINT FAILED: ", "DepthMode NOT Supported");
-            }
-            session.configure(config);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // ensures that the update listener is called whenever the camera frame updates
-        scene.addOnUpdateListener(
-                frameTime -> {
-                    if (isRunning) {
-                        if (styleType.equals("?") || !styleType.equals("none")) {
-                            if (GabrielClientActivity.this.openrtistComm != null) {
-
-                                // cloudlet execution
-                                synchronized (GabrielClientActivity.this.engineInputLock) {
-                                    try {
-                                        // obtain the current frame from ARSession
-                                        Frame frame = sceneView.getArFrame();
-
-                                        // obtain the camera image
-                                        image = frame.acquireCameraImage();
-
-                                        if (image == null) {
-                                            Log.v("CHECKPOINT FAILED: ", "cameraimage null");
-                                            return;
-                                        }
-                                        if (image.getFormat() != ImageFormat.YUV_420_888) {
-                                            Log.v("CHECKPOINT FAILED: ", "Expected cameraimage in YUV_420_888 format, got format:"+ image.getFormat());
-                                            return;
-                                        }
-                                        byte[] imageBytes = imageToByte(image);
-                                        int imageHeight = image.getHeight();
-                                        int imageWidth = image.getWidth();
-
-                                        image.close();
-
-                                        // obtain the depth map
-                                        if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-                                            depth_map = frame.acquireDepthImage();
-                                            if (depth_map == null) {
-                                                Log.v("CHECKPOINT FAILED: ", "depth_map null");
-                                                return;
-                                            }
-                                            if (depth_map.getFormat() != ImageFormat.DEPTH16) {
-                                                Log.v("CHECKPOINT FAILED: ", "Expected depth_map in DEPTH16 format, got format:"+ depth_map.getFormat());
-                                                return;
-                                            }
-
-                                            byte[] depthBytes = DEPTH16toBYTEs(depth_map);
-                                            depth_map.close();
-
-                                            // create engineInput for generating protobuf later and send data to server
-                                            GabrielClientActivity.this.engineInput = new EngineInput(
-                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
-                                            GabrielClientActivity.this.engineInputLock.notify();
-
-                                            Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
     }
 
     private void storeScreenshot(Bitmap bitmap, String path) {
@@ -590,7 +506,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         initOnce();
         serverIP = Const.SERVER_IP;
         initPerRun(serverIP);
-        arFragment.getPlaneDiscoveryController().hide();
     }
 
 
@@ -764,6 +679,112 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                 preview = (TextureView) findViewById(R.id.camera_preview);
         }
 
+        // get ARFragment instance to use SceneForm functions with ARCore
+        try {
+            arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+            arFragment.getPlaneDiscoveryController().hide();
+
+            sceneView = arFragment.getArSceneView();
+            scene = sceneView.getScene();
+            session = new Session(this);
+            sceneView.setupSession(session);
+
+            while (session == null) {
+                Log.v("CHECKPOINT FAILED: ", "null session");
+            }
+
+            Config config = new Config(session);
+            config.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
+            if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                config.setDepthMode(Config.DepthMode.AUTOMATIC);
+            } else {
+                Log.v("CHECKPOINT FAILED: ", "DepthMode NOT Supported");
+            }
+            session.configure(config);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // ensures that the update listener is called whenever the camera frame updates
+        scene.addOnUpdateListener(
+                frameTime -> {
+                    if (isRunning) {
+                        // obtain the current frame from ARSession
+                        Frame frame = sceneView.getArFrame();
+
+                        if (styleType.equals("?") || !styleType.equals("none")) {
+                            if (GabrielClientActivity.this.openrtistComm != null) {
+                                // cloudlet execution
+                                synchronized (GabrielClientActivity.this.engineInputLock) {
+                                    try {
+                                        // obtain the camera image
+                                        image = frame.acquireCameraImage();
+
+                                        if (image == null) {
+                                            Log.v("CHECKPOINT FAILED: ", "cameraimage null");
+                                            return;
+                                        }
+                                        if (image.getFormat() != ImageFormat.YUV_420_888) {
+                                            Log.v("CHECKPOINT FAILED: ", "Expected cameraimage in YUV_420_888 format, got format:"+ image.getFormat());
+                                            return;
+                                        }
+                                        byte[] imageBytes = imageToByte(image);
+                                        int imageHeight = image.getHeight();
+                                        int imageWidth = image.getWidth();
+
+                                        image.close();
+
+                                        // obtain the depth map
+                                        if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                                            depth_map = frame.acquireDepthImage();
+                                            if (depth_map == null) {
+                                                Log.v("CHECKPOINT FAILED: ", "depth_map null");
+                                                return;
+                                            }
+                                            if (depth_map.getFormat() != ImageFormat.DEPTH16) {
+                                                Log.v("CHECKPOINT FAILED: ", "Expected depth_map in DEPTH16 format, got format:"+ depth_map.getFormat());
+                                                return;
+                                            }
+
+                                            byte[] depthBytes = DEPTH16toBYTEs(depth_map);
+                                            depth_map.close();
+
+                                            // create engineInput for generating protobuf later and send data to server
+                                            GabrielClientActivity.this.engineInput = new EngineInput(
+                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
+                                            GabrielClientActivity.this.engineInputLock.notify();
+
+                                            Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        } else if (!cleared) {
+                            GabrielClientActivity.this.engineInput = null;
+                            Log.v(LOG_TAG, "Display Cleared");
+
+                            try {
+                                if (img != null) {
+                                    img.close();
+                                }
+                                img = frame.acquireCameraImage();
+                                byte[] bytes = imageToByte(img);
+                                final Bitmap camView = BitmapFactory.decodeByteArray(
+                                        bytes, 0, bytes.length);
+                                this.imgView = (ImageView)this.findViewById(R.id.guidance_image);
+                                this.imgView.setVisibility(View.VISIBLE);
+                                this.imgView.setImageBitmap(camView);
+
+                            } catch (NotYetAvailableException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
         // Media controller
         if (mediaController == null) {
             mediaController = new MediaController(this);
@@ -875,8 +896,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         return ans;
     }
     /**************** End of onItemSelected ****************/
-
-
 
     private Runnable fpsCalculator = new Runnable() {
 
@@ -1086,4 +1105,4 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     }
 
 }
-    /**************** End of onItemSelected ****************/
+/**************** End of onItemSelected ****************/
