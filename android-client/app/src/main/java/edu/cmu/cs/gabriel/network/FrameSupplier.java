@@ -1,8 +1,16 @@
 package edu.cmu.cs.gabriel.network;
 
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.media.Image;
+import android.util.Log;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
 import edu.cmu.cs.gabriel.GabrielClientActivity;
@@ -18,11 +26,14 @@ public class FrameSupplier implements Supplier<InputFrame> {
     }
 
     private static InputFrame convertEngineInput(EngineInput engineInput) {
-        byte[] frame = engineInput.getFrame();
+        byte[] imageBytes = engineInput.getFrame();
+        byte[] depthBytes = engineInput.getDepth_map();
+
+        // Log.v("CHECKPOINT SUCCESS", "convertEngineInput");
 
         // extra includes the style type and the depth map
         Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType())
-                .setStyleImage(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(engineInput.getDepth_map())))
+                .setStyleImage(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(depthBytes)))
                 .build();
 
         // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:
@@ -30,7 +41,7 @@ public class FrameSupplier implements Supplier<InputFrame> {
 
         InputFrame inputFrame = InputFrame.newBuilder()
                 .setPayloadType(PayloadType.IMAGE)
-                .addPayloads(ByteString.copyFrom(frame))
+                .addPayloads(ByteString.copyFrom(imageBytes))
                 .setExtras(FrameSupplier.pack(extras))
                 .build();
         return inputFrame;
@@ -54,3 +65,4 @@ public class FrameSupplier implements Supplier<InputFrame> {
                 .build();
     }
 }
+

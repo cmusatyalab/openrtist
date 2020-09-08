@@ -738,7 +738,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                                                     imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
                                             GabrielClientActivity.this.engineInputLock.notifyAll();
 
-                                            Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
+                                            // Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
                                         }
                                     } catch (Exception e) {
                                         e.printStackTrace();
@@ -781,7 +781,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
                 while (isRunning && this.engineInput == null) {
                     engineInputLock.wait();
                 }
-                Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity getEngineInput NOTIFIED");
+                // Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity getEngineInput NOTIFIED");
                 EngineInput inputToSend = this.engineInput;
                 this.engineInput = null;  // Prevent sending the same frame again
                 return inputToSend;
