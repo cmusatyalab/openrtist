@@ -8,20 +8,13 @@
     android:orientation="vertical"
     android:weightSum="1">
 
+
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:dropDownWidth="match_parent"
         android:prompt="@string/dropdown_prompt" />
-
-<!--    <SeekBar-->
-<!--        android:id="@+id/seekBar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:rotation="270"-->
-<!--        android:max="7"-->
-<!--        android:progress="2" />-->
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -144,8 +137,19 @@
                 android:textStyle="bold"
                 android:visibility="gone" />
 
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="250dp"
+                android:layout_height="18dp"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="8dp"
+                android:background="@color/colorPrimaryTransparent"
+                android:max="7000"
+                android:progress="0" />
+
         </FrameLayout>
 
     </RelativeLayout>
+
 
 </LinearLayout>

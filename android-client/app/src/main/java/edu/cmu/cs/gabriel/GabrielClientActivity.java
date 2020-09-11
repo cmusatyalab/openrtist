@@ -181,6 +181,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private Image img;
 
     SeekBar simpleSeekBar;
+    private int depth_threshold = 0;
 
     private ArrayAdapter<String> spinner_adapter = null;
     private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
@@ -296,27 +297,31 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         fpsLabel = (TextView) findViewById(R.id.fpsLabel);
 
 
-//        // initiate  views
-//        simpleSeekBar=(SeekBar)findViewById(R.id.seekBar);
-//        // perform seek bar change listener event used for getting the progress value
-//        simpleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            int changedValue = 0;
-//
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                changedValue = progress;
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//                Toast.makeText(GabrielClientActivity.this, "Depth threshold is set to:" + changedValue + " meters",
-//                        Toast.LENGTH_SHORT).show();
-//            }
-//        });
+        // initiate  views
+        simpleSeekBar=(SeekBar)findViewById(R.id.seekBar);
+        // perform seek bar change listener event used for getting the progress value
+        simpleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                depth_threshold = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (Const.DEPTH_SUPPORTED) {
+                    Toast.makeText(GabrielClientActivity.this, "Depth threshold is set to " + depth_threshold + " millimeters",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(GabrielClientActivity.this, "Depth mode is not supported on this device. Viewing normal mode",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
 
         if(Const.SHOW_RECORDER) {
@@ -748,8 +753,10 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
                                         image.close();
 
-                                        // obtain the depth map
+                                        // obtain the depth map if depth mode is supported
                                         if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+                                            Const.DEPTH_SUPPORTED = true;
+
                                             depth_map = frame.acquireDepthImage();
                                             if (depth_map == null) {
                                                 Log.v("CHECKPOINT FAILED: ", "depth_map null");
@@ -765,10 +772,16 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
                                             // create engineInput for generating protobuf later and send data to server
                                             GabrielClientActivity.this.engineInput = new EngineInput(
-                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType, 2);
+                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType, depth_threshold);
                                             GabrielClientActivity.this.engineInputLock.notifyAll();
 
                                             // Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");
+                                        } else {
+                                            // send depth as null and only send the image if depth mode is not supported
+                                            // assign the depth threshold as -1 as an indicator that the protobuf will not contain depth_map
+                                            GabrielClientActivity.this.engineInput = new EngineInput(
+                                                    imageBytes,  null, imageHeight, imageWidth, styleType, -1);
+                                            GabrielClientActivity.this.engineInputLock.notifyAll();
                                         }
                                     } catch (Exception e) {
                                         e.printStackTrace();

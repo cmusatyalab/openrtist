@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
+import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.GabrielClientActivity;
 import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
@@ -29,14 +30,20 @@ public class FrameSupplier implements Supplier<InputFrame> {
         byte[] imageBytes = engineInput.getFrame();
         byte[] depthBytes = engineInput.getDepth_map();
         int depth_threshold = engineInput.getDepthThreshold();
+        Extras extras;
 
         // Log.v("CHECKPOINT SUCCESS", "convertEngineInput");
 
-        // extra includes the style type and the depth map
-        Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType())
-                .setDepthMap(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(depthBytes)))
-//                .setDepthThreshold(depth_threshold)
-                .build();
+        if (Const.DEPTH_SUPPORTED) {
+            // extra includes the style type, the depth map, and the depth threshold
+            extras = Extras.newBuilder().setStyle(engineInput.getStyleType())
+                    .setDepthMap(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(depthBytes)))
+                    .setDepthThreshold(depth_threshold)
+                    .build();
+        } else {
+            // extra includes the style type
+            extras = Extras.newBuilder().setStyle(engineInput.getStyleType()).build();
+        }
 
         // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:
         // fromClientBuilder.setEngineFields(Any.pack(engineFields));
