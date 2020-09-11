@@ -71,6 +71,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.media.MediaActionSound;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.SeekBar;
+import android.widget.Button;
+import android.widget.Toast;
 
 import edu.cmu.cs.gabriel.network.EngineInput;
 import edu.cmu.cs.gabriel.network.FrameSupplier;
@@ -174,6 +179,8 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private Image image;
     private Image depth_map;
     private Image img;
+
+    SeekBar simpleSeekBar;
 
     private ArrayAdapter<String> spinner_adapter = null;
     private List<String> styleDescriptions = new ArrayList<>(Arrays.asList(
@@ -287,6 +294,29 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         imgView = (ImageView) findViewById(R.id.guidance_image);
         iconView = (ImageView) findViewById(R.id.style_image);
         fpsLabel = (TextView) findViewById(R.id.fpsLabel);
+
+
+//        // initiate  views
+//        simpleSeekBar=(SeekBar)findViewById(R.id.seekBar);
+//        // perform seek bar change listener event used for getting the progress value
+//        simpleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            int changedValue = 0;
+//
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                changedValue = progress;
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//                Toast.makeText(GabrielClientActivity.this, "Depth threshold is set to:" + changedValue + " meters",
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
 
         if(Const.SHOW_RECORDER) {
@@ -735,7 +765,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
                                             // create engineInput for generating protobuf later and send data to server
                                             GabrielClientActivity.this.engineInput = new EngineInput(
-                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType);
+                                                    imageBytes,  depthBytes, imageHeight, imageWidth, styleType, 2);
                                             GabrielClientActivity.this.engineInputLock.notifyAll();
 
                                             // Log.v("CHECKPOINT SUCCESS", "GabrielClientActivity addOnUpdateListener");

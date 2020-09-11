@@ -16,4 +16,6 @@ message Extras {
     string style = 1;
     map<string, string> style_list = 2;
     BytesValue style_image = 3;
+    int32 depth_threshold = 4;
+    BytesValue depth_map = 5;
 }

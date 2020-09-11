@@ -28,12 +28,14 @@ public class FrameSupplier implements Supplier<InputFrame> {
     private static InputFrame convertEngineInput(EngineInput engineInput) {
         byte[] imageBytes = engineInput.getFrame();
         byte[] depthBytes = engineInput.getDepth_map();
+        int depth_threshold = engineInput.getDepthThreshold();
 
         // Log.v("CHECKPOINT SUCCESS", "convertEngineInput");
 
         // extra includes the style type and the depth map
         Extras extras = Extras.newBuilder().setStyle(engineInput.getStyleType())
-                .setStyleImage(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(depthBytes)))
+                .setDepthMap(Extras.BytesValue.newBuilder().setValue(ByteString.copyFrom(depthBytes)))
+//                .setDepthThreshold(depth_threshold)
                 .build();
 
         // TODO: Switch to this once MobilEdgeX supports protobuf-javalite:

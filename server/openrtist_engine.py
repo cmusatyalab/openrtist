@@ -86,14 +86,16 @@ class OpenrtistEngine(cognitive_engine.Engine):
         image = self.process_image(orig_img)
 
         # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
-        depth_map = extras.style_image.value
+        depth_map = extras.depth_map.value
+        depth_threshol = extras.depth_threshold
 
         # data type conversion from bytes to a scaled-out 2d numpy array (480*640)
         np_depth_1d = np.frombuffer(depth_map, dtype=np.uint16)
         np_depth_2d = np.reshape(np_depth_1d, (-1, 160))
         np_depth_2d = np.kron(np_depth_2d, np.ones((4,4)))
 
-        mask_fg = cv2.inRange(np_depth_2d,0, 2000)
+        # mask_fg = cv2.inRange(np_depth_2d,0, 2000)
+        mask_fg = cv2.inRange(np_depth_2d,0, depth_threshol)
 
         # Apply morphology to the thresholded image to remove extraneous white regions and save a mask
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
