@@ -15,12 +15,26 @@ repositories {
 }
 
 android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     sourceSets {
         main {
             proto {
                 // In addition to the default 'src/main/proto'
                 srcDir '../protos'
             }
+        }
+        standard {
+            java.srcDirs('src/common/java')
+        }
+        measurement {
+            java.srcDirs('src/common/java')
+        }
+        mobilEdgeX {
+            java.srcDirs('src/common/java')
         }
     }
 
@@ -63,6 +77,13 @@ android {
                 }
             }
         }
+        arcore {
+            dimension 'version'
+            applicationIdSuffix 'ar'
+            versionNameSuffix '-ar'
+            minSdkVersion 24
+            multiDexEnabled false
+        }
     }
 
     protobuf {
@@ -88,7 +109,6 @@ android {
                         outputSubDir = 'java'
                     }
                 }
-
             }
         }
     }
@@ -103,6 +123,11 @@ dependencies {
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
 
+    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
+
+    implementation 'com.google.ar:core:1.18.0'
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.15.0'
+
     // Allow user to build other flavors when they do not have MobilEdgeX credentials
     if (artifactory_user != null) {
         mobilEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
@@ -115,4 +140,8 @@ dependencies {
 
     standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    
+    arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    arcoreImplementation 'com.google.ar:core:1.18.0'
+    arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.15.0'
 }
