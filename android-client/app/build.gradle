@@ -123,11 +123,6 @@ dependencies {
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
 
-    implementation 'com.google.protobuf:protobuf-lite:3.0.0'
-
-    implementation 'com.google.ar:core:1.18.0'
-    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.15.0'
-
     // Allow user to build other flavors when they do not have MobilEdgeX credentials
     if (artifactory_user != null) {
         mobilEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
