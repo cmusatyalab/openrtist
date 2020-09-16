@@ -45,15 +45,15 @@ curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 ```
 
-### Step 2. Ensure an NVIDIA driver are installed (Optional -- only for NVIDIA GPU support)
+### Step 2. Install NVIDIA CUDA drivers (for NVIDIA GPU support)
 
-[These notes](https://github.com/NVIDIA/nvidia-docker/wiki/Frequently-Asked-Questions#how-do-i-install-the-nvidia-driver) explain how to install the driver.
+[The cuda downloads page](https://developer.nvidia.com/cuda-downloads) allows you to select your distribution and provides instructions on how to install the CUDA toolkit and NVIDIA drivers.
 
-If you think you may already have an NVIDIA driver installed, run `nvidia-smi`. The Driver version will be listed at the top of the table that gets printed.
+If you think you may already have an NVIDIA driver installed, run `nvidia-smi`. The driver version will be listed at the top of the table that gets printed.
 
-### Step 3. Install the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) (Optional -- only for NVIDIA GPU support)
+### Step 3. Install the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) (for NVIDIA GPU support)
 
-Follow [these instructions](https://github.com/NVIDIA/nvidia-docker#ubuntu-16041804-debian-jessiestretchbuster).
+Follow [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian).
 
 ### Step 4. Obtain OpenRTiST Docker image
 
