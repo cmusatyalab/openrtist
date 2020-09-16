@@ -17,14 +17,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="com.google.android.glass.permission.DEVELOPMENT" />
 
-    <!-- Sceneform requires OpenGL ES 3.0 or later. -->
-    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
-
-    <!-- Limits app visibility in the Google Play Store to ARCore supported devices
-     (https://developers.google.com/ar/discover/supported-devices). -->
-    <uses-feature android:name="android.hardware.camera.ar" />
-
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -58,8 +50,7 @@
             android:name="edu.cmu.cs.gabriel.GabrielClientActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="landscape"
-            android:theme="@style/AppFullScreenTheme" >
-<!--            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">-->
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
             <!-- Enable this intent-filter for regular Android Application -->
             <!-- <intent-filter> -->
@@ -77,11 +68,6 @@
                 android:name="com.google.android.glass.VoiceTrigger"
                 android:resource="@xml/gabriel_start" />
         </activity>
-
-        <!-- "AR Required" app, requires "Google Play Services for AR" (ARCore)
-       to be installed, as the app does not include any non-AR features. -->
-        <meta-data android:name="com.google.ar.core" android:value="required" />
-
     </application>
 
 </manifest>
