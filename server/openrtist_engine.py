@@ -63,8 +63,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             status = gabriel_pb2.ResultWrapper.Status.WRONG_INPUT_FORMAT
             return cognitive_engine.create_result_wrapper(status)
 
-        extras = cognitive_engine.unpack_extras(openrtist_pb2.Extras,
-                                                input_frame)
+        extras = cognitive_engine.unpack_extras(openrtist_pb2.Extras, input_frame)
 
         new_style = False
         send_style_list = False
@@ -88,43 +87,43 @@ class OpenrtistEngine(cognitive_engine.Engine):
         # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
         depth_threshold = extras.depth_threshold
 
-        if depth_threshold == -1:
-        	# protobuf does NOT contain depth_map 
-        	final = image
+        image = image.astype("uint8")
+        if depth_threshold != -1:
+            # protobuf contains depth_map
+            depth_map = extras.depth_map.value
 
-        else:
-        	# protobuf contains depth_map 
-	        depth_map = extras.depth_map.value
+            # data type conversion from bytes to a scaled-out 2d numpy array (480*640)
+            np_depth_1d = np.frombuffer(depth_map, dtype=np.uint16)
+            np_depth_2d = np.reshape(np_depth_1d, (-1, 160))
 
-	        # data type conversion from bytes to a scaled-out 2d numpy array (480*640)
-	        np_depth_1d = np.frombuffer(depth_map, dtype=np.uint16)
-	        np_depth_2d = np.reshape(np_depth_1d, (-1, 160))
-	        np_depth_2d = np.kron(np_depth_2d, np.ones((4,4)))
+            # threshold on the distance
+            mask_fg = cv2.inRange(np_depth_2d, 0, depth_threshold)
 
-	        # mask_fg = cv2.inRange(np_depth_2d,0, 2000)
-	        mask_fg = cv2.inRange(np_depth_2d,0, depth_threshold)
+            # resize to match the image
+            orig_h, orig_w, _ = orig_img.shape
+            mask_fg = cv2.resize(
+                mask_fg, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST
+            )
 
-	        # Apply morphology to the thresholded image to remove extraneous white regions and save a mask
-	        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
-	        mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_OPEN, kernel)
-	        mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_CLOSE, kernel)
+            # Apply morphology to the thresholded image to remove extraneous white regions and save a mask
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_OPEN, kernel)
+            mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_CLOSE, kernel)
 
-        	fg = cv2.bitwise_and(orig_img,orig_img, mask= mask_fg)
-        
-	        # get background mask by inversion
-	        mask_bg = cv2.bitwise_not(mask_fg)
+            fg = cv2.bitwise_and(orig_img, orig_img, mask=mask_fg)
 
-	        # get background from transformed image
-	        bg = cv2.bitwise_and(image,image, mask= mask_bg)
+            # get background mask by inversion
+            mask_bg = cv2.bitwise_not(mask_fg)
 
-	        # stitch transformed background and original foreground
-	        bg = bg.astype("uint8")
-	        final = cv2.bitwise_or(fg, bg)
+            # get background from transformed image
+            bg = cv2.bitwise_and(image, image, mask=mask_bg)
 
+            # stitch transformed background and original foreground
+            image = cv2.bitwise_or(fg, bg)
 
-        final = self._apply_watermark(final)
+        image = self._apply_watermark(image)
 
-        _, jpeg_img = cv2.imencode(".jpg", final, self.compression_params)
+        _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
         img_data = jpeg_img.tostring()
 
         result = gabriel_pb2.ResultWrapper.Result()
