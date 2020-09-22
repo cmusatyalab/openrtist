@@ -313,13 +313,9 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (Const.DEPTH_SUPPORTED) {
-                    Toast.makeText(GabrielClientActivity.this, "Depth threshold is set to " + depth_threshold + " millimeters",
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(GabrielClientActivity.this, "Depth mode is not supported on this device. Viewing normal mode",
-                            Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(GabrielClientActivity.this, GabrielClientActivity.this.getApplicationContext().getString(R.string.depth_toast, (float) depth_threshold / 1000),
+                        Toast.LENGTH_SHORT).show();
+
             }
         });
 
@@ -755,8 +751,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
                                         // obtain the depth map if depth mode is supported
                                         if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
-                                            Const.DEPTH_SUPPORTED = true;
-
                                             depth_map = frame.acquireDepthImage();
                                             if (depth_map == null) {
                                                 Log.v("CHECKPOINT FAILED: ", "depth_map null");

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">OpenRTiST (AR)</string>
+    <string name="title_activity_main" translatable="false">OpenRTiST (AR)</string>
+    <string name="depth_toast">"Depth threshold is set to %.2f meters."</string>
+</resources>
