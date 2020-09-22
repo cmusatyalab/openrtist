@@ -84,13 +84,14 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         image = self.process_image(orig_img)
 
-        # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
-        depth_threshold = extras.depth_threshold
+
 
         image = image.astype("uint8")
-        if depth_threshold != -1:
+        if extras.HasField("depth_map"):
             # protobuf contains depth_map
             depth_map = extras.depth_map.value
+            # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
+            depth_threshold = extras.depth_threshold
 
             # data type conversion from bytes to a scaled-out 2d numpy array (480*640)
             np_depth_1d = np.frombuffer(depth_map, dtype=np.uint16)
