@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:foregroundTint="@color/colorAccent"
     android:keepScreenOn="true"
     android:orientation="vertical"
     android:weightSum="1">
@@ -20,8 +21,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <fragment android:name="com.google.ar.sceneform.ux.ArFragment"
+        <fragment
             android:id="@+id/ux_fragment"
+            android:name="com.google.ar.sceneform.ux.ArFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
@@ -36,8 +38,8 @@
             android:elevation="@dimen/activity_vertical_margin"
             android:gravity="left"
             android:scaleType="fitXY"
-            android:visibility="invisible"
-            android:src="@drawable/ic_question_mark"/>
+            android:src="@drawable/ic_question_mark"
+            android:visibility="invisible" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -143,7 +145,10 @@
                 android:layout_height="18dp"
                 android:layout_gravity="bottom|center"
                 android:layout_marginBottom="8dp"
-                android:background="@color/colorPrimaryTransparent"
+                android:background="@color/textColorPrimary"
+                android:thumbTint="@color/colorPrimary"
+                android:progressTint="@color/colorPrimary"
+                android:hapticFeedbackEnabled="true"
                 android:max="7000"
                 android:progress="0" />
 
