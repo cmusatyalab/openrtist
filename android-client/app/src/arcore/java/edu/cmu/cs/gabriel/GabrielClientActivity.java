@@ -313,7 +313,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(GabrielClientActivity.this, GabrielClientActivity.this.getApplicationContext().getString(R.string.depth_toast, (float) depth_threshold / 1000),
+                Toast.makeText(GabrielClientActivity.this, GabrielClientActivity.this.getApplicationContext().getString(R.string.depth_toast, Float.valueOf(depth_threshold) / 1000),
                         Toast.LENGTH_SHORT).show();
 
             }
