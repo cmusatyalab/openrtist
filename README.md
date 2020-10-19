@@ -66,19 +66,19 @@ docker pull cmusatyalab/openrtist:stable
 For NVIDIA GPU support, run:
 
 ```sh
-docker run --gpus all --rm -it -p 9099:9099 cmusatyalab/openrtist
+docker run --gpus all --rm -it -p 9099:9099 cmusatyalab/openrtist:stable
 ```
 
 For Intel iGPU support, run:
 
 ```sh
-docker run --device /dev/dri:/dev/dri --rm -it -p 9099:9099 cmusatyalab/openrtist
+docker run --device /dev/dri:/dev/dri --rm -it -p 9099:9099 cmusatyalab/openrtist:stable
 ```
 
 For CPU support only, run:
 
 ```sh
-docker run --rm -it -p 9099:9099 cmusatyalab/openrtist
+docker run --rm -it -p 9099:9099 cmusatyalab/openrtist:stable
 ```
 
 Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.
