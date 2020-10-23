@@ -1,7 +1,6 @@
 package edu.cmu.cs.measurementDb;
 
 import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
 
 import java.util.List;

@@ -82,5 +82,4 @@ class IPAddressExtractor {
                 ( ipno            ) % 256);
         return retstr;
     }
-
 }

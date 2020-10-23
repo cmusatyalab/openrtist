@@ -150,6 +150,7 @@ dependencies {
     measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
 
+    // This must be 2.14 to have the correct version of okhttp
     measurementDBImplementation 'org.influxdb:influxdb-java:2.14'
     
     arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
