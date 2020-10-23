@@ -39,6 +39,10 @@ android {
                 java.srcDirs('src/common/java')
             }
         }
+
+        measurementDB {
+            java.srcDirs('src/common/java')
+        }
     }
 
     compileSdkVersion 29
@@ -91,6 +95,10 @@ android {
             minSdkVersion 24
             multiDexEnabled false
         }
+
+        measurementDB {
+            minSdkVersion 26
+        }
     }
 
     protobuf {
@@ -122,8 +130,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.google.android.material:material:1.2.0'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.2'
+    implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'edu.cmu.cs.gabriel:client:2.2.1'
 
@@ -140,8 +148,11 @@ dependencies {
 
     standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+
+    measurementDBImplementation 'org.influxdb:influxdb-java:2.14'
     
     arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    arcoreImplementation 'com.google.ar:core:1.18.0'
-    arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.15.0'
+    arcoreImplementation 'com.google.ar:core:1.20.0'
+    arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
 }
