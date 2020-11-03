@@ -99,6 +99,7 @@
     </string-array>
 
     <string name="pref_title_iterate_interval">Iterate Styles Periodically</string>
+    <string name="fps_0">FPS: 0</string>
     <string-array name="pref_interval_list_titles">
         <item>No iteration</item>
         <item>5 sec delay</item>

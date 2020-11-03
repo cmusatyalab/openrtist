@@ -45,6 +45,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
@@ -63,6 +67,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -73,7 +78,8 @@ import edu.cmu.cs.gabriel.camera.CameraCapture;
 import edu.cmu.cs.gabriel.camera.YuvToJpegConverter;
 import edu.cmu.cs.gabriel.camera.YuvToNv21Converter;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
-import edu.cmu.cs.gabriel.protocol.Protos;
+import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
+import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
 import edu.cmu.cs.localtransfer.Utils;
@@ -86,7 +92,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
     private static final int REQUEST_CODE = 1000;
     private static final int DISPLAY_WIDTH = 640;
     private static final int DISPLAY_HEIGHT = 480;
-    private static final int BITRATE = 1*1024*1024;
+    private static final int BITRATE = 1024 * 1024;
     private static final int MEDIA_TYPE_IMAGE = 1;
     private static final int MEDIA_TYPE_VIDEO = 2;
 
@@ -112,7 +118,6 @@ public class GabrielClientActivity extends AppCompatActivity implements
     private ImageView iconView = null;
     private Handler iterationHandler = null;
     private Handler fpsHandler = null;
-    private boolean imageRotate = false;
     private TextView fpsLabel = null;
     private boolean cleared = false;
 
@@ -122,10 +127,10 @@ public class GabrielClientActivity extends AppCompatActivity implements
     private CameraCapture cameraCapture;
     private PreviewView preview;
 
-    private ArrayAdapter<String> spinner_adapter = null;
-    private List<String> styleDescriptions = new ArrayList<>(Arrays.asList("Clear Display"));
+    private final List<String> styleDescriptions = new ArrayList<>(
+            Collections.singletonList("Clear Display"));
 
-    private List<String> styleIds = new ArrayList<>(Arrays.asList("none"));
+    private final List<String> styleIds = new ArrayList<>(Collections.singletonList("none"));
 
     public void addStyles(Set<Map.Entry<String, String>> entrySet) {
         this.styleType = "none";
@@ -158,7 +163,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
             setContentView(R.layout.activity_main);
             // Spinner element
             Spinner spinner = (Spinner) findViewById(R.id.spinner);
-            spinner_adapter = new ArrayAdapter<String>(
+            ArrayAdapter<String> spinner_adapter = new ArrayAdapter<>(
                     this, R.layout.mylist, styleDescriptions);
             // Spinner click listener
             spinner.setOnItemSelectedListener(this);
@@ -173,15 +178,14 @@ public class GabrielClientActivity extends AppCompatActivity implements
         imgView = (ImageView) findViewById(R.id.guidance_image);
         iconView = (ImageView) findViewById(R.id.style_image);
         fpsLabel = (TextView) findViewById(R.id.fpsLabel);
+        ImageView imgRecord =  findViewById(R.id.imgRecord);
 
         if (Const.SHOW_RECORDER) {
-            final ImageView recButton = (ImageView) findViewById(R.id.imgRecord);
-            recButton.setOnClickListener(new View.OnClickListener() {
+            imgRecord.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (capturingScreen) {
-                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().
-                                getDrawable(R.drawable.ic_baseline_videocam_24px));
+                        imgRecord.setImageResource(R.drawable.ic_baseline_videocam_24px);
                         stopRecording();
                         MediaActionSound m = new MediaActionSound();
                         m.play(MediaActionSound.STOP_VIDEO_RECORDING);
@@ -189,12 +193,12 @@ public class GabrielClientActivity extends AppCompatActivity implements
                         recordingInitiated = true;
                         MediaActionSound m = new MediaActionSound();
                         m.play(MediaActionSound.START_VIDEO_RECORDING);
-                        ((ImageView) findViewById(R.id.imgRecord)).setImageDrawable(getResources().
-                                getDrawable(R.drawable.ic_baseline_videocam_off_24px));
+
+                        imgRecord.setImageResource(R.drawable.ic_baseline_videocam_off_24px);
                         initRecorder();
                         shareScreen();
                     }
-                    recButton.performHapticFeedback(
+                    imgRecord.performHapticFeedback(
                             android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
@@ -222,7 +226,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
                 playpauseButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (Const.ITERATION_STARTED == false) {
+                        if (!Const.ITERATION_STARTED) {
                             Const.ITERATION_STARTED = true;
                             playpauseButton.setImageResource(R.drawable.ic_pause);
 
@@ -257,7 +261,6 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
         if (!Const.STEREO_ENABLED) {
             final ImageView camButton = (ImageView) findViewById(R.id.imgSwitchCam);
-            final ImageView rotateButton = (ImageView) findViewById(R.id.imgRotate);
             camButton.setVisibility(View.VISIBLE);
             camButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -265,41 +268,22 @@ public class GabrielClientActivity extends AppCompatActivity implements
                     camButton.performHapticFeedback(
                             android.view.HapticFeedbackConstants.LONG_PRESS);
                     if (Const.USING_FRONT_CAMERA) {
-                        camButton.setImageDrawable(getResources().getDrawable(
-                                R.drawable.ic_baseline_camera_front_24px));
+                        camButton.setImageResource(R.drawable.ic_baseline_camera_front_24px);
 
                         cameraCapture = new CameraCapture(
                                 GabrielClientActivity.this, analyzer, Const.IMAGE_WIDTH,
                                 Const.IMAGE_HEIGHT, preview, CameraSelector.DEFAULT_BACK_CAMERA);
 
                         Const.USING_FRONT_CAMERA = false;
-                        rotateButton.setVisibility(View.GONE);
                     } else {
-                        camButton.setImageDrawable(getResources().getDrawable(
-                                R.drawable.ic_baseline_camera_rear_24px));
+                        camButton.setImageResource(R.drawable.ic_baseline_camera_rear_24px);
 
                         cameraCapture = new CameraCapture(
                                 GabrielClientActivity.this, analyzer, Const.IMAGE_WIDTH,
                                 Const.IMAGE_HEIGHT, preview, CameraSelector.DEFAULT_FRONT_CAMERA);
 
                         Const.USING_FRONT_CAMERA = true;
-                        rotateButton.setVisibility(View.VISIBLE);
                     }
-                }
-            });
-
-            rotateButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    imageRotate = !imageRotate;
-                    Const.FRONT_ROTATION = !Const.FRONT_ROTATION;
-                    // TODO: fix
-                    // preview.setRotation(); will rotate the preview frame, but the image doesn't
-                    // get rotated. Rotating 90 degrees will sho what I mean. Rotating 180 degrees
-                    // does nothing because the image isn't changed.
-                    rotateButton.performHapticFeedback(
-                            android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
         }
@@ -361,13 +345,12 @@ public class GabrielClientActivity extends AppCompatActivity implements
     };
 
     private void storeScreenshot(Bitmap bitmap, String path) {
-        OutputStream out = null;
         File imageFile = new File(path);
 
         try {
             MediaActionSound m = new MediaActionSound();
             m.play(MediaActionSound.SHUTTER_CLICK);
-            out = new FileOutputStream(imageFile);
+            OutputStream out = new FileOutputStream(imageFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
@@ -379,17 +362,19 @@ public class GabrielClientActivity extends AppCompatActivity implements
         }
     }
 
-    private Runnable styleIterator = new Runnable() {
+    private final Runnable styleIterator = new Runnable() {
         private int position = 1;
 
         @Override
         public void run() {
             if(Const.STYLES_RETRIEVED && Const.ITERATION_STARTED) {
                 // wait until styles are retrieved before iterating
-                if (++position == styleIds.size())
+                if (++position == styleIds.size()) {
                     position = 1;
+                }
                 styleType = styleIds.get(position);
-                if(runLocally) {
+
+                if (runLocally) {
                     localRunnerThreadHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -436,8 +421,8 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
     @Override
     protected void onResume() {
-        Log.v(LOG_TAG, "++onResume");
         super.onResume();
+        Log.v(LOG_TAG, "++onResume");
 
         initOnce();
         serverIP = Const.SERVER_IP;
@@ -446,24 +431,46 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
     @Override
     protected void onPause() {
-        Log.v(LOG_TAG, "++onPause");
-        if(iterationHandler != null)
-            iterationHandler.removeCallbacks(styleIterator);
-        if(capturingScreen)
-            stopRecording();
-
-
         super.onPause();
+        Log.v(LOG_TAG, "++onPause");
+
+        if(iterationHandler != null) {
+            iterationHandler.removeCallbacks(styleIterator);
+        }
+
+        if(capturingScreen) {
+            stopRecording();
+        }
     }
 
     @Override
     protected void onDestroy() {
-        Log.v(LOG_TAG, "++onDestroy");
-        if(iterationHandler != null)
-            iterationHandler.removeCallbacks(styleIterator);
-        if(capturingScreen)
-            stopRecording();
         super.onDestroy();
+        Log.v(LOG_TAG, "++onDestroy");
+
+        if (iterationHandler != null) {
+            iterationHandler.removeCallbacks(styleIterator);
+        }
+
+        if (capturingScreen) {
+            stopRecording();
+        }
+
+        if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
+            localRunnerThread.quitSafely();
+            localRunnerThread.interrupt();
+            localRunnerThread = null;
+            localRunnerThreadHandler = null;
+        }
+        if (rs != null) {
+            rs.destroy();
+        }
+
+        if (this.openrtistComm != null) {
+            this.openrtistComm.stop();
+            this.openrtistComm = null;
+        }
+        cameraCapture.shutdown();
     }
 
     /**
@@ -477,7 +484,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         if (!Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED)) {
-            return  null;
+            return null;
         }
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
@@ -508,34 +515,33 @@ public class GabrielClientActivity extends AppCompatActivity implements
         return mediaFile;
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() != RESULT_OK) {
+                        Toast.makeText(GabrielClientActivity.this,
+                                "Screen Cast Permission Denied", Toast.LENGTH_SHORT).show();
 
-        if (requestCode != REQUEST_CODE) {
-            Log.e(LOG_TAG, "Unknown request code: " + requestCode);
-            return;
-        }
-        if (resultCode != RESULT_OK) {
-            Toast.makeText(this,
-                    "Screen Cast Permission Denied", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-            return;
-        }
+                    mMediaProjection = mProjectionManager.getMediaProjection(
+                            result.getResultCode(), result.getData());
 
-        mMediaProjection = mProjectionManager.getMediaProjection(resultCode, data);
-
-        mVirtualDisplay = createVirtualDisplay();
-        mMediaRecorder.start();
-        capturingScreen = true;
-        if(Const.ITERATE_STYLES)
-            iterationHandler.postDelayed(styleIterator, 100 * Const.ITERATE_INTERVAL);
-    }
+                    mVirtualDisplay = createVirtualDisplay();
+                    mMediaRecorder.start();
+                    capturingScreen = true;
+                    if (Const.ITERATE_STYLES) {
+                        iterationHandler.postDelayed(styleIterator, 100 * Const.ITERATE_INTERVAL);
+                    }
+                }
+            });
 
     private void shareScreen() {
         if (mMediaProjection == null) {
-            startActivityForResult(mProjectionManager.createScreenCaptureIntent(), REQUEST_CODE);
-            return;
+            activityResultLauncher.launch(mProjectionManager.createScreenCaptureIntent());
         }
     }
 
@@ -546,8 +552,9 @@ public class GabrielClientActivity extends AppCompatActivity implements
         return mMediaProjection.createVirtualDisplay("MainActivity",
                 DISPLAY_WIDTH, DISPLAY_HEIGHT, mScreenDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                mMediaRecorder.getSurface(), null /*Callbacks*/, null
-                /*Handler*/);
+                mMediaRecorder.getSurface(),
+                null /* Callbacks */,
+                null /* Handler */);
     }
 
     private void initRecorder() {
@@ -650,7 +657,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
     // Based on
     // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_message.cc#L1387
-    private static Any pack(edu.cmu.cs.openrtist.Protos.Extras extras) {
+    private static Any pack(Extras extras) {
         return Any.newBuilder()
                 .setTypeUrl("type.googleapis.com/openrtist.Extras")
                 .setValue(extras.toByteString())
@@ -689,13 +696,11 @@ public class GabrielClientActivity extends AppCompatActivity implements
         openrtistComm.sendSupplier(() -> {
             Extras extras = Extras.newBuilder().setStyle(styleType).build();
 
-            Protos.InputFrame inputFrame = Protos.InputFrame.newBuilder()
-                    .setPayloadType(Protos.PayloadType.IMAGE)
+            return InputFrame.newBuilder()
+                    .setPayloadType(PayloadType.IMAGE)
                     .addPayloads(yuvToRgbConverter.convertToJpeg(image))
                     .setExtras(GabrielClientActivity.pack(extras))
                     .build();
-
-            return inputFrame;
         });
     }
 
@@ -772,42 +777,19 @@ public class GabrielClientActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Terminates all services.
-     */
-    private void terminate() {
-        Log.v(LOG_TAG, "++terminate");
-
-        if ((localRunnerThread != null) && (localRunnerThread.isAlive())) {
-            localRunnerThread.quitSafely();
-            localRunnerThread.interrupt();
-            localRunnerThread = null;
-            localRunnerThreadHandler = null;
-        }
-        if (rs != null) {
-            rs.destroy();
-        }
-
-        if (this.openrtistComm != null) {
-            this.openrtistComm.stop();
-            this.openrtistComm = null;
-        }
-        cameraCapture.shutdown();
-    }
-
-    /**************** onItemSelected ***********************/
+    // **************** onItemSelected ***********************
 
     //Performing action onItemSelected and onNothing selected
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position,long id) {
-        if (styleIds.get(position) == "none"){
+        if (styleIds.get(position).equals("none")) {
             if (!Const.STYLES_RETRIEVED) {
                 styleType = "?";
             } else {
                 styleType = "none";
             }
 
-            if(Const.STEREO_ENABLED) {
+            if (Const.STEREO_ENABLED) {
 //                stereoView1.setVisibility(View.INVISIBLE);
 //                stereoView2.setVisibility(View.INVISIBLE);
             } else {
@@ -819,7 +801,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
         } else {
             styleType = styleIds.get(position);
 
-            if(Const.STEREO_ENABLED) {
+            if (Const.STEREO_ENABLED) {
 //                if (stereoView1.getVisibility() == View.INVISIBLE) {
 //                    stereoView1.setVisibility(View.VISIBLE);
 //                    stereoView2.setVisibility(View.VISIBLE);
@@ -844,7 +826,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
                             styleType = "none";
                             AlertDialog.Builder builder = new AlertDialog.Builder(
                                     GabrielClientActivity.this,
-                                    AlertDialog.THEME_HOLO_DARK);
+                                    android.R.style.Theme_Material_Light_Dialog_Alert);
                             builder.setMessage("Style Not Found Locally")
                                     .setTitle("Failed to Load Style");
                             AlertDialog dialog = builder.create();
@@ -860,5 +842,5 @@ public class GabrielClientActivity extends AppCompatActivity implements
     public void onNothingSelected(AdapterView<?> arg0) {
     }
 
-    /**************** End of onItemSelected ****************/
+    // **************** End of onItemSelected ****************
 }
