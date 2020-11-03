@@ -3,6 +3,7 @@ package edu.cmu.cs.gabriel.network;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.util.function.Consumer;
@@ -18,14 +19,14 @@ public class ResultConsumer implements Consumer<ResultWrapper> {
     private static final String TAG = "ResultConsumer";
 
     private final ImageViewUpdater referenceViewUpdater;
-    private final ImageViewUpdater imageViewUpdater;
+    private final Consumer<ByteString> imageViewUpdater;
     private final GabrielClientActivity gabrielClientActivity;
 
     public ResultConsumer(
-            ImageView referenceView, ImageView imageView,
+            ImageView referenceView, Consumer<ByteString> imageViewUpdater,
             GabrielClientActivity gabrielClientActivity) {
         this.referenceViewUpdater = new ImageViewUpdater(referenceView);
-        this.imageViewUpdater = new ImageViewUpdater(imageView);
+        this.imageViewUpdater = imageViewUpdater;
         this.gabrielClientActivity = gabrielClientActivity;
     }
 

@@ -3,6 +3,8 @@ package edu.cmu.cs.gabriel.network;
 import android.app.Application;
 import android.widget.ImageView;
 
+import com.google.protobuf.ByteString;
+
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -18,7 +20,7 @@ public class OpenrtistComm {
 
     public static OpenrtistComm createOpenrtistComm(
             String endpoint, int port, GabrielClientActivity gabrielClientActivity,
-            ImageView referenceView, ImageView imageView, String tokenLimit) {
+            ImageView referenceView, Consumer<ByteString> imageView, String tokenLimit) {
         Consumer<ResultWrapper> consumer = new ResultConsumer(
                 referenceView, imageView, gabrielClientActivity);
         ErrorConsumer onDisconnect = new ErrorConsumer(gabrielClientActivity);

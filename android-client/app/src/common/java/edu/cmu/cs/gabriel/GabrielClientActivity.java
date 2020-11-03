@@ -19,7 +19,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.MediaActionSound;
@@ -57,6 +56,7 @@ import androidx.camera.core.ImageProxy;
 import androidx.camera.view.PreviewView;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.ByteString;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -72,11 +72,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import edu.cmu.cs.gabriel.camera.CameraCapture;
+import edu.cmu.cs.gabriel.camera.ImageViewUpdater;
 import edu.cmu.cs.gabriel.camera.YuvToJpegConverter;
 import edu.cmu.cs.gabriel.camera.YuvToNv21Converter;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
+import edu.cmu.cs.gabriel.network.StereoViewUpdater;
 import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.gabriel.util.Screenshot;
@@ -88,7 +91,6 @@ import edu.cmu.cs.openrtist.R;
 public class GabrielClientActivity extends AppCompatActivity implements
         AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = "GabrielClientActivity";
-    private static final int REQUEST_CODE = 1000;
     private static final int DISPLAY_WIDTH = 640;
     private static final int DISPLAY_HEIGHT = 480;
     private static final int BITRATE = 1024 * 1024;
@@ -113,18 +115,21 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
     // views
     private ImageView imgView;
-    private ImageView camView2;
     private ImageView iconView;
     private Handler iterationHandler;
     private Handler fpsHandler;
     private TextView fpsLabel;
     private PreviewView preview;
 
+    // Stereo views
+    private ImageView stereoView1;
+    private ImageView stereoView2;
+
     private boolean cleared = false;
 
     private int framesProcessed = 0;
     private YuvToNv21Converter yuvToNv21Converter;
-    private YuvToJpegConverter yuvToRgbConverter;
+    private YuvToJpegConverter yuvToJpegConverter;
     private CameraCapture cameraCapture;
 
     private final List<String> styleDescriptions = new ArrayList<>(
@@ -148,7 +153,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
     private Handler localRunnerThreadHandler = null;
     private volatile boolean localRunnerBusy = false;
     private RenderScript rs = null;
-    private Bitmap localRunnerBitmapCache;
+    private Bitmap bitmapCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,15 +168,19 @@ public class GabrielClientActivity extends AppCompatActivity implements
             setContentView(R.layout.activity_main);
         }
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED+
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON+
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                + WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                + WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        camView2 = (ImageView) findViewById(R.id.camera_preview2);
-        imgView = (ImageView) findViewById(R.id.guidance_image);
-        iconView = (ImageView) findViewById(R.id.style_image);
-        fpsLabel = (TextView) findViewById(R.id.fpsLabel);
+        imgView = findViewById(R.id.guidance_image);
+        iconView = findViewById(R.id.style_image);
+        fpsLabel = findViewById(R.id.fpsLabel);
+
+        stereoView1 = findViewById(R.id.guidance_image1);
+        stereoView2 = findViewById(R.id.guidance_image2);
+
         ImageView imgRecord =  findViewById(R.id.imgRecord);
+        ImageView screenshotButton = findViewById(R.id.imgScreenshot);
 
         if (Const.SHOW_RECORDER) {
             imgRecord.setOnClickListener(new View.OnClickListener() {
@@ -195,7 +204,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
                             android.view.HapticFeedbackConstants.LONG_PRESS);
                 }
             });
-            final ImageView screenshotButton = (ImageView) findViewById(R.id.imgScreenshot);
+
             screenshotButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -207,7 +216,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
             });
         } else if (!Const.STEREO_ENABLED){
             //this view doesn't exist when stereo is enabled (activity_stereo.xml)
-            findViewById(R.id.imgRecord).setVisibility(View.GONE);
+            imgRecord.setVisibility(View.GONE);
             findViewById(R.id.imgScreenshot).setVisibility(View.GONE);
         }
 
@@ -400,10 +409,10 @@ public class GabrielClientActivity extends AppCompatActivity implements
                         Toast.LENGTH_SHORT).show();
 
                 if (Const.STEREO_ENABLED) {
-//                    if (stereoView1.getVisibility() == View.INVISIBLE) {
-//                        stereoView1.setVisibility(View.VISIBLE);
-//                        stereoView2.setVisibility(View.VISIBLE);
-//                    }
+                    if (stereoView1.getVisibility() == View.INVISIBLE) {
+                        stereoView1.setVisibility(View.VISIBLE);
+                        stereoView2.setVisibility(View.VISIBLE);
+                    }
                 } else {
                     if (Const.DISPLAY_REFERENCE) {
                         iconView.setVisibility(View.VISIBLE);
@@ -644,13 +653,13 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
         this.setupComm();
         if (Const.STEREO_ENABLED) {
-            // TODO set preview
+            preview = findViewById(R.id.camera_preview1);
         } else {
             preview = findViewById(R.id.camera_preview);
         }
 
         yuvToNv21Converter = new YuvToNv21Converter();
-        yuvToRgbConverter = new YuvToJpegConverter(this);
+        yuvToJpegConverter = new YuvToJpegConverter(this);
 
         cameraCapture = new CameraCapture(
                 this, analyzer, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT,
@@ -680,16 +689,16 @@ public class GabrielClientActivity extends AppCompatActivity implements
             localRunnerBusy = true;
             int[] output = localRunner.infer(rgbImage);
             // send results back to UI as Gabriel would
-            if (localRunnerBitmapCache == null){
-                localRunnerBitmapCache = Bitmap.createBitmap(
+            if (bitmapCache == null){
+                bitmapCache = Bitmap.createBitmap(
                         image.getWidth(),
                         image.getHeight(),
                         Bitmap.Config.ARGB_8888
                 );
             }
-            localRunnerBitmapCache.setPixels(output, 0,
-                    image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-            imgView.post(() -> imgView.setImageBitmap(localRunnerBitmapCache));
+            bitmapCache.setPixels(
+                    output, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+            imgView.post(() -> imgView.setImageBitmap(bitmapCache));
             localRunnerBusy = false;
         });
     }
@@ -700,7 +709,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
             return InputFrame.newBuilder()
                     .setPayloadType(PayloadType.IMAGE)
-                    .addPayloads(yuvToRgbConverter.convertToJpeg(image))
+                    .addPayloads(yuvToJpegConverter.convertToJpeg(image))
                     .setExtras(GabrielClientActivity.pack(extras))
                     .build();
         });
@@ -718,17 +727,22 @@ public class GabrielClientActivity extends AppCompatActivity implements
                 } else if (GabrielClientActivity.this.openrtistComm != null) {
                     sendFrameCloudlet(image);
                 }
-                runOnUiThread(() -> imgView.setVisibility(View.VISIBLE));
+                if (Const.STEREO_ENABLED) {
+                    runOnUiThread(() -> {
+                        stereoView1.setVisibility(View.VISIBLE);
+                        stereoView2.setVisibility(View.VISIBLE);
+                    });
+                } else {
+                    runOnUiThread(() -> imgView.setVisibility(View.VISIBLE));
+                }
             } else if (!cleared) {
                 Log.v(LOG_TAG, "Display Cleared");
 
                 if (Const.STEREO_ENABLED) {
-                    byte[] bytes = yuvToRgbConverter.convertToJpeg(image).toByteArray();
-                    final Bitmap camView = BitmapFactory.decodeByteArray(
-                            bytes, 0, bytes.length);
-//                    stereoView1.setVisibility(View.INVISIBLE);
-//                    stereoView2.setVisibility(View.INVISIBLE);
-                    runOnUiThread(() -> camView2.setImageBitmap(camView));
+                    runOnUiThread(() -> {
+                        stereoView1.setVisibility(View.INVISIBLE);
+                        stereoView2.setVisibility(View.INVISIBLE);
+                    });
                 } else {
                     runOnUiThread(() -> imgView.setVisibility(View.INVISIBLE));
                 }
@@ -748,8 +762,12 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
     void setupComm() {
         int port = getPort();
+
+        Consumer<ByteString> imageViewUpdater = Const.STEREO_ENABLED
+                ? new StereoViewUpdater(stereoView1, stereoView2)
+                : new ImageViewUpdater(this.imgView);
         this.openrtistComm = OpenrtistComm.createOpenrtistComm(
-                this.serverIP, port, this, this.iconView, this.imgView, Const.TOKEN_LIMIT);
+                this.serverIP, port, this, this.iconView, imageViewUpdater, Const.TOKEN_LIMIT);
     }
 
     // Used by measurement build variant
@@ -792,8 +810,8 @@ public class GabrielClientActivity extends AppCompatActivity implements
             }
 
             if (Const.STEREO_ENABLED) {
-//                stereoView1.setVisibility(View.INVISIBLE);
-//                stereoView2.setVisibility(View.INVISIBLE);
+                stereoView1.setVisibility(View.INVISIBLE);
+                stereoView2.setVisibility(View.INVISIBLE);
             } else {
                 imgView.setVisibility(View.INVISIBLE);
                 if (Const.DISPLAY_REFERENCE) {
@@ -804,10 +822,10 @@ public class GabrielClientActivity extends AppCompatActivity implements
             styleType = styleIds.get(position);
 
             if (Const.STEREO_ENABLED) {
-//                if (stereoView1.getVisibility() == View.INVISIBLE) {
-//                    stereoView1.setVisibility(View.VISIBLE);
-//                    stereoView2.setVisibility(View.VISIBLE);
-//                }
+                if (stereoView1.getVisibility() == View.INVISIBLE) {
+                    stereoView1.setVisibility(View.VISIBLE);
+                    stereoView2.setVisibility(View.VISIBLE);
+                }
             } else {
                 if (Const.DISPLAY_REFERENCE) {
                     iconView.setVisibility(View.VISIBLE);
