@@ -130,10 +130,11 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support.constraint:constraint-layout:2.0.2'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'edu.cmu.cs.gabriel:client:2.2.1'
+    implementation 'edu.cmu.cs.gabriel:client:2.2.3'
+    implementation 'edu.cmu.cs.gabriel:camera:2.2.3'
 
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
@@ -149,9 +150,7 @@ dependencies {
     standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-
-    // This must be 2.14 to have the correct version of okhttp
-    measurementDBImplementation 'org.influxdb:influxdb-java:2.14'
+    measurementDBImplementation 'org.influxdb:influxdb-java:2.19'
     
     arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     arcoreImplementation 'com.google.ar:core:1.20.0'

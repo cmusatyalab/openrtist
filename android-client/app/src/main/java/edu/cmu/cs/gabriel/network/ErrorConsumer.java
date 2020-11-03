@@ -1,26 +1,17 @@
 package edu.cmu.cs.gabriel.network;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
-
 import java.util.function.Consumer;
 
+import edu.cmu.cs.gabriel.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.results.ErrorType;
 import edu.cmu.cs.openrtist.R;
 
 public class ErrorConsumer implements Consumer<ErrorType> {
-    private static final String TAG = "ResultConsumer";
-
-    private final Handler returnMsgHandler;
-    private final Activity activity;
+    private final GabrielClientActivity gabrielClientActivity;
     private boolean shownError;
 
-    public ErrorConsumer(Handler returnMsgHandler, Activity activity) {
-        this.returnMsgHandler = returnMsgHandler;
-        this.activity = activity;
+    public ErrorConsumer(GabrielClientActivity gabrielClientActivity) {
+        this.gabrielClientActivity = gabrielClientActivity;
         this.shownError = false;
     }
 
@@ -49,12 +40,7 @@ public class ErrorConsumer implements Consumer<ErrorType> {
         }
 
         this.shownError = true;
-        Log.i(TAG, "Disconnected");
-        Message msg = Message.obtain();
-        msg.what = NetworkProtocol.NETWORK_RET_FAILED;
-        Bundle data = new Bundle();
-        data.putString("message", this.activity.getResources().getString(stringId));
-        msg.setData(data);
-        this.returnMsgHandler.sendMessage(msg);
+        this.gabrielClientActivity.showNetworkErrorMessage(
+                this.gabrielClientActivity.getResources().getString(stringId));
     }
 }

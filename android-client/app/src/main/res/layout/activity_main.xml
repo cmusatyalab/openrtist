@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TextureView
+            <androidx.camera.view.PreviewView
                 android:id="@+id/camera_preview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
@@ -61,7 +61,7 @@
                 android:hapticFeedbackEnabled="true"
                 android:rotation="0"
                 android:src="@drawable/ic_baseline_videocam_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="visible" />
 
             <ImageView
@@ -76,7 +76,7 @@
                 android:hapticFeedbackEnabled="true"
                 android:rotation="0"
                 android:src="@drawable/ic_play"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="visible" />
 
             <ImageView
@@ -88,7 +88,7 @@
                 android:focusable="false"
                 android:hapticFeedbackEnabled="true"
                 android:src="@drawable/ic_baseline_photo_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="visible" />
 
             <ImageView
@@ -101,7 +101,7 @@
                 android:focusable="false"
                 android:hapticFeedbackEnabled="true"
                 android:src="@drawable/ic_baseline_camera_front_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="gone" />
 
             <ImageView
@@ -115,17 +115,17 @@
                 android:focusable="false"
                 android:hapticFeedbackEnabled="true"
                 android:src="@drawable/ic_baseline_rotate_left_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="gone" />
 
             <TextView
                 android:id="@+id/fpsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="top|right"
+                android:layout_gravity="top|end"
                 android:background="@color/navigationBarColor"
                 android:text="FPS: 0"
-                android:textAlignment="center"
+                android:gravity="center_horizontal"
                 android:textColor="@color/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold"
