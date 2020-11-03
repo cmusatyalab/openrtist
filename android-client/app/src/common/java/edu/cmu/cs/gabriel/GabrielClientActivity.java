@@ -66,7 +66,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -113,19 +112,20 @@ public class GabrielClientActivity extends AppCompatActivity implements
     private String mOutputPath = null;
 
     // views
-    private ImageView imgView = null;
-    private ImageView camView2 = null;
-    private ImageView iconView = null;
-    private Handler iterationHandler = null;
-    private Handler fpsHandler = null;
-    private TextView fpsLabel = null;
+    private ImageView imgView;
+    private ImageView camView2;
+    private ImageView iconView;
+    private Handler iterationHandler;
+    private Handler fpsHandler;
+    private TextView fpsLabel;
+    private PreviewView preview;
+
     private boolean cleared = false;
 
     private int framesProcessed = 0;
     private YuvToNv21Converter yuvToNv21Converter;
     private YuvToJpegConverter yuvToRgbConverter;
     private CameraCapture cameraCapture;
-    private PreviewView preview;
 
     private final List<String> styleDescriptions = new ArrayList<>(
             Collections.singletonList("Clear Display"));
@@ -157,17 +157,10 @@ public class GabrielClientActivity extends AppCompatActivity implements
         Const.STYLES_RETRIEVED = false;
         Const.ITERATION_STARTED = false;
 
-        if(Const.STEREO_ENABLED) {
+        if (Const.STEREO_ENABLED) {
             setContentView(R.layout.activity_stereo);
         } else {
             setContentView(R.layout.activity_main);
-            // Spinner element
-            Spinner spinner = (Spinner) findViewById(R.id.spinner);
-            ArrayAdapter<String> spinner_adapter = new ArrayAdapter<>(
-                    this, R.layout.mylist, styleDescriptions);
-            // Spinner click listener
-            spinner.setOnItemSelectedListener(this);
-            spinner.setAdapter(spinner_adapter);
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED+
@@ -210,57 +203,66 @@ public class GabrielClientActivity extends AppCompatActivity implements
                     storeScreenshot(b,getOutputMediaFile(MEDIA_TYPE_IMAGE).getPath());
                     screenshotButton.performHapticFeedback(
                             android.view.HapticFeedbackConstants.LONG_PRESS);
-
                     }
-
             });
-        } else if(!Const.STEREO_ENABLED){
+        } else if (!Const.STEREO_ENABLED){
             //this view doesn't exist when stereo is enabled (activity_stereo.xml)
             findViewById(R.id.imgRecord).setVisibility(View.GONE);
             findViewById(R.id.imgScreenshot).setVisibility(View.GONE);
         }
 
-        if (Const.ITERATE_STYLES) {
-            if (!Const.STEREO_ENABLED) {
-                final ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
-                playpauseButton.setOnClickListener(new View.OnClickListener() {
+        if (Const.STEREO_ENABLED) {
+            if (Const.ITERATE_STYLES) {
+                // artificially start iteration since we don't display
+                // any buttons in stereo view
+                Const.ITERATION_STARTED = true;
+
+                iterationHandler = new Handler();
+                iterationHandler.postDelayed(styleIterator, 100);
+            }
+        } else {
+            Spinner spinner = findViewById(R.id.spinner);
+            ImageView playPauseButton = findViewById(R.id.imgPlayPause);
+            ImageView camButton = findViewById(R.id.imgSwitchCam);
+
+            if (Const.ITERATE_STYLES) {
+                playPauseButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (!Const.ITERATION_STARTED) {
                             Const.ITERATION_STARTED = true;
-                            playpauseButton.setImageResource(R.drawable.ic_pause);
+                            playPauseButton.setImageResource(R.drawable.ic_pause);
 
-                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_started),
+                            Toast.makeText(
+                                    playPauseButton.getContext(),
+                                    getString(R.string.iteration_started),
                                     Toast.LENGTH_LONG).show();
                         } else {
                             Const.ITERATION_STARTED = false;
-                            playpauseButton.setImageResource(R.drawable.ic_play);
-                            Toast.makeText(playpauseButton.getContext(), getString(R.string.iteration_stopped),
+                            playPauseButton.setImageResource(R.drawable.ic_play);
+                            Toast.makeText(
+                                    playPauseButton.getContext(),
+                                    getString(R.string.iteration_stopped),
                                     Toast.LENGTH_LONG).show();
                         }
-                        playpauseButton.performHapticFeedback(
+                        playPauseButton.performHapticFeedback(
                                 android.view.HapticFeedbackConstants.LONG_PRESS);
-
                     }
-
                 });
 
-                findViewById(R.id.spinner).setVisibility(View.GONE);
+                spinner.setVisibility(View.GONE);
+                iterationHandler = new Handler();
+                iterationHandler.postDelayed(styleIterator, 100);
             } else {
-                //artificially start iteration since we don't display
-                //any buttons in stereo view
-                Const.ITERATION_STARTED = true;
+                playPauseButton.setVisibility(View.GONE);
+
+                ArrayAdapter<String> spinner_adapter = new ArrayAdapter<>(
+                        this, R.layout.mylist, styleDescriptions);
+                // Spinner click listener
+                spinner.setOnItemSelectedListener(this);
+                spinner.setAdapter(spinner_adapter);
             }
 
-            iterationHandler = new Handler();
-            iterationHandler.postDelayed(styleIterator, 100);
-        } else {
-            ImageView playpauseButton = (ImageView) findViewById(R.id.imgPlayPause);
-            playpauseButton.setVisibility(View.GONE);
-        }
-
-        if (!Const.STEREO_ENABLED) {
-            final ImageView camButton = (ImageView) findViewById(R.id.imgSwitchCam);
             camButton.setVisibility(View.VISIBLE);
             camButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -756,7 +758,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
     }
 
     public void showNetworkErrorMessage(String message) {
-        //suppress this error when screen recording as we have to temporarily leave this
+        // suppress this error when screen recording as we have to temporarily leave this
         // activity causing a network disruption
         if (!recordingInitiated) {
             this.runOnUiThread(() -> {
@@ -779,7 +781,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
     // **************** onItemSelected ***********************
 
-    //Performing action onItemSelected and onNothing selected
+    // Performing action onItemSelected and onNothing selected
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int position,long id) {
         if (styleIds.get(position).equals("none")) {
