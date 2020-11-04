@@ -7,7 +7,6 @@ BLACK_VERSION = 19.10b0
 PYQT5_VERSION = 5.13.1
 TORCH_VERSION = 1.3
 TORCHVISION_VERSION = 0.4.2
-PROTOC_DIST = https://github.com/protocolbuffers/protobuf/releases/download/v3.12.3/protoc-3.12.3-linux-x86_64.zip
 
 
 LOCAL_EXECUTION_MODELS = \
@@ -31,8 +30,7 @@ LOCAL_EXEC_ASSET_DIR = android-client/app/src/main/assets
 
 GENERATED_FILES = \
 	$(LOCAL_EXECUTION_MODELS:%.model=$(LOCAL_EXEC_ASSET_DIR)/%.pt) \
-	python-client/design.py \
-	protocol/openrtist_pb2.py
+	python-client/design.py
 
 REQUIREMENTS = \
 	'PyQT5==$(PYQT5_VERSION)' \
@@ -65,16 +63,11 @@ distclean: clean
 .venv:
 	python3 -m venv .venv
 	.venv/bin/pip install $(REQUIREMENTS)
-	# install protoc
 	mkdir -p .venv/tmp
-	wget -O .venv/tmp/protobuf.zip $(PROTOC_DIST)
-	unzip -o .venv/tmp/protobuf.zip -d .venv bin/protoc
 	touch .venv
 
 %.py: %.ui .venv
 	.venv/bin/pyuic5 -x $< -o $@
-%_pb2.py: %.proto .venv
-	cd $(dir $<) && $(PWD)/.venv/bin/protoc --python_out=. $(notdir $<)
 
 $(LOCAL_EXEC_ASSET_DIR)/%.pt: models/%.model .venv
 	mkdir -p $(LOCAL_EXEC_ASSET_DIR)

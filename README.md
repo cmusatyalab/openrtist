@@ -355,6 +355,13 @@ An additional script can convert from the generated PyTorch model to OpenVINO:
 python model-app/openvino_convert.py <path_to_pytorch_model>
 ```
 
+## Protocol
+
+The Extras proto is defined in `android-client/app/src/main/proto/openrtist.proto`.
+
+If you make changes to this proto, it will be recompiled for both Python and Android 
+the next time you start the Android client from Android Studio.
+
 ## Credits
 
 Please see the [CREDITS](CREDITS.md) file for a list of acknowledgments.

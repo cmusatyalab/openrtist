@@ -159,25 +159,25 @@ _EXTRAS.fields_by_name['depth_map'].message_type = _EXTRAS_BYTESVALUE
 DESCRIPTOR.message_types_by_name['Extras'] = _EXTRAS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-Extras = _reflection.GeneratedProtocolMessageType('Extras', (_message.Message,), dict(
+Extras = _reflection.GeneratedProtocolMessageType('Extras', (_message.Message,), {
 
-  BytesValue = _reflection.GeneratedProtocolMessageType('BytesValue', (_message.Message,), dict(
-    DESCRIPTOR = _EXTRAS_BYTESVALUE,
-    __module__ = 'openrtist_pb2'
+  'BytesValue' : _reflection.GeneratedProtocolMessageType('BytesValue', (_message.Message,), {
+    'DESCRIPTOR' : _EXTRAS_BYTESVALUE,
+    '__module__' : 'openrtist_pb2'
     # @@protoc_insertion_point(class_scope:openrtist.Extras.BytesValue)
-    ))
+    })
   ,
 
-  StyleListEntry = _reflection.GeneratedProtocolMessageType('StyleListEntry', (_message.Message,), dict(
-    DESCRIPTOR = _EXTRAS_STYLELISTENTRY,
-    __module__ = 'openrtist_pb2'
+  'StyleListEntry' : _reflection.GeneratedProtocolMessageType('StyleListEntry', (_message.Message,), {
+    'DESCRIPTOR' : _EXTRAS_STYLELISTENTRY,
+    '__module__' : 'openrtist_pb2'
     # @@protoc_insertion_point(class_scope:openrtist.Extras.StyleListEntry)
-    ))
+    })
   ,
-  DESCRIPTOR = _EXTRAS,
-  __module__ = 'openrtist_pb2'
+  'DESCRIPTOR' : _EXTRAS,
+  '__module__' : 'openrtist_pb2'
   # @@protoc_insertion_point(class_scope:openrtist.Extras)
-  ))
+  })
 _sym_db.RegisterMessage(Extras)
 _sym_db.RegisterMessage(Extras.BytesValue)
 _sym_db.RegisterMessage(Extras.StyleListEntry)

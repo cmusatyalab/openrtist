@@ -21,12 +21,6 @@ android {
     }
 
     sourceSets {
-        main {
-            proto {
-                // In addition to the default 'src/main/proto'
-                srcDir '../protos'
-            }
-        }
         standard {
             java.srcDirs('src/common/java')
         }
@@ -101,6 +95,7 @@ android {
         }
     }
 
+    // We can't use protoc:3.8.0 because MobileEdgeX uses an old version of protobuf
     protobuf {
         protoc {
             // You still need protoc like in the non-Android case
@@ -145,6 +140,7 @@ dependencies {
         mobilEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
         mobilEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
         mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:2.0.1'
+        mobilEdgeXImplementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     }
 
     standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
