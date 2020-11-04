@@ -34,7 +34,7 @@ import numpy as np
 import logging
 from gabriel_server import cognitive_engine
 from gabriel_protocol import gabriel_pb2
-from openrtist_protocol import openrtist_pb2
+import openrtist_pb2
 
 logger = logging.getLogger(__name__)
 
