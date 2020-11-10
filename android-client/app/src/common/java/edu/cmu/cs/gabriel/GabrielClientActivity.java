@@ -667,7 +667,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
     }
 
     // Based on
-    // https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/compiler/java/java_message.cc#L1387
+    // https://github.com/protocolbuffers/protobuf/blob/2f6a7546e4539499bc08abc6900dc929782f5dcd/src/google/protobuf/compiler/java/java_message.cc#L1374
     private static Any pack(Extras extras) {
         return Any.newBuilder()
                 .setTypeUrl("type.googleapis.com/openrtist.Extras")
