@@ -1,0 +1,154 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
+
+def grpcVersion = '1.20.0'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def artifactory_user = properties.getProperty("artifactory_user")
+def artifactory_password = properties.getProperty("artifactory_password")
+
+repositories {
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
+android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        standard {
+            java.srcDirs('src/common/java')
+        }
+        measurement {
+            java.srcDirs('src/common/java')
+        }
+
+        if (artifactory_user != null) {
+            mobilEdgeX {
+                java.srcDirs('src/common/java')
+            }
+        }
+
+        measurementDB {
+            java.srcDirs('src/common/java')
+        }
+    }
+
+    compileSdkVersion 29
+
+    defaultConfig {
+        applicationId "edu.cmu.cs.openrtist"
+        targetSdkVersion 29
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+    flavorDimensions "version"
+    productFlavors {
+        standard {
+            isDefault = true
+            minSdkVersion 24
+        }
+        measurement {
+            minSdkVersion 24
+        }
+
+        if (artifactory_user != null) {
+            mobilEdgeX {
+                apply plugin: 'com.jfrog.artifactory'
+
+                minSdkVersion 24
+                repositories {
+                    maven {
+                        credentials {
+                            // Create these variables in local.properties if you don't have them.
+                            username artifactory_user
+                            password artifactory_password
+                        }
+                        url = "https://artifactory.mobiledgex.net/maven-releases/"
+                    }
+                }
+            }
+        }
+
+        arcore {
+            dimension 'version'
+            applicationIdSuffix 'ar'
+            versionNameSuffix '-ar'
+            minSdkVersion 24
+            multiDexEnabled false
+        }
+
+        measurementDB {
+            minSdkVersion 26
+        }
+    }
+
+    // We can't use protoc:3.8.0 because MobileEdgeX uses an old version of protobuf
+    protobuf {
+        protoc {
+            // You still need protoc like in the non-Android case
+            artifact = 'com.google.protobuf:protoc:3.7.0'
+        }
+        plugins {
+            javalite {
+                // The codegen for lite comes as a separate artifact
+                artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+            }
+        }
+        generateProtoTasks {
+            all().each { task ->
+                task.builtins {
+                    // In most cases you don't need the full Java output
+                    // if you use the lite output.
+                    remove java
+                }
+                task.plugins {
+                    javalite {
+                        outputSubDir = 'java'
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'edu.cmu.cs.gabriel:client:2.2.3'
+    implementation 'edu.cmu.cs.gabriel:camera:2.2.3'
+
+    implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
+    implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
+
+    if (artifactory_user != null) {
+        mobilEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
+        mobilEdgeXImplementation "io.grpc:grpc-okhttp:${grpcVersion}"
+        mobilEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
+        mobilEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
+        mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:2.0.1'
+        mobilEdgeXImplementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    }
+
+    standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    measurementDBImplementation 'org.influxdb:influxdb-java:2.19'
+    
+    arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    arcoreImplementation 'com.google.ar:core:1.20.0'
+    arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
+}

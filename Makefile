@@ -6,7 +6,7 @@
 BLACK_VERSION = 19.10b0
 PYQT5_VERSION = 5.13.1
 TORCH_VERSION = 1.3
-PROTOC_DIST = https://github.com/google/protobuf/releases/download/v3.0.0/protoc-3.0.0-linux-x86_64.zip
+TORCHVISION_VERSION = 0.4.2
 
 
 LOCAL_EXECUTION_MODELS = \
@@ -26,19 +26,18 @@ LOCAL_EXECUTION_MODELS = \
 	udnie.model \
 	weeping_woman.model
 
-LOCAL_EXEC_ASSET_DIR = gabriel-client-openrtist-android/app/src/main/assets
+LOCAL_EXEC_ASSET_DIR = android-client/app/src/main/assets
 
 GENERATED_FILES = \
 	$(LOCAL_EXECUTION_MODELS:%.model=$(LOCAL_EXEC_ASSET_DIR)/%.pt) \
-	gabriel-client-openrtist-python/design.py \
-	protocol/openrtist_pb2.py
+	python-client/design.py
 
 REQUIREMENTS = \
 	'PyQT5==$(PYQT5_VERSION)' \
 	'opencv-python' \
 	'fire' \
 	'torch==$(TORCH_VERSION)' \
-	'torchvision' \
+	'torchvision==$(TORCHVISION_VERSION)' \
 	'black==$(BLACK_VERSION)' \
 	flake8 \
 	flake8-bugbear
@@ -64,19 +63,13 @@ distclean: clean
 .venv:
 	python3 -m venv .venv
 	.venv/bin/pip install $(REQUIREMENTS)
-	# install protoc
 	mkdir -p .venv/tmp
-	wget -O .venv/tmp/protobuf.zip $(PROTOC_DIST)
-	unzip -o .venv/tmp/protobuf.zip -d .venv bin/protoc
 	touch .venv
 
 %.py: %.ui .venv
 	.venv/bin/pyuic5 -x $< -o $@
 
-%_pb2.py: %.proto .venv
-	cd $(dir $<) && $(PWD)/.venv/bin/protoc --python_out=. $(notdir $<)
-
-$(LOCAL_EXEC_ASSET_DIR)/%.pt: models_1p0/%.model .venv
+$(LOCAL_EXEC_ASSET_DIR)/%.pt: models/%.model .venv
 	mkdir -p $(LOCAL_EXEC_ASSET_DIR)
 	.venv/bin/python scripts/freeze_model.py freeze --weight-file-path='$<' --output-file-path='$@'
 

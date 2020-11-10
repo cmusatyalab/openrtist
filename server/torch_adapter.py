@@ -56,10 +56,7 @@ class TorchAdapter(OpenrtistAdapter):
 
         self.style_model = TransformerNet()
 
-        if LooseVersion(torch.__version__) >= LooseVersion("1.0"):
-            models_dir = "models_1p0"
-        else:
-            models_dir = "models"
+        models_dir = "models"
         self.path = os.path.join(os.getcwd(), "..", models_dir)
         # self._update_model_style(default_style)
 

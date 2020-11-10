@@ -34,13 +34,13 @@ import numpy as np
 import logging
 from gabriel_server import cognitive_engine
 from gabriel_protocol import gabriel_pb2
-from openrtist_protocol import openrtist_pb2
+import openrtist_pb2
 
 logger = logging.getLogger(__name__)
 
 
 class OpenrtistEngine(cognitive_engine.Engine):
-    ENGINE_NAME = "openrtist"
+    SOURCE_NAME = "openrtist"
 
     def __init__(self, compression_params, adapter):
         self.compression_params = compression_params
@@ -58,27 +58,70 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         logger.info("FINISHED INITIALISATION")
 
-    def handle(self, from_client):
-        if from_client.payload_type != gabriel_pb2.PayloadType.IMAGE:
-            return cognitive_engine.wrong_input_format_error(from_client.frame_id)
+    def handle(self, input_frame):
+        if input_frame.payload_type != gabriel_pb2.PayloadType.IMAGE:
+            status = gabriel_pb2.ResultWrapper.Status.WRONG_INPUT_FORMAT
+            return cognitive_engine.create_result_wrapper(status)
 
-        engine_fields = cognitive_engine.unpack_engine_fields(
-            openrtist_pb2.EngineFields, from_client
-        )
+        extras = cognitive_engine.unpack_extras(openrtist_pb2.Extras, input_frame)
 
         new_style = False
         send_style_list = False
-        if engine_fields.style == "?":
+        if extras.style == "?":
             new_style = True
             send_style_list = True
-
-        elif engine_fields.style != self.adapter.get_style():
-            self.adapter.set_style(engine_fields.style)
-            logger.info("New Style: %s", engine_fields.style)
+        elif extras.style != self.adapter.get_style():
+            self.adapter.set_style(extras.style)
+            logger.info("New Style: %s", extras.style)
             new_style = True
 
         style = self.adapter.get_style()
-        image = self.process_image(from_client.payload)
+
+        # Preprocessing steps used by both engines
+        np_data = np.fromstring(input_frame.payloads[0], dtype=np.uint8)
+        orig_img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
+        orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
+
+        image = self.process_image(orig_img)
+
+
+
+        image = image.astype("uint8")
+        if extras.HasField("depth_map"):
+            # protobuf contains depth_map
+            depth_map = extras.depth_map.value
+            # get depth map (bytes) and perform depth thresholding to create foreground mask with 3 channels
+            depth_threshold = extras.depth_threshold
+
+            # data type conversion from bytes to a scaled-out 2d numpy array (480*640)
+            np_depth_1d = np.frombuffer(depth_map, dtype=np.uint16)
+            np_depth_2d = np.reshape(np_depth_1d, (-1, 160))
+
+            # threshold on the distance
+            mask_fg = cv2.inRange(np_depth_2d, 0, depth_threshold)
+
+            # resize to match the image
+            orig_h, orig_w, _ = orig_img.shape
+            mask_fg = cv2.resize(
+                mask_fg, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST
+            )
+
+            # Apply morphology to the thresholded image to remove extraneous white regions and save a mask
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_OPEN, kernel)
+            mask_fg = cv2.morphologyEx(mask_fg, cv2.MORPH_CLOSE, kernel)
+
+            fg = cv2.bitwise_and(orig_img, orig_img, mask=mask_fg)
+
+            # get background mask by inversion
+            mask_bg = cv2.bitwise_not(mask_fg)
+
+            # get background from transformed image
+            bg = cv2.bitwise_and(image, image, mask=mask_bg)
+
+            # stitch transformed background and original foreground
+            image = cv2.bitwise_or(fg, bg)
+
         image = self._apply_watermark(image)
 
         _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
@@ -86,34 +129,26 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         result = gabriel_pb2.ResultWrapper.Result()
         result.payload_type = gabriel_pb2.PayloadType.IMAGE
-        result.engine_name = self.ENGINE_NAME
         result.payload = img_data
 
-        engine_fields = openrtist_pb2.EngineFields()
-        engine_fields.style = style
+        extras = openrtist_pb2.Extras()
+        extras.style = style
 
         if new_style:
-            engine_fields.style_image.value = self.adapter.get_style_image()
+            extras.style_image.value = self.adapter.get_style_image()
         if send_style_list:
             for k, v in self.adapter.get_all_styles().items():
-                engine_fields.style_list[k] = v
+                extras.style_list[k] = v
 
-        result_wrapper = gabriel_pb2.ResultWrapper()
-        result_wrapper.frame_id = from_client.frame_id
-        result_wrapper.status = gabriel_pb2.ResultWrapper.Status.SUCCESS
+        status = gabriel_pb2.ResultWrapper.Status.SUCCESS
+        result_wrapper = cognitive_engine.create_result_wrapper(status)
         result_wrapper.results.append(result)
-        result_wrapper.engine_fields.Pack(engine_fields)
+        result_wrapper.extras.Pack(extras)
 
         return result_wrapper
 
     def process_image(self, image):
-
-        # Preprocessing steps used by both engines
-        np_data = np.fromstring(image, dtype=np.uint8)
-        img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        preprocessed = self.adapter.preprocessing(img)
+        preprocessed = self.adapter.preprocessing(image)
         post_inference = self.inference(preprocessed)
         img_out = self.adapter.postprocessing(post_inference)
         return img_out
@@ -128,7 +163,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         img_mrk[:, :, 1] = (1 - self.alpha) * img_mrk[:, :, 1] + self.alpha * self.mrk
         img_mrk[:, :, 2] = (1 - self.alpha) * img_mrk[:, :, 2] + self.alpha * self.mrk
         image[-30:, -120:] = img_mrk
-        img_out = image.astype("uint8")
-        img_out = cv2.cvtColor(img_out, cv2.COLOR_RGB2BGR)
+        # img_out = image.astype("uint8")
+        img_out = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
         return img_out

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="edu.cmu.cs.openrtist">
+
+    <application>
+        <activity
+            android:name=".SettingsActivity"
+            android:parentActivityName=".MeasurementServerListActivity"
+            tools:replace="android:parentActivityName">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="edu.cmu.cs.openrtist.MeasurementServerListActivity"
+                tools:replace="android:value" />
+        </activity>
+        <activity
+            android:name=".MeasurementServerListActivity"
+            android:label="@string/title_activity_main"
+            android:screenOrientation="sensor"
+            android:theme="@style/MyGabrielMaterialTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="edu.cmu.cs.gabriel.MeasurementClientActivity"
+            android:label="@string/title_activity_main"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+            <!-- Enable this intent-filter for regular Android Application -->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+
+
+            <!-- Enable below for Google Glass -->
+            <intent-filter>
+                <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
+            </intent-filter>
+
+            <meta-data
+                android:name="com.google.android.glass.VoiceTrigger"
+                android:resource="@xml/gabriel_start" />
+        </activity>
+    </application>
+</manifest>
