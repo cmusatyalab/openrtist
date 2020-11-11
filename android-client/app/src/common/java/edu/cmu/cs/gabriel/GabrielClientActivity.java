@@ -76,8 +76,8 @@ import java.util.function.Consumer;
 
 import edu.cmu.cs.gabriel.camera.CameraCapture;
 import edu.cmu.cs.gabriel.camera.ImageViewUpdater;
-import edu.cmu.cs.gabriel.camera.YuvToJpegConverter;
-import edu.cmu.cs.gabriel.camera.YuvToNv21Converter;
+import edu.cmu.cs.gabriel.camera.YuvToNV21Converter;
+import edu.cmu.cs.gabriel.camera.YuvToJPEGConverter;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
 import edu.cmu.cs.gabriel.network.StereoViewUpdater;
 import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
@@ -128,8 +128,8 @@ public class GabrielClientActivity extends AppCompatActivity implements
     private boolean cleared = false;
 
     private int framesProcessed = 0;
-    private YuvToNv21Converter yuvToNv21Converter;
-    private YuvToJpegConverter yuvToJpegConverter;
+    private YuvToNV21Converter yuvToNV21Converter;
+    private YuvToJPEGConverter yuvToJPEGConverter;
     private CameraCapture cameraCapture;
 
     private final List<String> styleDescriptions = new ArrayList<>(
@@ -658,8 +658,8 @@ public class GabrielClientActivity extends AppCompatActivity implements
             preview = findViewById(R.id.camera_preview);
         }
 
-        yuvToNv21Converter = new YuvToNv21Converter();
-        yuvToJpegConverter = new YuvToJpegConverter(this);
+        yuvToNV21Converter = new YuvToNV21Converter();
+        yuvToJPEGConverter = new YuvToJPEGConverter(this);
 
         cameraCapture = new CameraCapture(
                 this, analyzer, Const.IMAGE_WIDTH, Const.IMAGE_HEIGHT,
@@ -679,7 +679,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
         long st = SystemClock.elapsedRealtime();
         final float[] rgbImage = Utils.convertYuvToRgb(
                 rs,
-                yuvToNv21Converter.convertToBuffer(image).toByteArray(),
+                yuvToNV21Converter.convert(image).toByteArray(),
                 image.getWidth(),
                 image.getHeight()
         );
@@ -709,7 +709,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
 
             return InputFrame.newBuilder()
                     .setPayloadType(PayloadType.IMAGE)
-                    .addPayloads(yuvToJpegConverter.convertToJpeg(image))
+                    .addPayloads(yuvToJPEGConverter.convert(image))
                     .setExtras(GabrielClientActivity.pack(extras))
                     .build();
         });
