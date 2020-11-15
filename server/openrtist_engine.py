@@ -78,7 +78,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         style = self.adapter.get_style()
 
         # Preprocessing steps used by both engines
-        np_data = np.fromstring(input_frame.payloads[0], dtype=np.uint8)
+        np_data = np.frombuffer(input_frame.payloads[0], dtype=np.uint8)
         orig_img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
         orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
 

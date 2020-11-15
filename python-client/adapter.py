@@ -77,7 +77,7 @@ class Adapter:
                     logger.debug("got empty style image")
                 else:
                     self.style_image = cv2.imdecode(
-                        np.fromstring(
+                        np.frombuffer(
                             extras.style_image.value, dtype=np.uint8),
                         cv2.IMREAD_COLOR,
                     )
