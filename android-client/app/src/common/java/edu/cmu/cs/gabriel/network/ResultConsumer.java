@@ -9,7 +9,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.function.Consumer;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.gabriel.GabrielClientActivity;
+import edu.cmu.cs.openrtist.GabrielClientActivity;
 import edu.cmu.cs.gabriel.camera.ImageViewUpdater;
 import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;

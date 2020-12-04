@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.gabriel.GabrielClientActivity;
+import edu.cmu.cs.openrtist.ar.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.comm.ServerComm;
 import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;

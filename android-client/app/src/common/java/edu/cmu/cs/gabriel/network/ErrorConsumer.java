@@ -2,7 +2,7 @@ package edu.cmu.cs.gabriel.network;
 
 import java.util.function.Consumer;
 
-import edu.cmu.cs.gabriel.GabrielClientActivity;
+import edu.cmu.cs.openrtist.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.results.ErrorType;
 import edu.cmu.cs.openrtist.R;
 

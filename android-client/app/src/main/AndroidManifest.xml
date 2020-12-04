@@ -47,7 +47,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="edu.cmu.cs.gabriel.GabrielClientActivity"
+            android:name=".GabrielClientActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.NoActionBar">
@@ -61,7 +61,8 @@
 
             <!-- Enable below for Google Glass -->
             <intent-filter>
-                <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
+                <action android:name="edu.cmu.cs.openrtist.GabrielClientActivity" />
+                <category android:name="android:android.intent.category.DEFAULT" />
             </intent-filter>
 
             <meta-data

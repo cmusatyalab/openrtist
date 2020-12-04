@@ -14,7 +14,7 @@ import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.gabriel.GabrielClientActivity;
+import edu.cmu.cs.openrtist.ar.GabrielClientActivity;
 import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.protocol.Protos.PayloadType;
 import edu.cmu.cs.openrtist.Protos.Extras;

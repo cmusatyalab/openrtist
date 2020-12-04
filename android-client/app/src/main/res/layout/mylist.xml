@@ -11,6 +11,6 @@
     android:padding="2dp"
     android:text="Medium Text"
     android:textAppearance="?android:attr/textAppearanceMedium"
-    android:background="@color/navigationBarColor"
+    android:background="@color/colorPrimary"
     android:textColor="@color/textColorPrimary" />
 
