@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:icon="@android:drawable/ic_menu_preferences"
+        app:key="general_category"
+        app:title="@string/pref_header_general">
+
+        <ListPreference
+            app:defaultValue="1"
+            app:entries="@array/pref_resolution_titles"
+            app:entryValues="@array/pref_resolution_values"
+            app:key="experimental_resolution"
+            app:negativeButtonText="@null"
+            app:positiveButtonText="@null"
+            app:title="@string/pref_title_resolution"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            android:summary="Blah blah"
+            app:defaultValue="None"
+            app:entries="@array/pref_token_list_titles"
+            app:entryValues="@array/pref_token_list_values"
+            app:key="experimental_token_limit"
+            app:negativeButtonText="@null"
+            app:positiveButtonText="@null"
+            app:summary="@string/token_limit_summary"
+            app:title="@string/pref_title_token_limit"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:icon="@android:drawable/ic_menu_crop"
+        app:key="ui_category"
+        app:title="@string/pref_header_ui">
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:key="general_recording"
+            app:title="@string/pref_title_recording" />
+
+        <SwitchPreferenceCompat
+            app:defaultValue="true"
+            android:key="general_show_fps"
+            android:title="@string/show_fps"  />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="general_stereoscopic"
+            android:title="@string/stereo_option" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="general_show_reference"
+            android:title="@string/reference_option" />
+
+        <ListPreference
+            android:entries="@array/pref_interval_list_titles"
+            android:entryValues="@array/pref_interval_list_values"
+            android:defaultValue="0"
+            android:key="general_iterate_delay"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/pref_title_iterate_interval"
+            app:useSimpleSummaryProvider="true" />
+
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

@@ -13,12 +13,16 @@
 # limitations under the License.
 
 from gabriel_client.opencv_adapter import OpencvAdapter
-from openrtist_protocol import openrtist_pb2
 import cv2
 import config
 import numpy as np
 import random
 import logging
+import sys
+import os
+
+sys.path.append(os.path.join('..', 'server'))
+import openrtist_pb2
 
 
 logger = logging.getLogger(__name__)
@@ -73,7 +77,7 @@ class Adapter:
                     logger.debug("got empty style image")
                 else:
                     self.style_image = cv2.imdecode(
-                        np.fromstring(
+                        np.frombuffer(
                             extras.style_image.value, dtype=np.uint8),
                         cv2.IMREAD_COLOR,
                     )

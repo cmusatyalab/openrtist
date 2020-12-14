@@ -56,7 +56,8 @@
     <string name="tokenSize">Gabriel Token Size</string>
     <string name="about_title" translatable="false">OpenRTiST: Real-Time Style Transfer</string>
     <string name="about_message" translatable="false">version: %s\nCopyright &#169; 2017-2020\nCarnegie Mellon University\nThis is a developing project.\n\nAll source code and documentation are under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html)</string>
-
+    <string name="pref_header_ui">UI</string>
+    <string name="token_limit_summary">Controls how many frames can be in flight to Gabriel server</string>
 
     <!-- Glass Launch-related strings. -->
     <string name="start_gabriel_voice_trigger" translatable="false">Gabriel Assistant</string>
@@ -99,6 +100,7 @@
     </string-array>
 
     <string name="pref_title_iterate_interval">Iterate Styles Periodically</string>
+    <string name="fps_0">FPS: 0</string>
     <string-array name="pref_interval_list_titles">
         <item>No iteration</item>
         <item>5 sec delay</item>

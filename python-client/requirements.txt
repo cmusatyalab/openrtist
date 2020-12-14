@@ -1,2 +1,2 @@
 gabriel-client==2.0.1
-PyQt5
+PyQt5==5.14.2

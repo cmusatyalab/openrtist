@@ -20,7 +20,6 @@ import android.content.Context;
 public class Const {
     public static boolean USING_FRONT_CAMERA = false;
     public static boolean FRONT_ROTATION = false;
-    public static boolean DEPTH_SUPPORTED = false;
     public static boolean STEREO_ENABLED = false;
     public static boolean DISPLAY_REFERENCE = false;
     public static boolean ITERATE_STYLES = false;
@@ -46,35 +45,27 @@ public class Const {
     public static final int PORT = 9099;
 
     // server IP
-    public static String SERVER_IP;  // Cloudlet
+    public static String SERVER_IP = "";  // Cloudlet
 
     // token size
     public static String TOKEN_LIMIT = "None";
 
     public static final String SOURCE_NAME = "openrtist";
 
-    public static void loadPref(Context c, String key, Object value) {
-        String stringValue = value.toString();
+    public static void loadPref(SharedPreferences sharedPreferences, String key) {
         Boolean b = null;
         Integer i = null;
         //update Const values so that new settings take effect
         switch(key) {
             case "general_recording":
-                Const.SHOW_RECORDER = new Boolean(value.toString());
+                Const.SHOW_RECORDER = sharedPreferences.getBoolean(key, false);
                 break;
             case "general_show_fps":
-                b = new Boolean(value.toString());
+                b = sharedPreferences.getBoolean(key, false);
                 Const.SHOW_FPS = b;
-                if(b) {
-                    SharedPreferences.Editor editor = PreferenceManager
-                            .getDefaultSharedPreferences(c)
-                            .edit();
-                    editor.putBoolean("general_stereoscopic", false);
-                    editor.commit();
-                }
                 break;
             case "experimental_resolution":
-                i = new Integer(stringValue);
+                i = new Integer(sharedPreferences.getString(key, "1"));
                 if(i == 1) {
                     Const.IMAGE_HEIGHT = 240;
                     Const.IMAGE_WIDTH = 320;
@@ -90,40 +81,32 @@ public class Const {
                 }
                 break;
             case "experimental_token_limit":
-                Const.TOKEN_LIMIT = stringValue;
+                Const.TOKEN_LIMIT = sharedPreferences.getString(key, "2");
                 break;
             case "general_stereoscopic":
-                b = new Boolean(value.toString());
+                b = sharedPreferences.getBoolean(key, false);
                 Const.STEREO_ENABLED = b;
                 if(b) {
                     Const.SHOW_FPS = false;
                     Const.SHOW_RECORDER = false;
                     Const.DISPLAY_REFERENCE = false;
-                    SharedPreferences.Editor editor = PreferenceManager
-                            .getDefaultSharedPreferences(c)
-                            .edit();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putBoolean("general_show_reference", false);
                     editor.putBoolean("general_front_camera", false);
                     editor.putBoolean("general_recording", false);
                     editor.putBoolean("general_show_fps", false);
                     editor.putString("general_iterate_delay", "2");
                     editor.commit();
+
                 }
                 break;
             case "general_show_reference":
-                b = new Boolean(value.toString());
+                b = sharedPreferences.getBoolean(key, true);
                 Const.DISPLAY_REFERENCE = b;
-                if(b) {
-                    SharedPreferences.Editor editor = PreferenceManager
-                            .getDefaultSharedPreferences(c)
-                            .edit();
-                    editor.putBoolean("general_stereoscopic", false);
-                    editor.commit();
-                }
                 break;
 
             case "general_iterate_delay":
-                i = new Integer(stringValue);
+                i = new Integer(sharedPreferences.getString(key, "0"));
                 Const.ITERATE_STYLES = (i != 0);
                 Const.ITERATE_INTERVAL = i * 5;
                 break;

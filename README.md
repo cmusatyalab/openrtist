@@ -45,15 +45,15 @@ curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 ```
 
-### Step 2. Ensure an NVIDIA driver are installed (Optional -- only for NVIDIA GPU support)
+### Step 2. Install NVIDIA CUDA drivers (for NVIDIA GPU support)
 
-[These notes](https://github.com/NVIDIA/nvidia-docker/wiki/Frequently-Asked-Questions#how-do-i-install-the-nvidia-driver) explain how to install the driver.
+[The cuda downloads page](https://developer.nvidia.com/cuda-downloads) allows you to select your distribution and provides instructions on how to install the CUDA toolkit and NVIDIA drivers.
 
-If you think you may already have an NVIDIA driver installed, run `nvidia-smi`. The Driver version will be listed at the top of the table that gets printed.
+If you think you may already have an NVIDIA driver installed, run `nvidia-smi`. The driver version will be listed at the top of the table that gets printed.
 
-### Step 3. Install the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) (Optional -- only for NVIDIA GPU support)
+### Step 3. Install the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) (for NVIDIA GPU support)
 
-Follow [these instructions](https://github.com/NVIDIA/nvidia-docker#ubuntu-16041804-debian-jessiestretchbuster).
+Follow [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian).
 
 ### Step 4. Obtain OpenRTiST Docker image
 
@@ -66,19 +66,19 @@ docker pull cmusatyalab/openrtist:stable
 For NVIDIA GPU support, run:
 
 ```sh
-docker run --gpus all --rm -it -p 9099:9099 cmusatyalab/openrtist
+docker run --gpus all --rm -it -p 9099:9099 cmusatyalab/openrtist:stable
 ```
 
 For Intel iGPU support, run:
 
 ```sh
-docker run --device /dev/dri:/dev/dri --rm -it -p 9099:9099 cmusatyalab/openrtist
+docker run --device /dev/dri:/dev/dri --rm -it -p 9099:9099 cmusatyalab/openrtist:stable
 ```
 
 For CPU support only, run:
 
 ```sh
-docker run --rm -it -p 9099:9099 cmusatyalab/openrtist
+docker run --rm -it -p 9099:9099 cmusatyalab/openrtist:stable
 ```
 
 Note:  With OpenVINO using an integrated GPU, it may take up to a minute to preload all of the style models.
@@ -354,6 +354,13 @@ An additional script can convert from the generated PyTorch model to OpenVINO:
 ```bash
 python model-app/openvino_convert.py <path_to_pytorch_model>
 ```
+
+## Protocol
+
+The Extras proto is defined in `android-client/app/src/main/proto/openrtist.proto`.
+
+If you make changes to this proto, it will be recompiled for both Python and Android 
+the next time you start the Android client from Android Studio.
 
 ## Credits
 
