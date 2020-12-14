@@ -90,7 +90,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         if extras.style == "?":
             new_style = True
             send_style_list = True
-        elif extras.style == 'emotion_enabled':
+        elif extras.style == 'aaa_emotion_enabled':
             emotion_enabled = True
             style = self.emotion_detection(input_frame.payloads[0])
             if style:
@@ -170,7 +170,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
             extras.style_image.value = self.adapter.get_style_image()
         if send_style_list:
             if face_supported:
-                extras.style_list['emotion_enabled'] = 'Switch styles based on your emotion'
+                extras.style_list['aaa_emotion_enabled'] = 'Switch styles based on your emotion'
             for k, v in self.adapter.get_all_styles().items():
                 extras.style_list[k] = v
 
