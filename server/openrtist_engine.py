@@ -38,6 +38,20 @@ import openrtist_pb2
 
 logger = logging.getLogger(__name__)
 
+from azure.cognitiveservices.vision.face import FaceClient
+from msrest.authentication import CognitiveServicesCredentials
+import http.client, urllib.request, urllib.parse, urllib.error, base64
+import json
+from emotion_to_style import emotion_to_style_map
+
+face_supported = False
+try:
+    from azure_face_credentials import ENDPOINT, KEY
+    face_supported = True
+    logger.info("AZURE FACE API IS SUPPORTED")
+except ImportError:
+    logger.info("AZURE FACE IS NOT SUPPORTED")
+
 
 class OpenrtistEngine(cognitive_engine.Engine):
     SOURCE_NAME = "openrtist"
@@ -56,6 +70,10 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         # TODO support server display
 
+        # check if Face api is supported
+        if face_supported:
+            self.face_client = FaceClient(ENDPOINT, CognitiveServicesCredentials(KEY))
+
         logger.info("FINISHED INITIALISATION")
 
     def handle(self, input_frame):
@@ -67,23 +85,35 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         new_style = False
         send_style_list = False
+        emotion_enabled = False
+        
         if extras.style == "?":
             new_style = True
             send_style_list = True
+        elif extras.style == 'emotion_enabled':
+            emotion_enabled = True
+            style = self.emotion_detection(input_frame.payloads[0])
+            if style:
+                self.adapter.set_style(style)
+                new_style = True
         elif extras.style != self.adapter.get_style():
             self.adapter.set_style(extras.style)
             logger.info("New Style: %s", extras.style)
             new_style = True
 
-        style = self.adapter.get_style()
+        if not emotion_enabled:
+            style = self.adapter.get_style()
 
         # Preprocessing steps used by both engines
         np_data = np.frombuffer(input_frame.payloads[0], dtype=np.uint8)
         orig_img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
         orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
 
-        image = self.process_image(orig_img)
-
+        # It is possible that no face is detected and style is None, if so bypass processing
+        if style:
+            image = self.process_image(orig_img)
+        else:
+            image = orig_img
 
 
         image = image.astype("uint8")
@@ -132,11 +162,15 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result.payload = img_data
 
         extras = openrtist_pb2.Extras()
-        extras.style = style
+        
+        if style:
+            extras.style = style
 
         if new_style:
             extras.style_image.value = self.adapter.get_style_image()
         if send_style_list:
+            if face_supported:
+                extras.style_list['emotion_enabled'] = 'Switch styles based on your emotion'
             for k, v in self.adapter.get_all_styles().items():
                 extras.style_list[k] = v
 
@@ -146,6 +180,44 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result_wrapper.extras.Pack(extras)
 
         return result_wrapper
+
+    # https://westus.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/operations/563879b61984550f30395236
+    def emotion_detection(self, img_bytes):
+        headers = {
+            'Content-Type': 'application/octet-stream',
+            'Ocp-Apim-Subscription-Key': KEY
+        }
+
+        params = urllib.parse.urlencode({
+            'returnFaceAttributes': 'emotion'
+        })
+
+        try:
+            # make sure Face container is running in the same VM
+            conn = http.client.HTTPConnection("localhost",5000)
+            conn.request("POST", "/face/v1.0/detect?%s" % params, img_bytes, headers)
+            response = conn.getresponse()
+            data = response.read()
+            js = json.loads(data)
+            conn.close()
+        except Exception as e:
+            logger.info("ERROR WHEN CONNECTING TO FACE CONTAINER")
+
+        if len(js) == 0:
+            # no face detected
+            return None
+        else:
+            # get the largest face in the image
+            largest_face = js[0]
+
+            # get the strongest emotion of the face
+            emo_dict = largest_face['faceAttributes']['emotion']
+            strongest_emotion = max(emo_dict, key=emo_dict.get)
+
+            if strongest_emotion in emotion_to_style_map:
+                return emotion_to_style_map[strongest_emotion]
+
+            return None
 
     def process_image(self, image):
         preprocessed = self.adapter.preprocessing(image)
