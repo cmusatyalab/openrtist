@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import edu.cmu.cs.gabriel.Const;
@@ -48,7 +49,7 @@ public class ResultConsumer implements Consumer<ResultWrapper> {
 
             if (!Const.STYLES_RETRIEVED && (extras.getStyleListCount() > 0)) {
                 Const.STYLES_RETRIEVED = true;
-                this.gabrielClientActivity.addStyles(extras.getStyleListMap().entrySet());
+                this.gabrielClientActivity.addStyles(new TreeMap<String, String>(extras.getStyleListMap()).entrySet());
             }
         }  catch (InvalidProtocolBufferException e) {
             Log.e(TAG, "Protobuf Error", e);
