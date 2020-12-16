@@ -2,3 +2,6 @@ gabriel-server==2.0.1
 opencv-python>=3, <5
 torchvision>=0.3, <0.5
 py-cpuinfo
+#required for MS Face Cognitive Service
+azure-cognitiveservices-vision-face
+asyncio
