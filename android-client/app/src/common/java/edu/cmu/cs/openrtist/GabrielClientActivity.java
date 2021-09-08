@@ -758,7 +758,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
     };
 
     int getPort() {
-        int port = URI.create(this.serverIP).getPort();
+        int port = URI.create("http://" + this.serverIP).getPort();
         if (port == -1) {
             return Const.PORT;
         }
