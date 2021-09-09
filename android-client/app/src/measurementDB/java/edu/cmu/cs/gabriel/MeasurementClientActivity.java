@@ -1,6 +1,7 @@
 package edu.cmu.cs.gabriel;
 
 import edu.cmu.cs.gabriel.network.MeasurementComm;
+import edu.cmu.cs.openrtist.GabrielClientActivity;
 
 public class MeasurementClientActivity extends GabrielClientActivity {
     @Override
