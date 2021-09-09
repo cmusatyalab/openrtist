@@ -28,7 +28,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.function.Consumer;
 
-import edu.cmu.cs.gabriel.GabrielClientActivity;
+import edu.cmu.cs.openrtist.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.observer.IntervalMeasurement;
 
 import static androidx.core.app.ActivityCompat.requestPermissions;

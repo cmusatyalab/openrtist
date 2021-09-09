@@ -12,7 +12,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package edu.cmu.cs.gabriel;
+package edu.cmu.cs.openrtist.ar;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
+import android.media.Image;
+import android.media.MediaActionSound;
+import android.media.MediaRecorder;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
+import android.renderscript.RenderScript;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.TextureView;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.MediaController;
+import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.ar.core.Config;
+import com.google.ar.core.Frame;
+import com.google.ar.core.Session;
+import com.google.ar.core.exceptions.NotYetAvailableException;
+import com.google.ar.sceneform.ArSceneView;
+import com.google.ar.sceneform.Scene;
+import com.google.ar.sceneform.ux.ArFragment;
+import com.google.protobuf.ByteString;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,99 +71,26 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Locale;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.SurfaceTexture;
-import android.graphics.YuvImage;
-
-import android.media.Image;
-import android.media.MediaRecorder;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Message;
-import android.os.SystemClock;
-import android.renderscript.RenderScript;
-import android.util.Log;
-import android.view.TextureView;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.MediaController;
-import android.widget.Spinner;
-import android.widget.Toast;
-import android.hardware.display.DisplayManager;
-import android.hardware.display.VirtualDisplay;
-import android.media.projection.MediaProjection;
-import android.media.projection.MediaProjectionManager;
-import android.util.DisplayMetrics;
-import android.content.Context;
-import android.os.Environment;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.net.Uri;
-import android.media.MediaActionSound;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.SeekBar;
-import android.widget.Button;
-import android.widget.Toast;
-
+import edu.cmu.cs.gabriel.Const;
+import edu.cmu.cs.gabriel.camera.ImageViewUpdater;
 import edu.cmu.cs.gabriel.network.EngineInput;
 import edu.cmu.cs.gabriel.network.FrameSupplier;
 import edu.cmu.cs.gabriel.network.NetworkProtocol;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
-import edu.cmu.cs.gabriel.protocol.Protos;
-import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
 import edu.cmu.cs.gabriel.util.Screenshot;
 import edu.cmu.cs.localtransfer.LocalTransfer;
-import edu.cmu.cs.localtransfer.Utils;
 import edu.cmu.cs.openrtist.R;
-
-import com.google.ar.core.ArCoreApk;
-import com.google.ar.core.Session;
-import com.google.ar.core.CameraConfig;
-import android.opengl.GLSurfaceView;
-import com.google.ar.core.Config;
-import com.google.ar.core.Frame;
-import com.google.ar.core.exceptions.CameraNotAvailableException;
-import com.google.ar.core.exceptions.NotYetAvailableException;
-import com.google.ar.core.exceptions.UnavailableApkTooOldException;
-import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
-import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
-import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
-
-import android.opengl.GLES20;
-
-import com.google.ar.sceneform.ArSceneView;
-import com.google.ar.sceneform.FrameTime;
-import com.google.ar.sceneform.Scene;
-import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.rendering.Renderable;
-import com.google.ar.sceneform.rendering.Texture;
-import com.google.ar.sceneform.ux.ArFragment;
-import com.google.ar.sceneform.ux.AugmentedFaceNode;
-import com.google.ar.sceneform.ux.BaseArFragment;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 public class GabrielClientActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private static final String LOG_TAG = "GabrielClientActivity";
@@ -157,7 +133,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
     private ImageView imgView = null;
     private ImageView stereoView1 = null;
     private ImageView stereoView2 = null;
-    private ImageView camView2 = null;
     private ImageView iconView = null;
     private Handler iterationHandler = null;
     private Handler fpsHandler = null;
@@ -291,7 +266,6 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         stereoView1 = (ImageView) findViewById(R.id.guidance_image1);
         //styleView1 = (ImageView) findViewById(R.id.style_image1);
         stereoView2 = (ImageView) findViewById(R.id.guidance_image2);
-        camView2 = (ImageView) findViewById(R.id.camera_preview2);
         imgView = (ImageView) findViewById(R.id.guidance_image);
         iconView = (ImageView) findViewById(R.id.style_image);
         fpsLabel = (TextView) findViewById(R.id.fpsLabel);
@@ -299,6 +273,7 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
         // initiate  views
         simpleSeekBar=(SeekBar)findViewById(R.id.seekBar);
+        ((TextView)findViewById(R.id.depthLabel)).setText(GabrielClientActivity.this.getApplicationContext().getString(R.string.depth_toast, Float.valueOf(0)));
         // perform seek bar change listener event used for getting the progress value
         simpleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -313,9 +288,8 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(GabrielClientActivity.this, GabrielClientActivity.this.getApplicationContext().getString(R.string.depth_toast, Float.valueOf(depth_threshold) / 1000),
-                        Toast.LENGTH_SHORT).show();
-
+                TextView depthLabel =(TextView)findViewById(R.id.depthLabel);
+                depthLabel.setText(GabrielClientActivity.this.getApplicationContext().getString(R.string.depth_toast, Float.valueOf(depth_threshold) / 1000));
             }
         });
 
@@ -518,7 +492,8 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         super.onResume();
 
         initOnce();
-        serverIP = Const.SERVER_IP;
+        Intent intent = getIntent();
+        serverIP = intent.getStringExtra("SERVER_IP");
         initPerRun(serverIP);
     }
 
@@ -873,8 +848,9 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
         int port = getPort();
         Log.d("CHECKPOINT: ", "Port_discovery ServerIP " + serverIP);
         Log.d("CHECKPOINT: ", "Port_discovery PORT: " + port);
+        Consumer<ByteString> imageViewUpdater = new ImageViewUpdater(this.imgView);
         this.openrtistComm = OpenrtistComm.createOpenrtistComm(
-                this.serverIP, port, this, this.returnMsgHandler, Const.TOKEN_LIMIT);
+                this.serverIP, port, this, this.iconView, imageViewUpdater, Const.TOKEN_LIMIT);
     }
 
     void setOpenrtistComm(OpenrtistComm openrtistComm) {
@@ -1141,5 +1117,39 @@ public class GabrielClientActivity extends AppCompatActivity implements AdapterV
 
     }
 
+    public void showNetworkErrorMessage(String message) {
+        // suppress this error when screen recording as we have to temporarily leave this
+        // activity causing a network disruption
+        if (!recordingInitiated) {
+            this.runOnUiThread(() -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        this, android.R.style.Theme_Material_Light_Dialog_Alert);
+                builder.setMessage(message)
+                        .setTitle(R.string.connection_error)
+                        .setNegativeButton(R.string.back_button,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        GabrielClientActivity.this.finish();
+                                    }
+                                }).setCancelable(false);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            });
+        }
+    }
+
+    public void addStyles(Set<Map.Entry<String, String>> entrySet) {
+        this.styleType = "none";
+        for (Map.Entry<String, String> entry : entrySet) {
+            Log.v(LOG_TAG, "style: " + entry.getKey() + ", desc: " + entry.getValue());
+            styleDescriptions.add(entry.getValue().trim());
+            styleIds.add(entry.getKey().trim());
+        }
+    }
+
+    public void addFrameProcessed() {
+        framesProcessed++;
+    }
 }
 /**************** End of onItemSelected ****************/

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package edu.cmu.cs.gabriel;
+package edu.cmu.cs.openrtist;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -57,6 +57,7 @@ import androidx.camera.view.PreviewView;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,10 +75,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.camera.CameraCapture;
 import edu.cmu.cs.gabriel.camera.ImageViewUpdater;
 import edu.cmu.cs.gabriel.camera.YuvToNV21Converter;
 import edu.cmu.cs.gabriel.camera.YuvToJPEGConverter;
+import edu.cmu.cs.gabriel.client.comm.ServerComm;
+import edu.cmu.cs.gabriel.client.results.ErrorType;
 import edu.cmu.cs.gabriel.network.OpenrtistComm;
 import edu.cmu.cs.gabriel.network.StereoViewUpdater;
 import edu.cmu.cs.gabriel.protocol.Protos.InputFrame;
@@ -436,7 +440,8 @@ public class GabrielClientActivity extends AppCompatActivity implements
         Log.v(LOG_TAG, "++onResume");
 
         initOnce();
-        serverIP = Const.SERVER_IP;
+        Intent intent = getIntent();
+        serverIP = intent.getStringExtra("SERVER_IP");
         initPerRun(serverIP);
     }
 

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="edu.cmu.cs.openrtist"
-    android:versionCode="17">
+    android:versionCode="18">
 
     <!-- Sceneform requires OpenGL ES 3.0 or later. -->
     <uses-feature android:glEsVersion="0x00030000" android:required="true" />
@@ -22,11 +21,15 @@
 
 
         <activity
-            android:name="edu.cmu.cs.gabriel.GabrielClientActivity"
+            android:name="edu.cmu.cs.openrtist.ar.GabrielClientActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="landscape"
             android:theme="@style/AppFullScreenTheme"
             tools:replace="android:theme">
+            <intent-filter>
+                <action android:name="edu.cmu.cs.openrtist.ar.GabrielClientActivity" />
+                <category android:name="android:android.intent.category.DEFAULT" />
+            </intent-filter>
 
         </activity>
 

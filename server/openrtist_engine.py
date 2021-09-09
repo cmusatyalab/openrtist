@@ -1,13 +1,14 @@
 # OpenRTiST
 #   - Real-time Style Transfer
 #
-#   Author: Zhuo Chen <zhuoc@cs.cmu.edu>
+#   Authors: Zhuo Chen <zhuoc@cs.cmu.edu>
 #           Shilpa George <shilpag@andrew.cmu.edu>
 #           Thomas Eiszler <teiszler@andrew.cmu.edu>
 #           Padmanabhan Pillai <padmanabhan.s.pillai@intel.com>
 #           Roger Iyengar <iyengar@cmu.edu>
+#           Meng Cao <mcao@andrew.cmu.edu>
 #
-#   Copyright (C) 2011-2019 Carnegie Mellon University
+#   Copyright (C) 2011-2020 Carnegie Mellon University
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
@@ -35,9 +36,17 @@ import logging
 from gabriel_server import cognitive_engine
 from gabriel_protocol import gabriel_pb2
 import openrtist_pb2
+import os
+from io import BytesIO
 
 logger = logging.getLogger(__name__)
 
+from azure.cognitiveservices.vision.face import FaceClient
+from azure.cognitiveservices.vision.face.models import FaceAttributeType
+from msrest.authentication import CognitiveServicesCredentials
+import http.client, urllib.request, urllib.parse, urllib.error, base64
+import json
+from emotion_to_style import emotion_to_style_map
 
 class OpenrtistEngine(cognitive_engine.Engine):
     SOURCE_NAME = "openrtist"
@@ -45,7 +54,11 @@ class OpenrtistEngine(cognitive_engine.Engine):
     def __init__(self, compression_params, adapter):
         self.compression_params = compression_params
         self.adapter = adapter
-
+        self.face_supported = os.getenv("FaceEnabled", False)
+        if self.face_supported:
+            logger.info("Emotion-based styling enabled via MS Face Service.")
+        else:
+            logger.info("Emotion-based styling disabled.")
         # The waterMark is of dimension 30x120
         wtr_mrk4 = cv2.imread("../wtrMrk.png", -1)
 
@@ -55,6 +68,10 @@ class OpenrtistEngine(cognitive_engine.Engine):
         self.alpha = mrk_alpha.astype(float) / 255
 
         # TODO support server display
+
+        # check if Face api is supported
+        if self.face_supported:
+            self.face_client = FaceClient("http://ms-face-service:5000", CognitiveServicesCredentials(os.getenv("ApiKey")))
 
         logger.info("FINISHED INITIALISATION")
 
@@ -67,23 +84,35 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         new_style = False
         send_style_list = False
+        emotion_enabled = False
+        
         if extras.style == "?":
             new_style = True
             send_style_list = True
+        elif extras.style == 'aaa_emotion_enabled':
+            emotion_enabled = True
+            style = self.emotion_detection(input_frame.payloads[0])
+            if style:
+                self.adapter.set_style(style)
+                new_style = True
         elif extras.style != self.adapter.get_style():
             self.adapter.set_style(extras.style)
             logger.info("New Style: %s", extras.style)
             new_style = True
 
-        style = self.adapter.get_style()
+        if not emotion_enabled:
+            style = self.adapter.get_style()
 
         # Preprocessing steps used by both engines
         np_data = np.frombuffer(input_frame.payloads[0], dtype=np.uint8)
         orig_img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)
         orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
 
-        image = self.process_image(orig_img)
-
+        # It is possible that no face is detected and style is None, if so bypass processing
+        if style:
+            image = self.process_image(orig_img)
+        else:
+            image = orig_img
 
 
         image = image.astype("uint8")
@@ -132,11 +161,15 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result.payload = img_data
 
         extras = openrtist_pb2.Extras()
-        extras.style = style
+        
+        if style:
+            extras.style = style
 
         if new_style:
             extras.style_image.value = self.adapter.get_style_image()
         if send_style_list:
+            if self.face_supported:
+                extras.style_list['aaa_emotion_enabled'] = '* Emotion-based styling (contempt,disgust,fear,happiness,sadness,surprise)'
             for k, v in self.adapter.get_all_styles().items():
                 extras.style_list[k] = v
 
@@ -146,6 +179,32 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result_wrapper.extras.Pack(extras)
 
         return result_wrapper
+
+    # https://westus.dev.cognitive.microsoft.com/docs/services/563879b61984550e40cbbe8d/operations/563879b61984550f30395236
+    def emotion_detection(self, img_bytes):
+        style = None
+        detected_faces = []
+
+        try:
+            detected_faces = self.face_client.face.detect_with_stream(image=BytesIO(img_bytes), return_face_id=False, return_face_landmarks=False, return_face_attributes=list([FaceAttributeType.emotion]))
+        except Exception as e:
+            logger.error(e)
+
+        if len(detected_faces) == 0:
+            # no face detected
+            style = None
+        else:
+            # get the largest face in the image
+            largest_face = detected_faces[0]
+
+            # get the strongest emotion of the face
+            emotions = largest_face.face_attributes.emotion
+            strongest_emotion = max(emotions.as_dict(), key=emotions.as_dict().get)
+
+            if strongest_emotion in emotion_to_style_map:
+                style = emotion_to_style_map[strongest_emotion]
+
+        return style
 
     def process_image(self, image):
         preprocessed = self.adapter.preprocessing(image)

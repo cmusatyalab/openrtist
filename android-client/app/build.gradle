@@ -37,6 +37,10 @@ android {
         measurementDB {
             java.srcDirs('src/common/java')
         }
+
+        arcore {
+            java.srcDirs('src/arcore/java')
+        }
     }
 
     compileSdkVersion 29
@@ -87,7 +91,7 @@ android {
             applicationIdSuffix 'ar'
             versionNameSuffix '-ar'
             minSdkVersion 24
-            multiDexEnabled false
+            multiDexEnabled true
         }
 
         measurementDB {
@@ -135,6 +139,8 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'edu.cmu.cs.gabriel:client:2.3.0'
     implementation 'edu.cmu.cs.gabriel:camera:2.3.0'
+    implementation 'edu.cmu.cs.gabriel:serverlist:2.3.0'
+    implementation 'androidx.preference:preference:1.1.0'
 
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
