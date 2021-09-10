@@ -25,6 +25,8 @@ import androidx.core.content.ContextCompat;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -95,8 +97,13 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
         }
 
         // Set up the Database
-        String serverBase = serverURL.split(":")[0]; // Assumes InfluxDB on same server as OpenRTIST
-        influxhelper = new InfluxDBHelper(serverBase, this.getServerPort());
+        URI uri = null;
+        try {
+            uri = new URI(serverURL);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        influxhelper = new InfluxDBHelper(uri.getHost(), uri.getPort());
         influxhelper.setSessionID();
 //        // Run Traceroute
         String typestr = "traceroute";
