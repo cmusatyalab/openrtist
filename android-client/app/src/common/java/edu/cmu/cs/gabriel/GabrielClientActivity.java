@@ -14,6 +14,8 @@
 
 package edu.cmu.cs.gabriel;
 
+import static java.lang.Integer.parseInt;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -744,10 +746,16 @@ public class GabrielClientActivity extends Activity implements AdapterView.OnIte
     }
 
     int getPort() {
-        int port = URI.create(this.serverIP).getPort();
-        if (port == -1) {
-            return Const.PORT;
+        int port = Const.PORT;
+        try {
+            port = parseInt(this.serverIP.split(":")[1]);
+        } catch (Exception e) {
+            port = Const.PORT;
         }
+//        int port = URI.create(this.serverIP).getPort();
+//        if (port == -1) {
+//            return Const.PORT;
+//        }
         return port;
     }
 

@@ -25,8 +25,6 @@ import androidx.core.content.ContextCompat;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -97,13 +95,8 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
         }
 
         // Set up the Database
-        URI uri = null;
-        try {
-            uri = new URI(serverURL);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        influxhelper = new InfluxDBHelper(uri.getHost(), uri.getPort());
+        String serverBase = serverURL.split(":")[0]; // Assumes InfluxDB on same server as OpenRTIST
+        influxhelper = new InfluxDBHelper(serverBase, this.getServerPort());
         influxhelper.setSessionID();
 //        // Run Traceroute
         String typestr = "traceroute";
@@ -122,35 +115,35 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
         double ofps = round(intervalMeasurement.getOverallFps(), 1); // TODO
         String msg = String.format("FRAMERATE: INTERVALFPS = %.1f OVERALLFPS = %.1f", ifps, ofps);
         Log.i(TAG, msg);
-        String typestr = "framerate";
-        MeasurementFactory.Measurement tmeasure =
-                new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
-                        serverURL, connect_type, phone_type, carrier_name, country_name,
-                        "INTERVALFPS", "OVERALLFPS");
-        tmeasure.setVar0(ifps);
-        tmeasure.setVar1(ofps);
-        influxhelper.AsyncWritePoint(tmeasure);
+//        String typestr = "framerate";
+//        MeasurementFactory.Measurement tmeasure =
+//                new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
+//                        serverURL, connect_type, phone_type, carrier_name, country_name,
+//                        "INTERVALFPS", "OVERALLFPS");
+//        tmeasure.setVar0(ifps);
+//        tmeasure.setVar1(ofps);
+//        influxhelper.AsyncWritePoint(tmeasure);
 
-        typestr = "allmeasure";
+        String typestr = "allmeasure";
         MeasurementFactory.Measurement tmeasureall =
                 new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
                         serverURL, connect_type, phone_type, carrier_name, country_name,
                         "INTERVALFPS", "OVERALLFPS");
-        tmeasureall.setVar0(ifps);
-        tmeasureall.setVar1(ofps);
+//        tmeasureall.setVar0(ifps);
+//        tmeasureall.setVar1(ofps);
 
         // Round Trip Time
         double irtt = round(intervalMeasurement.getIntervalRtt(), 1);
         double ortt = round(intervalMeasurement.getOverallRtt(), 1); // TODO
         msg = String.format("ROUND TRIP TIME: INTERVALRTT = %.1f OVERALLRTT =%.1f", irtt, ortt);
         Log.i(TAG, msg);
-        typestr = "roundtriptime";
-        tmeasure = new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
-                serverURL, connect_type, phone_type, carrier_name, country_name,
-                "INTERVALRTT", "OVERALLRTT");
-        tmeasure.setVar0(irtt);
-        tmeasure.setVar1(ortt);
-        influxhelper.AsyncWritePoint(tmeasure);
+//        typestr = "roundtriptime";
+//        tmeasure = new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
+//                serverURL, connect_type, phone_type, carrier_name, country_name,
+//                "INTERVALRTT", "OVERALLRTT");
+//        tmeasure.setVar0(irtt);
+//        tmeasure.setVar1(ortt);
+//        influxhelper.AsyncWritePoint(tmeasure);
         tmeasureall.setFieldMap("INTERVALRTT",(float) irtt);
         tmeasureall.setFieldMap("OVERALLRTT",(float) ortt);
 
@@ -166,15 +159,15 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
             lng = round(locationGPS.getLongitude(), 6);
             lat = round(locationGPS.getLatitude(), 6);
             msg = String.format("LOCATION: LONGITUDE = %.6f LATITUDE = %.6f", lng, lat);
-            typestr = "location";
-            tmeasure = new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
-                    serverURL, connect_type, phone_type, carrier_name, country_name,
-                    "LAT", "LNG");
-            tmeasure.setVar0(lat);
-            tmeasure.setVar1(lng);
-            tmeasure.setTagMap("latitude",Double.toString(lat));
-            tmeasure.setTagMap("longitude",Double.toString(lng));
-            influxhelper.AsyncWritePoint(tmeasure);
+//            typestr = "location";
+//            tmeasure = new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
+//                    serverURL, connect_type, phone_type, carrier_name, country_name,
+//                    "LAT", "LNG");
+//            tmeasure.setVar0(lat);
+//            tmeasure.setVar1(lng);
+//            tmeasure.setTagMap("latitude",Double.toString(lat));
+//            tmeasure.setTagMap("longitude",Double.toString(lng));
+//            influxhelper.AsyncWritePoint(tmeasure);
 
             tmeasureall.setFieldMap("LAT",(float) lat);
             tmeasureall.setFieldMap("LNG",(float) lng);
@@ -203,14 +196,14 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
             msg = String.format("SIGNAL STRENGTH: WIFI = %.1f Dbm CELLID %d  CELLULAR = %.1f Dbm",
                     wifiSignalStrength, cellID, cellSignalStrength);
             Log.i(TAG, msg);
-            typestr = "signal";
-            tmeasure = new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
-                    serverURL, connect_type, phone_type, carrier_name, country_name,
-                    "WIFISIGNAL", "CELLSIGNAL");
-            tmeasure.setVar0(wifiSignalStrength);
-            tmeasure.setVar1(cellSignalStrength);
-            tmeasure.setTagMap("CELLID", Integer.toString(cellID));
-            influxhelper.AsyncWritePoint(tmeasure);
+//            typestr = "signal";
+//            tmeasure = new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
+//                    serverURL, connect_type, phone_type, carrier_name, country_name,
+//                    "WIFISIGNAL", "CELLSIGNAL");
+//            tmeasure.setVar0(wifiSignalStrength);
+//            tmeasure.setVar1(cellSignalStrength);
+//            tmeasure.setTagMap("CELLID", Integer.toString(cellID));
+//            influxhelper.AsyncWritePoint(tmeasure);
 
             tmeasureall.setFieldMap("WIFISIGNAL",(float) wifiSignalStrength);
             tmeasureall.setFieldMap("CELLSIGNAL",(float) cellSignalStrength);
@@ -256,21 +249,7 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
                         CellSignalStrengthLte cellSignalStrengthLte = cellInfoLte.getCellSignalStrength();
                         strength = cellSignalStrengthLte.getDbm();
                     }
-                    // Assume LTE Network for now
-//                    } else if (cellInfos.get(i) instanceof CellInfoWcdma) {
-//                        CellInfoWcdma cellInfoWcdma = (CellInfoWcdma) cellInfos.get(i);
-//                        CellSignalStrengthWcdma cellSignalStrengthWcdma = cellInfoWcdma.getCellSignalStrength();
-//                        strength = cellSignalStrengthWcdma.getDbm();
-//                    } else if (cellInfos.get(i) instanceof CellInfoGsm) {
-//                        CellInfoGsm cellInfogsm = (CellInfoGsm) cellInfos.get(i);
-//                        CellSignalStrengthGsm cellSignalStrengthGsm = cellInfogsm.getCellSignalStrength();
-//                        strength = cellSignalStrengthGsm.getDbm();
-//                    } else if (cellInfos.get(i) instanceof CellInfoCdma) {
-//                        CellInfoCdma cellInfoCdma = (CellInfoCdma) cellInfos.get(i);
-//                        CellSignalStrengthCdma cellSignalStrengthCdma = cellInfoCdma.getCellSignalStrength();
-//                        strength = cellSignalStrengthCdma.getDbm();
-//                    }
-                }
+                 }
             }
         }
         return MeasurementDbConsumer.round(strength,1);
