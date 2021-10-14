@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
-
 public class NetUtilityHelper {
 
     //    private String osname;
@@ -26,19 +23,20 @@ public class NetUtilityHelper {
         IPAddressExtractor.isValidIPAddress("128.2.209.144");
     }
     public class TraceRouteResult {
-        String[] output; String[] iplist;float[] timings;float lsttime;
+        String[] output; String[] iplist;float[] timings;float lsttime; String errorcode;
         TraceRouteResult(ArrayList<String> outbufarg, ArrayList<String> ipbufarg) {
             output = outbufarg.toArray(new String[outbufarg.size()]);
             iplist = ipbufarg.toArray(new String[ipbufarg.size()]);
             timings = new float[outbufarg.size()];
             lsttime = extractTime(this.output[output.length-1]);
+            errorcode = "NONE";
             this.setLastTime();
         }
         TraceRouteResult(ArrayList<String> outbufarg, ArrayList<String> ipbufarg,
                          ArrayList<Float> timingsarg) {
             output = outbufarg.toArray(new String[outbufarg.size()]);
             iplist = ipbufarg.toArray(new String[ipbufarg.size()]);
-
+            errorcode = "NONE";
             timings = new float[timingsarg.size()];
             int ii = 0;
             for (Float f : timingsarg) {
@@ -60,9 +58,14 @@ public class NetUtilityHelper {
                     outp = String.format("%s TIME: %f",outp,timings[ii]);
                 }
                 System.out.println(outp);
+                System.out.println(String.format("ERRORCODE: %s",errorcode));
                 ii++;
             }
         }
+        public void setErrorcode(String newcode) {
+            errorcode = newcode;
+        }
+
     }
     public TraceRouteResult TraceRoute(String dest, int maxhops, boolean...varargs) {
         ArrayList<String> strlst = new ArrayList<String>();
@@ -72,7 +75,21 @@ public class NetUtilityHelper {
             if (ii == 0) { timing = varargs[ii]; }
         }
         String strout;
+        long starttr = System.currentTimeMillis();
+        long nowtr = 0;
+        long maxtr = 5000;
+        boolean aborted = false;
         for (int ii = 3; ii < maxhops;ii++) {
+            nowtr = System.currentTimeMillis();
+            if (nowtr - starttr > maxtr) {
+                strout = String.format("Traceroute timeout exceeded  %d ms",maxtr);
+                System.out.println(String.format(strout));
+                aborted = true;
+                break;
+            } else {
+                strout = String.format("Traceroute time %d of %d ms",(nowtr - starttr),maxtr);
+                System.out.println(String.format(strout));
+            }
             String[] strarr = this.Ping(dest, 1, ii);
             if (strarr[1].contains("Time to live exceeded")) {
                 strout = String.format("HOP: %s",strarr[1].replace(": icmp_seq=1 Time to live exceeded",""));
@@ -96,9 +113,11 @@ public class NetUtilityHelper {
         } else {
             retres = new TraceRouteResult(strlst,interdestlst);
         }
+        if (aborted) {
+            retres.setErrorcode("ABORTED");
+        }
         retres.print();
         return retres;
-
     }
 
     private ArrayList<Float> runTimings(ArrayList<String> destlst) {

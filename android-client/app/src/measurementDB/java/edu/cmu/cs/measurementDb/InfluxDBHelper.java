@@ -21,6 +21,7 @@ public class InfluxDBHelper {
     private static final int ADVPort = 30086;
     private static final int DEFPort = 8086;
 
+    private static final String CLOUDLET013 = "128.2.209.111";
     private static final String INFLUXDBHOST = "127.0.0.1";
     private static final int INFLUXDBPORT = DEFPort;
 
