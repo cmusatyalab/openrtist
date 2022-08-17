@@ -18,10 +18,7 @@ import config
 import numpy as np
 import random
 import logging
-import sys
-import os
 
-sys.path.append(os.path.join('..', 'server'))
 import openrtist_pb2
 
 

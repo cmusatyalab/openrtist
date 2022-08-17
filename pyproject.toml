@@ -9,6 +9,7 @@ exclude = '''
   )/
   # don't rewrite generated files
   | python-client/design.py
+  | python-client/openrtist_pb2.py
   | server/openrtist_pb2.py
 )
 '''

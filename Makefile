@@ -4,9 +4,9 @@
 
 # specific versions to ensure consistent rebuilds
 BLACK_VERSION = 19.10b0
-PYQT5_VERSION = 5.13.1
-TORCH_VERSION = 1.3
-TORCHVISION_VERSION = 0.4.2
+PYQT5_VERSION = 5.14.2
+TORCH_VERSION = 1.4.0
+TORCHVISION_VERSION = 0.5.0
 
 
 LOCAL_EXECUTION_MODELS = \
@@ -30,7 +30,8 @@ LOCAL_EXEC_ASSET_DIR = android-client/app/src/main/assets
 
 GENERATED_FILES = \
 	$(LOCAL_EXECUTION_MODELS:%.model=$(LOCAL_EXEC_ASSET_DIR)/%.pt) \
-	python-client/design.py
+	python-client/design.py \
+	python-client/openrtist_pb2.py
 
 REQUIREMENTS = \
 	'PyQT5==$(PYQT5_VERSION)' \
@@ -40,7 +41,8 @@ REQUIREMENTS = \
 	'torchvision==$(TORCHVISION_VERSION)' \
 	'black==$(BLACK_VERSION)' \
 	flake8 \
-	flake8-bugbear
+	flake8-bugbear \
+	grpcio-tools
 
 all: $(GENERATED_FILES)
 
@@ -68,6 +70,10 @@ distclean: clean
 
 %.py: %.ui .venv
 	.venv/bin/pyuic5 -x $< -o $@
+
+python-client/openrtist_pb2.py: android-client/app/src/main/proto/openrtist.proto .venv
+	.venv/bin/python -m grpc_tools.protoc --python_out=server -I android-client/app/src/main/proto openrtist.proto
+	.venv/bin/python -m grpc_tools.protoc --python_out=python-client -I android-client/app/src/main/proto openrtist.proto
 
 $(LOCAL_EXEC_ASSET_DIR)/%.pt: models/%.model .venv
 	mkdir -p $(LOCAL_EXEC_ASSET_DIR)

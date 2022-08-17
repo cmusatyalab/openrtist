@@ -122,11 +122,6 @@ android {
                     javalite {
                         outputSubDir = 'java'
                     }
-                    python {
-                        // This gradle file is located in <REPOSITORY ROOT>/android-client/app
-                        // outputSubDir is relative to <REPOSITORY ROOT>/android-client/app/build/generated/source/proto/debug
-                        outputSubDir = '../../../../../../../server'
-                    }
                 }
             }
         }
