@@ -8,7 +8,7 @@ exclude = '''
    | \.venv
   )/
   # don't rewrite generated files
-  | gabriel-client-openrtist-python/design.py
-  | protocol/openrtist_pb2.py
+  | python-client/design.py
+  | server/openrtist_pb2.py
 )
 '''
