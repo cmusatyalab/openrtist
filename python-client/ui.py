@@ -85,11 +85,11 @@ class ClientThread(QThread):
     def run(self):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
 
-        client = capture_adapter.create_client(
-            self._server_ip, consume_rgb_frame_style)
+        client = capture_adapter.create_client(self._server_ip, consume_rgb_frame_style)
         client.launch()
 
     def stop(self):
@@ -101,7 +101,8 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "server_ip", action="store", help="IP address for Openrtist Server")
+        "server_ip", action="store", help="IP address for Openrtist Server"
+    )
     inputs = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)

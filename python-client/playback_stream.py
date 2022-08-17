@@ -8,23 +8,29 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("server_ip", action="store",
-                        help="IP address for Openrtist Server")
+    parser.add_argument(
+        "server_ip", action="store", help="IP address for Openrtist Server"
+    )
     parser.add_argument("video", action="store", help="Path to video file")
-    parser.add_argument("--display", action="store_true",
-                        help="Show frames received from server")
-    parser.add_argument("--timing", action="store_true",
-                        help="Print timing information")
+    parser.add_argument(
+        "--display", action="store_true", help="Show frames received from server"
+    )
+    parser.add_argument(
+        "--timing", action="store_true", help="Print timing information"
+    )
     args = parser.parse_args()
 
     def preprocess(frame):
         return frame
 
     if args.display:
+
         def consume_frame_style(frame, style, style_image):
             cv2.imshow("Result from server", frame)
             cv2.waitKey(1)
+
     else:
+
         def consume_frame_style(frame, style, style_image):
             pass
 
@@ -32,11 +38,13 @@ def main():
     adapter = Adapter(preprocess, consume_frame_style, video_capture)
 
     if args.timing:
-        client = MeasurementClient(args.server_ip, config.PORT,
-                                   adapter.producer_wrappers, adapter.consumer)
+        client = MeasurementClient(
+            args.server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
+        )
     else:
-        client = WebsocketClient(args.server_ip, config.PORT,
-                                 adapter.producer_wrappers, adapter.consumer)
+        client = WebsocketClient(
+            args.server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
+        )
     client.launch()
 
 

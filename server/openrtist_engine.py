@@ -48,6 +48,7 @@ import http.client, urllib.request, urllib.parse, urllib.error, base64
 import json
 from emotion_to_style import emotion_to_style_map
 
+
 class OpenrtistEngine(cognitive_engine.Engine):
     SOURCE_NAME = "openrtist"
 
@@ -71,7 +72,10 @@ class OpenrtistEngine(cognitive_engine.Engine):
 
         # check if Face api is supported
         if self.face_supported:
-            self.face_client = FaceClient("http://ms-face-service:5000", CognitiveServicesCredentials(os.getenv("ApiKey")))
+            self.face_client = FaceClient(
+                "http://ms-face-service:5000",
+                CognitiveServicesCredentials(os.getenv("ApiKey")),
+            )
 
         logger.info("FINISHED INITIALISATION")
 
@@ -85,11 +89,11 @@ class OpenrtistEngine(cognitive_engine.Engine):
         new_style = False
         send_style_list = False
         emotion_enabled = False
-        
+
         if extras.style == "?":
             new_style = True
             send_style_list = True
-        elif extras.style == 'aaa_emotion_enabled':
+        elif extras.style == "aaa_emotion_enabled":
             emotion_enabled = True
             style = self.emotion_detection(input_frame.payloads[0])
             if style:
@@ -113,7 +117,6 @@ class OpenrtistEngine(cognitive_engine.Engine):
             image = self.process_image(orig_img)
         else:
             image = orig_img
-
 
         image = image.astype("uint8")
         if extras.HasField("depth_map"):
@@ -161,7 +164,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         result.payload = img_data
 
         extras = openrtist_pb2.Extras()
-        
+
         if style:
             extras.style = style
 
@@ -169,7 +172,9 @@ class OpenrtistEngine(cognitive_engine.Engine):
             extras.style_image.value = self.adapter.get_style_image()
         if send_style_list:
             if self.face_supported:
-                extras.style_list['aaa_emotion_enabled'] = '* Emotion-based styling (contempt,disgust,fear,happiness,sadness,surprise)'
+                extras.style_list[
+                    "aaa_emotion_enabled"
+                ] = "* Emotion-based styling (contempt,disgust,fear,happiness,sadness,surprise)"
             for k, v in self.adapter.get_all_styles().items():
                 extras.style_list[k] = v
 
@@ -186,7 +191,12 @@ class OpenrtistEngine(cognitive_engine.Engine):
         detected_faces = []
 
         try:
-            detected_faces = self.face_client.face.detect_with_stream(image=BytesIO(img_bytes), return_face_id=False, return_face_landmarks=False, return_face_attributes=list([FaceAttributeType.emotion]))
+            detected_faces = self.face_client.face.detect_with_stream(
+                image=BytesIO(img_bytes),
+                return_face_id=False,
+                return_face_landmarks=False,
+                return_face_attributes=list([FaceAttributeType.emotion]),
+            )
         except Exception as e:
             logger.error(e)
 

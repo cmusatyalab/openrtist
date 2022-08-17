@@ -74,12 +74,10 @@ class Adapter:
                     logger.debug("got empty style image")
                 else:
                     self.style_image = cv2.imdecode(
-                        np.frombuffer(
-                            extras.style_image.value, dtype=np.uint8),
+                        np.frombuffer(extras.style_image.value, dtype=np.uint8),
                         cv2.IMREAD_COLOR,
                     )
-                    self.style_image = cv2.cvtColor(
-                        self.style_image, cv2.COLOR_BGR2RGB)
+                    self.style_image = cv2.cvtColor(self.style_image, cv2.COLOR_BGR2RGB)
                     logger.debug("got style image")
 
             consume_frame_style(frame, extras.style, self.style_image)

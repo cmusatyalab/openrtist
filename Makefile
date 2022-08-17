@@ -3,7 +3,7 @@
 #
 
 # specific versions to ensure consistent rebuilds
-BLACK_VERSION = 19.10b0
+BLACK_VERSION = 22.6.0
 PYQT5_VERSION = 5.14.2
 TORCH_VERSION = 1.4.0
 TORCHVISION_VERSION = 0.5.0
