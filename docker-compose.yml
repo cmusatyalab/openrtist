@@ -1,0 +1,10 @@
+version: '2.3'
+services:
+  openrtist:
+    image: cmusatyalab/openrtist:dev
+    build: .
+    ports:
+      - "9099:9099"
+    devices:
+      - "/dev/dri:/dev/dri"
+    restart: unless-stopped
