@@ -21,6 +21,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QPainter
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QImage
@@ -78,9 +79,10 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
 class ClientThread(QThread):
     pyqt_signal = pyqtSignal(object, str, object)
 
-    def __init__(self, server_ip):
+    def __init__(self, server_ip, video_source=None):
         super().__init__()
         self._server_ip = server_ip
+        self._video_source = video_source
 
     def run(self):
         loop = asyncio.new_event_loop()
@@ -89,7 +91,7 @@ class ClientThread(QThread):
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
 
-        client = capture_adapter.create_client(self._server_ip, consume_rgb_frame_style)
+        client = capture_adapter.create_client(self._server_ip, consume_rgb_frame_style, video_source=self._video_source)
         client.launch()
 
     def stop(self):
@@ -103,12 +105,21 @@ def main():
     parser.add_argument(
         "server_ip", action="store", help="IP address for Openrtist Server"
     )
+    parser.add_argument(
+        "-v", "--video", metavar="URL", type=str, help="video stream (default: try to use USB webcam)"
+    )
+    parser.add_argument(
+        "--fullscreen", action="store_true"
+    )
     inputs = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)
     ui = UI()
     ui.show()
-    clientThread = ClientThread(inputs.server_ip)
+    if inputs.fullscreen:
+        ui.showFullScreen()
+        app.setOverrideCursor(QCursor(Qt.BlankCursor))
+    clientThread = ClientThread(inputs.server_ip, inputs.video)
     clientThread.pyqt_signal.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
