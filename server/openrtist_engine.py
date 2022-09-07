@@ -93,7 +93,7 @@ class OpenrtistEngine(cognitive_engine.Engine):
         if extras.style == "?":
             new_style = True
             send_style_list = True
-        elif extras.style == "aaa_emotion_enabled":
+        elif self.face_supported and extras.style == "aaa_emotion_enabled":
             emotion_enabled = True
             style = self.emotion_detection(input_frame.payloads[0])
             if style:
