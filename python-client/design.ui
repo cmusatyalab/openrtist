@@ -18,7 +18,7 @@
     <item>
      <widget class="QLabel" name="label_image">
       <property name="text">
-       <string>Image</string>
+       <string>Initializing...</string>
       </property>
      </widget>
     </item>

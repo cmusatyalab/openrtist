@@ -1,7 +1,49 @@
+from threading import Thread
+from time import sleep
 from adapter import Adapter
 from gabriel_client.websocket_client import WebsocketClient
 import config
 import cv2
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
+class WebcamVideoStream:
+    def __init__(self, src=0, name="WebcamVideoStream"):
+        self.src = src
+        self.stream = cv2.VideoCapture(src)
+        (self.grabbed, self.frame) = self.stream.read()
+        self.name = name
+        self.stopped = False
+
+    def start(self):
+        t = Thread(target=self.update, name=self.name, args=())
+        t.daemon = True
+        t.start()
+        return self
+
+    def update(self):
+        while not self.stopped:
+            self.grabbed, frame = self.stream.read()
+
+            if not self.grabbed:
+                logging.info("Lost stream, reconnecting in 1 second")
+                sleep(1)
+                self.stream = cv2.VideoCapture(self.src)
+                continue
+
+            self.frame = frame
+
+    def stop(self):
+        self.stopped = True
+
+    def read(self):
+        if self.frame is None:
+            # slow down if the stream is not ready or failed
+            sleep(0.5)
+        return self.grabbed, self.frame
 
 
 class CaptureAdapter:
@@ -28,7 +70,7 @@ class CaptureAdapter:
 
         return frame
 
-    def __init__(self, consume_rgb_frame_style):
+    def __init__(self, consume_rgb_frame_style, video_source=None):
         """
         consume_rgb_frame_style should take one rgb_frame parameter and one
         style parameter.
@@ -38,8 +80,12 @@ class CaptureAdapter:
         self.style_interval = config.STYLE_DISPLAY_INTERVAL
         self.current_style_frames = 0
 
-        video_capture = cv2.VideoCapture(-1)
-        video_capture.set(cv2.CAP_PROP_FPS, config.CAM_FPS)
+		if video_source is None:
+			video_capture = cv2.VideoCapture(-1)
+			video_capture.set(cv2.CAP_PROP_FPS, config.CAM_FPS)
+		else:
+			video_capture = WebcamVideoStream(src=video_source)
+			video_capture.start()
 
         def consume_frame_style(frame, style, style_image):
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -50,13 +96,13 @@ class CaptureAdapter:
         )
 
 
-def create_client(server_ip, consume_rgb_frame_style):
+def create_client(server_ip, consume_rgb_frame_style, video_source=None):
     """
     consume_rgb_frame_style should take one rgb_frame parameter and one
     style parameter.
     """
 
-    adapter = CaptureAdapter(consume_rgb_frame_style)
+    adapter = CaptureAdapter(consume_rgb_frame_style, video_source=video_source)
     return WebsocketClient(
         server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
     )
