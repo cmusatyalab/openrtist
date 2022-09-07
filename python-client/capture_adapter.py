@@ -80,12 +80,12 @@ class CaptureAdapter:
         self.style_interval = config.STYLE_DISPLAY_INTERVAL
         self.current_style_frames = 0
 
-		if video_source is None:
-			video_capture = cv2.VideoCapture(-1)
-			video_capture.set(cv2.CAP_PROP_FPS, config.CAM_FPS)
-		else:
-			video_capture = WebcamVideoStream(src=video_source)
-			video_capture.start()
+        if video_source is None:
+            video_capture = cv2.VideoCapture(-1)
+            video_capture.set(cv2.CAP_PROP_FPS, config.CAM_FPS)
+        else:
+            video_capture = WebcamVideoStream(src=video_source)
+            video_capture.start()
 
         def consume_frame_style(frame, style, style_image):
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
