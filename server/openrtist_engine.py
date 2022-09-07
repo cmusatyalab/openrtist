@@ -154,6 +154,12 @@ class OpenrtistEngine(cognitive_engine.Engine):
             # stitch transformed background and original foreground
             image = cv2.bitwise_or(fg, bg)
 
+        # scale image back to original size to get a better watermark
+        if orig_image.shape != image.shape:
+            orig_h, orig_w, _ = orig_img.shape
+            image = cv2.resize(
+                image, (orig_w, orig_h), interpolation=cv2.INTER_LINEAR
+            )
         image = self._apply_watermark(image)
 
         _, jpeg_img = cv2.imencode(".jpg", image, self.compression_params)
