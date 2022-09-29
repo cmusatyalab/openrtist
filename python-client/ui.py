@@ -22,7 +22,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QCursor
-from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QPainter, QFont
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QImage
 import capture_adapter
@@ -65,12 +65,20 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             pixmap = QPixmap()
             pixmap.load(os.path.join("style-image", str_name))
         # print("UI STYLE {}".format('style-image/' + str_name))
+        try:
+            with open(os.path.join("style-image", "{}.txt".format(str_name)), "r") as f:
+                artist_info = f.read()
+        except IOError:
+            artist_info = artist_info + " -- Unknown"
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix)
         painter.drawPixmap(0, 0, pixmap)
         painter.setPen(Qt.red)
         painter.drawRect(0, 0, pixmap.width(), pixmap.height())
+        painter.setPen(Qt.white)
+        painter.setFont(QFont("Arial", 18))
+        painter.drawText(0, pix.height() - 20, artist_info)
         painter.end()
         self.label_image.setPixmap(pix)
         self.label_image.setScaledContents(True)
