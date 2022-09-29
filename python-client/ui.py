@@ -69,7 +69,7 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             with open(os.path.join("style-image", "{}.txt".format(str_name)), "r") as f:
                 artist_info = f.read()
         except IOError:
-            artist_info = artist_info + " -- Unknown"
+            artist_info = str_name + " -- Unknown"
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix)
