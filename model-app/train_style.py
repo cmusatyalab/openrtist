@@ -1,4 +1,8 @@
-# #BSD 3-Clause License
+#
+# Code derived from pytorch - fast-neural-style example
+# https://github.com/pytorch/examples/blob/main/fast_neural_style/neural_style/neural_style.py
+#
+# BSD 3-Clause License
 #
 # Copyright (c) 2017,
 # All rights reserved.
