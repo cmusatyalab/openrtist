@@ -70,7 +70,7 @@ class CaptureAdapter:
 
         return frame
 
-    def __init__(self, consume_rgb_frame_style, video_source=None):
+    def __init__(self, consume_rgb_frame_style, video_source=None, capture_device=-1):
         """
         consume_rgb_frame_style should take one rgb_frame parameter and one
         style parameter.
@@ -81,7 +81,7 @@ class CaptureAdapter:
         self.current_style_frames = 0
 
         if video_source is None:
-            video_capture = cv2.VideoCapture(-1)
+            video_capture = cv2.VideoCapture(capture_device)
             video_capture.set(cv2.CAP_PROP_FPS, config.CAM_FPS)
         else:
             video_capture = WebcamVideoStream(src=video_source)

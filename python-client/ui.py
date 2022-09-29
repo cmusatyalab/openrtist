@@ -87,10 +87,11 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
 class ClientThread(QThread):
     pyqt_signal = pyqtSignal(object, str, object)
 
-    def __init__(self, server_ip, video_source=None):
+    def __init__(self, server_ip, video_source=None, capture_device=-1):
         super().__init__()
         self._server_ip = server_ip
         self._video_source = video_source
+        self._capture_device = capture_device
 
     def run(self):
         loop = asyncio.new_event_loop()
@@ -99,7 +100,8 @@ class ClientThread(QThread):
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
 
-        client = capture_adapter.create_client(self._server_ip, consume_rgb_frame_style, video_source=self._video_source)
+        client = capture_adapter.create_client(self._server_ip, consume_rgb_frame_style, video_source=self._video_source
+                                            , capture_device=self._capture_device)
         client.launch()
 
     def stop(self):
@@ -117,6 +119,9 @@ def main():
         "-v", "--video", metavar="URL", type=str, help="video stream (default: try to use USB webcam)"
     )
     parser.add_argument(
+        "-d", "--device", type=int, default=-1, help="Capture device (default: -1)"
+    )
+    parser.add_argument(
         "--fullscreen", action="store_true"
     )
     inputs = parser.parse_args()
@@ -127,7 +132,7 @@ def main():
     if inputs.fullscreen:
         ui.showFullScreen()
         app.setOverrideCursor(QCursor(Qt.BlankCursor))
-    clientThread = ClientThread(inputs.server_ip, inputs.video)
+    clientThread = ClientThread(inputs.server_ip, inputs.video, inputs.device)
     clientThread.pyqt_signal.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
