@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.1-devel-ubuntu18.04
+FROM nvidia/cuda:11.7-runtime-ubuntu18.04
 MAINTAINER Satyalab, satya-group@lists.andrew.cmu.edu
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -25,8 +25,8 @@ RUN echo "deb http://ppa.launchpad.net/intel-opencl/intel-opencl/ubuntu bionic m
  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Prevent NVIDIA libOpenCL.so from being loaded
-RUN mv /usr/local/cuda-10.1/targets/x86_64-linux/lib/libOpenCL.so.1 \
-       /usr/local/cuda-10.1/targets/x86_64-linux/lib/libOpenCL.so.1.bak
+RUN mv /usr/local/cuda-11.7/targets/x86_64-linux/lib/libOpenCL.so.1 \
+       /usr/local/cuda-11.7/targets/x86_64-linux/lib/libOpenCL.so.1.bak
 
 # Install PyTorch and Gabriel's external dependencies
 COPY python-client/requirements.txt client-requirements.txt
