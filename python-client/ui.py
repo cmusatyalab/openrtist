@@ -18,12 +18,12 @@ import argparse
 import asyncio
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtCore import QThread
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QCursor
-from PyQt5.QtGui import QPainter, QFont
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPainter, QFont, QPainterPath, QPen, QBrush
+from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.QtGui import QImage
 import capture_adapter
 import os
@@ -36,6 +36,33 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
+
+    def addArtistInfo(self, painter, thumbnail, text):
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Create the path
+        path = QPainterPath()
+        # Set painter colors to given values.
+        font = QFont("Arial", 7, QFont.Bold)
+        pen = QPen(Qt.red, 1)
+        painter.setPen(pen)
+        brush = QBrush(Qt.black)
+        painter.setBrush(brush)
+        fm = QFontMetrics(font)
+        textWidthInPixels = fm.width(text)
+        textHeightInPixels = fm.height()
+        rect = QRectF(0, thumbnail.height()+5, textWidthInPixels+10, textHeightInPixels+35)
+
+        # Add the rect to path.
+        path.addRect(rect)
+        painter.setClipPath(path)
+
+        # Fill shape, draw the border and center the text.
+        painter.fillPath(path, painter.brush())
+        painter.strokePath(path, painter.pen())
+        painter.setPen(Qt.white)
+        painter.setFont(font)
+        painter.drawText(rect, Qt.AlignCenter, text)
 
     def set_image(self, frame, str_name, style_image):
         img = QImage(
@@ -69,16 +96,16 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             with open(os.path.join("style-image", "{}.txt".format(str_name)), "r") as f:
                 artist_info = f.read()
         except IOError:
-            artist_info = str_name + " -- Unknown"
+            artist_info = str_name + " (Unknown)"
+        artist_info = artist_info.replace("(", "\n -")
+        artist_info = artist_info.replace(')', '')
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix)
         painter.drawPixmap(0, 0, pixmap)
         painter.setPen(Qt.red)
         painter.drawRect(0, 0, pixmap.width(), pixmap.height())
-        painter.setPen(Qt.white)
-        painter.setFont(QFont("Arial", 18))
-        painter.drawText(0, pix.height() - 20, artist_info)
+        self.addArtistInfo(painter, pixmap, artist_info)
         painter.end()
         self.label_image.setPixmap(pix)
         self.label_image.setScaledContents(True)
