@@ -25,11 +25,20 @@ from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QPainter, QFont, QPainterPath, QPen, QBrush
 from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.QtGui import QImage
+from sinfonia_tier3 import sinfonia_tier3
 import capture_adapter
 import os
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
 import logging
+from time import sleep, time
+
+SINFONIA = "sinfonia"
+STAGING = "stage2"
+DEFAULT_TIMEOUT = 10 # timeout in seconds
+TIER1_URL = "https://cmu.findcloudlet.org"
+CPU_UUID = "737b5001-d27a-413f-9806-abf9bfce6746"
+GPU_UUID = "755e5883-0788-44da-8778-2113eddf4271"
 
 
 class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
@@ -134,9 +143,49 @@ class ClientThread(QThread):
     def stop(self):
         self._client.stop()
 
+def launchServer(mode="CPU"):
+    logging.info("Launching Backend Server using Sinfonia...")
+
+    sinfonia_uuid = GPU_UUID if (mode == "GPU") else CPU_UUID
+    tier1_url = TIER1_URL
+
+    cmd = " ".join(["sinfonia_tier3", 
+           tier1_url, 
+           sinfonia_uuid, 
+           "python3", 
+           "-m", 
+           sys.argv[0],
+           "stage2"])
+    
+    logging.info(f"Calling {cmd}")
+
+    status = sinfonia_tier3(
+        str(tier1_url),
+        sinfonia_uuid,
+        [sys.executable, "-m", sys.argv[0], "stage2"]),
+
+    logging.info(f"Lanching request sent. Status: {status}.")
+
+def stageServer(timeout=DEFAULT_TIMEOUT):
+    logging.info("Staging, waiting for backend server to start...")
+
+    start_time = time.time()
+
+    while True:
+        print(".", end="", flush=True)
+        
+        sleep(1)
+        if time.time() - start_time > timeout:
+            raise Exception(f"Connection to backend server timeout after {timeout} seconds.")
+    print()
+
+    logging.info("Stage server starts.")
+
 
 def main():
     logging.basicConfig(level=logging.INFO)
+
+    print(f"Main method entered! {sys.argv}")
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -159,10 +208,18 @@ def main():
     if inputs.fullscreen:
         ui.showFullScreen()
         app.setOverrideCursor(QCursor(Qt.BlankCursor))
-    clientThread = ClientThread(inputs.server_ip, inputs.video, inputs.device)
-    clientThread.pyqt_signal.connect(ui.set_image)
-    clientThread.finished.connect(app.exit)
-    clientThread.start()
+
+    if str(inputs.server_ip) == SINFONIA:
+        logging.info("Using Sinfonia to open openrtist...")
+        launchServer()
+    elif str(inputs.server_ip) == STAGING:
+        stageServer()
+
+    else:
+        clientThread = ClientThread(inputs.server_ip, inputs.video, inputs.device)
+        clientThread.pyqt_signal.connect(ui.set_image)
+        clientThread.finished.connect(app.exit)
+        clientThread.start()
 
     sys.exit(app.exec())  # return Dialog Code
 
