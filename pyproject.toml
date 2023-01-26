@@ -13,3 +13,6 @@ exclude = '''
   | server/openrtist_pb2.py
 )
 '''
+
+[tool.isort]
+profile = "black"
