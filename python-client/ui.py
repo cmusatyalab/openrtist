@@ -31,6 +31,7 @@ import os
 import sys  # We need sys so that we can pass argv to QApplication
 import design  # This file holds our MainWindow and all design related things
 import logging
+import subprocess
 from time import sleep, time
 
 SINFONIA = "sinfonia"
@@ -169,13 +170,24 @@ def launchServer(mode="CPU"):
 def stageServer(timeout=DEFAULT_TIMEOUT):
     logging.info("Staging, waiting for backend server to start...")
 
-    start_time = time.time()
+    start_time = time()
 
     while True:
         print(".", end="", flush=True)
+
+        try:
+            cmd = [sys.executable, "-m", "ui", "openrtist"]
+            subprocess.run(cmd)
+            logging.info("Frontend terminated.")
+            return
+        except Exception as e:
+            logging.info("Getting Error...")
+            print(e)
+            logging.info("Retrying in 1 second...")
+            pass
         
         sleep(1)
-        if time.time() - start_time > timeout:
+        if time() - start_time > timeout:
             raise Exception(f"Connection to backend server timeout after {timeout} seconds.")
     print()
 
