@@ -132,7 +132,7 @@ class OpenvinoAdapter(OpenrtistAdapter):
                 net.reshape({self.input_blob: (1, 3, img.shape[0], img.shape[1])})
                 reshaped = True
             else:
-                logger.warning(
+                logger.debug(
                     "Image is resized from %s to %s", str(img.shape[:-1]), str((h, w))
                 )
                 img = cv2.resize(img, (w, h))
