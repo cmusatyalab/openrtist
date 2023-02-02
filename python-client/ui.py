@@ -189,9 +189,6 @@ def stageServer(timeout=DEFAULT_TIMEOUT):
         sleep(1)
         if time() - start_time > timeout:
             raise Exception(f"Connection to backend server timeout after {timeout} seconds.")
-    print()
-
-    logging.info("Stage server starts.")
 
 
 def main():

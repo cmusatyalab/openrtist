@@ -15,24 +15,10 @@
 # limitations under the License.
 
 import argparse
-import asyncio
-from PyQt5 import QtWidgets
-from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QCursor
-from PyQt5.QtGui import QPainter, QFont, QPainterPath, QPen, QBrush
-from PyQt5.QtGui import QPixmap, QFontMetrics
-from PyQt5.QtGui import QImage
 from sinfonia_tier3 import sinfonia_tier3
-import capture_adapter
 from ui import *
-import os
 import sys  # We need sys so that we can pass argv to QApplication
-import design  # This file holds our MainWindow and all design related things
 import logging
-from time import sleep, time
 
 SINFONIA = "sinfonia"
 STAGING = "stage2"
@@ -42,7 +28,11 @@ CPU_UUID = "737b5001-d27a-413f-9806-abf9bfce6746"
 GPU_UUID = "755e5883-0788-44da-8778-2113eddf4271"
 
 
-def launchServer(mode="CPU"):
+def launchServer(application_args, mode="CPU"):
+    """
+    Call sinfonia tier3 to deploy the backend,
+    and call stage2 which will wait until the backend is ready.
+    """
     logging.info("Launching Backend Server using Sinfonia...")
 
     sinfonia_uuid = GPU_UUID if (mode == "GPU") else CPU_UUID
@@ -53,7 +43,7 @@ def launchServer(mode="CPU"):
            sinfonia_uuid, 
            "python3", 
            "-m", 
-           sys.argv[0],
+           "sinfonia_wrapper" # TODO: get application name from sys
            "stage2"])
     
     logging.info(f"Sending request to launch backend via: ${cmd}.")
@@ -61,9 +51,47 @@ def launchServer(mode="CPU"):
     status = sinfonia_tier3(
         str(tier1_url),
         sinfonia_uuid,
-        [sys.executable, "-m", "ui", "stage2"]),
+        [sys.executable, "-m", "sinfonia_wrapper", "stage2"]) # TODO: add relative path to sinfonia_wrapper
 
     logging.info(f"Status: {status}")
+
+def parse_args(inputs):
+    """
+    return the bash commands for openrtist as a string
+
+    :param inputs: parse args namespace
+    :return: a string of flags and values after the ui.py command
+    """
+
+    server_ip = inputs.server_ip
+    v_flag = "-v " + str(inputs.video) if inputs.video else ""
+    d_flag = "-d " + str(inputs.device) if inputs.device else ""
+    fs_flag = "--fullscreen" if inputs.fullscreen else ""
+    all_flags = " ".join([server_ip, v_flag, d_flag, fs_flag])
+    return all_flags.strip()
+
+def stage(application_args, timeout=DEFAULT_TIMEOUT):
+    timeout = DEFAULT_TIMEOUT
+    logging.info("Staging, waiting for backend server to start...")
+
+    start_time = time()
+
+    while True:
+
+        try:
+            cmd = [sys.executable, "-m", "ui", "openrtist", application_args]
+            subprocess.run(cmd)
+            logging.info("Frontend terminated.")
+            return
+        except Exception as e:
+            logging.info("Getting Error...")
+            print(e)
+        
+        if time() - start_time > timeout:
+            raise Exception(f"Connection to backend server timeout after {timeout} seconds.")
+        else:
+            logging.info("Retrying in 1 second...")
+            sleep(1)
 
 
 def main():
@@ -72,6 +100,12 @@ def main():
     print(f"Main method entered! {sys.argv}")
 
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-g", "--gpu", action="store_true", help="Use GPU backend instead of CPU"
+    )
+    parser.add_argument(
+        "-s", "--stage", action="store_true", help="Calling the staging for sinfonia, not for external use."
+    )
     parser.add_argument(
         "server_ip", action="store", help="IP address for Openrtist Server"
     )
@@ -86,13 +120,19 @@ def main():
     )
     inputs = parser.parse_args()
 
-    if str(inputs.server_ip) == SINFONIA:
-        logging.info("Using Sinfonia to open openrtist...")
-        launchServer()
-    elif str(inputs.server_ip) == STAGING:
-        stageServer()
+    if (inputs.stage):
+        logging.warning("Calling internal staging function!")
+        application_args = parse_args(inputs)
+        stage(application_args)
     else:
-        logging.info("Wrong argument. Please use ui.py instead.")
+        use_gpu = inputs.gpu
+        application_args = parse_args(inputs)
+
+        print(f"args for program is {application_args}.")
+
+        logging.info("Using Sinfonia to open openrtist...")
+        launchServer(application_args, use_gpu)
+    
 
 
     sys.exit(0)
