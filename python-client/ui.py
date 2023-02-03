@@ -218,17 +218,17 @@ def main():
         ui.showFullScreen()
         app.setOverrideCursor(QCursor(Qt.BlankCursor))
 
-    if str(inputs.server_ip) == SINFONIA:
-        logging.info("Using Sinfonia to open openrtist...")
-        launchServer()
-    elif str(inputs.server_ip) == STAGING:
-        stageServer()
+    # if str(inputs.server_ip) == SINFONIA:
+    #     logging.info("Using Sinfonia to open openrtist...")
+    #     launchServer()
+    # elif str(inputs.server_ip) == STAGING:
+    #     stageServer()
 
-    else:
-        clientThread = ClientThread(inputs.server_ip, inputs.video, inputs.device)
-        clientThread.pyqt_signal.connect(ui.set_image)
-        clientThread.finished.connect(app.exit)
-        clientThread.start()
+    # else:
+    clientThread = ClientThread(inputs.server_ip, inputs.video, inputs.device)
+    clientThread.pyqt_signal.connect(ui.set_image)
+    clientThread.finished.connect(app.exit)
+    clientThread.start()
 
     sys.exit(app.exec())  # return Dialog Code
 

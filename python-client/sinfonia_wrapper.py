@@ -28,30 +28,38 @@ CPU_UUID = "737b5001-d27a-413f-9806-abf9bfce6746"
 GPU_UUID = "755e5883-0788-44da-8778-2113eddf4271"
 
 
-def launchServer(application_args, mode="CPU"):
+def launchServer(application_args, use_gpu=False):
     """
     Call sinfonia tier3 to deploy the backend,
     and call stage2 which will wait until the backend is ready.
     """
+    # TODO: make tier1 url and uuid as optional customized input
+
     logging.info("Launching Backend Server using Sinfonia...")
 
-    sinfonia_uuid = GPU_UUID if (mode == "GPU") else CPU_UUID
+    sinfonia_uuid = GPU_UUID if use_gpu else CPU_UUID
     tier1_url = TIER1_URL
 
-    cmd = " ".join(["sinfonia_tier3", 
+    cmd = " ".join(["sinfonia_tier3",
            tier1_url, 
            sinfonia_uuid, 
            "python3", 
            "-m", 
-           "sinfonia_wrapper" # TODO: get application name from sys
-           "stage2"])
+           "sinfonia_wrapper", # TODO: get application name from sys
+           STAGING])
     
-    logging.info(f"Sending request to launch backend via: ${cmd}.")
+    logging.info(f"Sending request to sinfonia-tier3 to launch backend: \n\t${cmd}.")
 
     status = sinfonia_tier3(
         str(tier1_url),
         sinfonia_uuid,
-        [sys.executable, "-m", "sinfonia_wrapper", "stage2"]) # TODO: add relative path to sinfonia_wrapper
+        [
+            sys.executable, 
+            "-m", 
+            "sinfonia_wrapper", # TODO: add relative path to sinfonia_wrapper
+            "-s",
+            application_args
+        ]) 
 
     logging.info(f"Status: {status}")
 
@@ -63,15 +71,15 @@ def parse_args(inputs):
     :return: a string of flags and values after the ui.py command
     """
 
-    server_ip = inputs.server_ip
+    # server_ip = inputs.server_ip
     v_flag = "-v " + str(inputs.video) if inputs.video else ""
     d_flag = "-d " + str(inputs.device) if inputs.device else ""
     fs_flag = "--fullscreen" if inputs.fullscreen else ""
-    all_flags = " ".join([server_ip, v_flag, d_flag, fs_flag])
+    all_flags = " ".join([v_flag, d_flag, fs_flag])
     return all_flags.strip()
 
 def stage(application_args, timeout=DEFAULT_TIMEOUT):
-    timeout = DEFAULT_TIMEOUT
+    timeout = DEFAULT_TIMEOUT # TODO: add timeout as a customized param
     logging.info("Staging, waiting for backend server to start...")
 
     start_time = time()
@@ -79,7 +87,13 @@ def stage(application_args, timeout=DEFAULT_TIMEOUT):
     while True:
 
         try:
-            cmd = [sys.executable, "-m", "ui", "openrtist", application_args]
+            cmd = [
+                sys.executable, 
+                "-m", 
+                "ui", # TODO: getting UI path
+                "openrtist",  # TODO: setting openrtist alias name for customized backend
+                application_args
+            ]
             subprocess.run(cmd)
             logging.info("Frontend terminated.")
             return
@@ -106,9 +120,9 @@ def main():
     parser.add_argument(
         "-s", "--stage", action="store_true", help="Calling the staging for sinfonia, not for external use."
     )
-    parser.add_argument(
-        "server_ip", action="store", help="IP address for Openrtist Server"
-    )
+    # parser.add_argument(
+    #     "server_ip", action="store", help="IP address for Openrtist Server"
+    # )
     parser.add_argument(
         "-v", "--video", metavar="URL", type=str, help="video stream (default: try to use USB webcam)"
     )
@@ -132,8 +146,6 @@ def main():
 
         logging.info("Using Sinfonia to open openrtist...")
         launchServer(application_args, use_gpu)
-    
-
 
     sys.exit(0)
 
