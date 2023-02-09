@@ -17,8 +17,9 @@
 import argparse
 from sinfonia_tier3 import sinfonia_tier3
 from ui import *
-import sys  # We need sys so that we can pass argv to QApplication
+import sys
 import logging
+import socket
 
 SINFONIA = "sinfonia"
 STAGING = "stage2"
@@ -26,6 +27,8 @@ DEFAULT_TIMEOUT = 10 # timeout in seconds
 TIER1_URL = "https://cmu.findcloudlet.org"
 CPU_UUID = "737b5001-d27a-413f-9806-abf9bfce6746"
 GPU_UUID = "755e5883-0788-44da-8778-2113eddf4271"
+OPENRTIST_DNS = "openrtist"
+OPENRTIST_PORT = 9099
 
 
 def launchServer(application_args, use_gpu=False):
@@ -87,25 +90,30 @@ def stage(application_args, timeout=DEFAULT_TIMEOUT):
     while True:
 
         try:
-            cmd = [
-                sys.executable, 
-                "-m", 
-                "ui", # TODO: getting UI path
-                "openrtist",  # TODO: setting openrtist alias name for customized backend
-                application_args
-            ]
-            subprocess.run(cmd)
-            logging.info("Frontend terminated.")
-            return
-        except Exception as e:
-            logging.info("Getting Error...")
-            print(e)
+            with socket.create_connection((OPENRTIST_DNS, OPENRTIST_PORT), 1.0) as sockfd:
+                sockfd.settimeout(1.0)
+                break
+        except (socket.gaierror, ConnectionRefusedError, socket.timeout):
+            logging.info("Backend not ready yet. Retry in 1 second...")
+            sleep(1)
         
         if time() - start_time > timeout:
             raise Exception(f"Connection to backend server timeout after {timeout} seconds.")
-        else:
-            logging.info("Retrying in 1 second...")
-            sleep(1)
+
+    try:
+        cmd = [
+            sys.executable, 
+            "-m", 
+            "ui", # TODO: getting UI path
+            "openrtist",  # TODO: setting openrtist alias name for customized backend
+            application_args
+        ]
+        subprocess.run(cmd)
+        logging.info("Frontend terminated.")
+        
+    except Exception as e:
+        logging.info("Getting Error...")
+        print(e)
 
 
 def main():
