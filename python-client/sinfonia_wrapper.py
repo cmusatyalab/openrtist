@@ -16,12 +16,12 @@
 
 import argparse
 from sinfonia_tier3 import sinfonia_tier3
-from ui import *
 import sys
 import logging
 import socket
+import subprocess
+from time import sleep, time
 
-SINFONIA = "sinfonia"
 STAGING = "stage2"
 DEFAULT_TIMEOUT = 10 # timeout in seconds
 TIER1_URL = "https://cmu.findcloudlet.org"
@@ -43,15 +43,7 @@ def launchServer(application_args, use_gpu=False):
     sinfonia_uuid = GPU_UUID if use_gpu else CPU_UUID
     tier1_url = TIER1_URL
 
-    cmd = " ".join(["sinfonia_tier3",
-           tier1_url, 
-           sinfonia_uuid, 
-           "python3", 
-           "-m", 
-           "sinfonia_wrapper", # TODO: get application name from sys
-           STAGING])
-    
-    logging.info(f"Sending request to sinfonia-tier3 to launch backend: \n\t${cmd}.")
+    logging.info(f"Sending request to sinfonia-tier3 to launch backend.")
 
     status = sinfonia_tier3(
         str(tier1_url),
