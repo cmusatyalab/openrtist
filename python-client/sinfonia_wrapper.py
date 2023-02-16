@@ -25,13 +25,21 @@ from time import sleep, time
 STAGING = "stage2"
 DEFAULT_TIMEOUT = 10 # timeout in seconds
 TIER1_URL = "https://cmu.findcloudlet.org"
-CPU_UUID = "737b5001-d27a-413f-9806-abf9bfce6746"
-GPU_UUID = "755e5883-0788-44da-8778-2113eddf4271"
-OPENRTIST_DNS = "openrtist"
-OPENRTIST_PORT = 9099
+OPENRTIST_BACKENDS = {
+    "cpu": {
+        "uuid": "737b5001-d27a-413f-9806-abf9bfce6746",
+        "dns": "openrtist",
+        "port": 9099
+    },
+    "gpu": {
+        "uuid": "737b5001-d27a-413f-9806-abf9bfce6746",
+        "dns": "openrtist",
+        "port": 9099
+    }
+}
 
 
-def launchServer(application_args, use_gpu=False):
+def launchServer(application_args, backend):
     """
     Call sinfonia tier3 to deploy the backend,
     and call stage2 which will wait until the backend is ready.
@@ -40,15 +48,15 @@ def launchServer(application_args, use_gpu=False):
 
     logging.info("Launching Backend Server using Sinfonia...")
 
-    sinfonia_uuid = GPU_UUID if use_gpu else CPU_UUID
+    sinfonia_uuid = OPENRTIST_BACKENDS[backend]["uuid"]
     tier1_url = TIER1_URL
 
     logging.info(f"Sending request to sinfonia-tier3 to launch backend.")
 
-    print([
+    logging.debug(f"Request sent: " + [
             sys.executable, 
             "-m", 
-            "sinfonia_wrapper", # TODO: add relative path to sinfonia_wrapper
+            "sinfonia_wrapper", 
             "-s"
         ] + application_args)
 
@@ -59,34 +67,25 @@ def launchServer(application_args, use_gpu=False):
             sys.executable, 
             "-m", 
             "sinfonia_wrapper", # TODO: add relative path to sinfonia_wrapper
-            "-s"
-        ] + application_args
+            "-s",
+            "-b",
+            backend
+        ] 
+        + application_args
         ) 
 
     logging.info(f"Status: {status}")
 
-# def parse_args(inputs):
-#     """
-#     return the bash commands for openrtist as a string
-
-#     :param inputs: parse args namespace
-#     :return: a string of flags and values after the ui.py command
-#     """
-
-#     # server_ip = inputs.server_ip
-#     v_flag = "-v " + str(inputs.video) if inputs.video else ""
-#     d_flag = "-d " + str(inputs.device) if inputs.device else ""
-#     fs_flag = "--fullscreen" if inputs.fullscreen else ""
-#     all_flags = " ".join([v_flag, d_flag, fs_flag])
-#     return all_flags.strip()
-
-def stage(application_args, timeout=DEFAULT_TIMEOUT):
-    timeout = DEFAULT_TIMEOUT # TODO: add timeout as a customized param
+def stage(application_args, backend):
+    timeout = DEFAULT_TIMEOUT
     logging.info("Staging, waiting for backend server to start...")
 
     start_time = time()
 
     while True:
+
+        OPENRTIST_DNS = OPENRTIST_BACKENDS[backend]["dns"]
+        OPENRTIST_PORT = OPENRTIST_BACKENDS[backend]["port"]
 
         try:
             with socket.create_connection((OPENRTIST_DNS, OPENRTIST_PORT), 1.0) as sockfd:
@@ -101,13 +100,11 @@ def stage(application_args, timeout=DEFAULT_TIMEOUT):
 
     try:
 
-        print(application_args)
-
         cmd = [
             sys.executable, 
             "-m", 
             "ui", # TODO: getting UI path
-            "openrtist",  # TODO: setting openrtist alias name for customized backend
+            OPENRTIST_BACKENDS[backend]["dns"], 
         ] + application_args
         subprocess.run(cmd)
         logging.info("Frontend terminated.")
@@ -122,7 +119,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-g", "--gpu", action="store_true", help="Use GPU backend instead of CPU"
+        "-b", "--backend", action="store", help="Choose the backend for sinfonia to use", default="cpu"
     )
     parser.add_argument(
         "-s", "--stage", action="store_true", help="Calling the staging for sinfonia, not for external use."
@@ -132,12 +129,10 @@ def main():
 
     if (inputs.stage):
         logging.warning("Calling internal staging function!")
-        stage(application_args)
+        stage(application_args, inputs.backend)
     else:
-        use_gpu = inputs.gpu
-
         logging.info("Using Sinfonia to open openrtist...")
-        launchServer(application_args, use_gpu)
+        launchServer(application_args, inputs.backend)
 
     sys.exit(0)
 
