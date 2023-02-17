@@ -23,19 +23,19 @@ import subprocess
 from time import sleep, time
 
 STAGING = "stage2"
-DEFAULT_TIMEOUT = 10 # timeout in seconds
+DEFAULT_TIMEOUT = 10  # timeout in seconds
 TIER1_URL = "https://cmu.findcloudlet.org"
 OPENRTIST_BACKENDS = {
     "cpu": {
         "uuid": "737b5001-d27a-413f-9806-abf9bfce6746",
         "dns": "openrtist",
-        "port": 9099
+        "port": 9099,
     },
     "gpu": {
         "uuid": "737b5001-d27a-413f-9806-abf9bfce6746",
         "dns": "openrtist",
-        "port": 9099
-    }
+        "port": 9099,
+    },
 }
 
 
@@ -53,28 +53,27 @@ def launchServer(application_args, backend):
 
     logging.info(f"Sending request to sinfonia-tier3 to launch backend.")
 
-    logging.debug(f"Request sent: " + str([
-            sys.executable, 
-            "-m", 
-            "sinfonia_wrapper", 
-            "-s"
-        ] + application_args))
+    logging.debug(
+        f"Request sent: "
+        + str([sys.executable, "-m", "sinfonia_wrapper", "-s"] + application_args)
+    )
 
     status = sinfonia_tier3(
         str(tier1_url),
         sinfonia_uuid,
         [
-            sys.executable, 
-            "-m", 
-            "sinfonia_wrapper", # TODO: add relative path to sinfonia_wrapper
+            sys.executable,
+            "-m",
+            "sinfonia_wrapper",  # TODO: add relative path to sinfonia_wrapper
             "-s",
             "-b",
-            backend
-        ] 
-        + application_args
-        ) 
+            backend,
+        ]
+        + application_args,
+    )
 
     logging.info(f"Status: {status}")
+
 
 def stage(application_args, backend):
     timeout = DEFAULT_TIMEOUT
@@ -83,32 +82,34 @@ def stage(application_args, backend):
     start_time = time()
 
     while True:
-
         OPENRTIST_DNS = OPENRTIST_BACKENDS[backend]["dns"]
         OPENRTIST_PORT = OPENRTIST_BACKENDS[backend]["port"]
 
         try:
-            with socket.create_connection((OPENRTIST_DNS, OPENRTIST_PORT), 1.0) as sockfd:
+            with socket.create_connection(
+                (OPENRTIST_DNS, OPENRTIST_PORT), 1.0
+            ) as sockfd:
                 sockfd.settimeout(1.0)
                 break
         except (socket.gaierror, ConnectionRefusedError, socket.timeout):
             logging.info("Backend not ready yet. Retry in 1 second...")
             sleep(1)
-        
+
         if time() - start_time > timeout:
-            raise Exception(f"Connection to backend server timeout after {timeout} seconds.")
+            raise Exception(
+                f"Connection to backend server timeout after {timeout} seconds."
+            )
 
     try:
-
         cmd = [
-            sys.executable, 
-            "-m", 
-            "ui", # TODO: getting UI path
-            OPENRTIST_BACKENDS[backend]["dns"], 
+            sys.executable,
+            "-m",
+            "ui",  # TODO: getting UI path
+            OPENRTIST_BACKENDS[backend]["dns"],
         ] + application_args
         subprocess.run(cmd)
         logging.info("Frontend terminated.")
-        
+
     except Exception as e:
         logging.info("Getting Error...")
         print(e)
@@ -119,15 +120,22 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-b", "--backend", action="store", help="Choose the backend for sinfonia to use", default="cpu"
+        "-b",
+        "--backend",
+        action="store",
+        help="Choose the backend for sinfonia to use",
+        default="cpu",
     )
     parser.add_argument(
-        "-s", "--stage", action="store_true", help="Calling the staging for sinfonia, not for external use."
+        "-s",
+        "--stage",
+        action="store_true",
+        help="Calling the staging for sinfonia, not for external use.",
     )
 
     inputs, application_args = parser.parse_known_args()
 
-    if (inputs.stage):
+    if inputs.stage:
         logging.warning("Calling internal staging function!")
         stage(application_args, inputs.backend)
     else:
