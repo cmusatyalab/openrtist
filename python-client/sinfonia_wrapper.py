@@ -53,12 +53,12 @@ def launchServer(application_args, backend):
 
     logging.info(f"Sending request to sinfonia-tier3 to launch backend.")
 
-    logging.debug(f"Request sent: " + [
+    logging.debug(f"Request sent: " + str([
             sys.executable, 
             "-m", 
             "sinfonia_wrapper", 
             "-s"
-        ] + application_args)
+        ] + application_args))
 
     status = sinfonia_tier3(
         str(tier1_url),
