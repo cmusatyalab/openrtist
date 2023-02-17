@@ -15,12 +15,13 @@
 # limitations under the License.
 
 import argparse
-from sinfonia_tier3 import sinfonia_tier3
-import sys
 import logging
 import socket
 import subprocess
+import sys
 from time import sleep, time
+
+from sinfonia_tier3 import sinfonia_tier3
 
 STAGING = "stage2"
 DEFAULT_TIMEOUT = 10  # timeout in seconds
