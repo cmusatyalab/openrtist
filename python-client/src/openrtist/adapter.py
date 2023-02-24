@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from gabriel_client.opencv_adapter import OpencvAdapter
-import cv2
-import config
-import numpy as np
-import random
 import logging
+import random
 
-import openrtist_pb2
+import cv2
+import numpy as np
+from gabriel_client.opencv_adapter import OpencvAdapter
 
+from . import config, openrtist_pb2
 
 logger = logging.getLogger(__name__)
 

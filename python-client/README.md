@@ -1,16 +1,18 @@
-# Overview
+# Openrtist_Sinfonia
+
+## Overview
 This is the Desktop demo python client for Openrtist.
+The backend can be deployed with Sinfonia.
 
 
-# Dependencies:
+## Dependencies:
+The project uses [poetry](https://python-poetry.org/) to manage dependencies. To install all dependencies, [install `poetry`](https://python-poetry.org/docs/#installation) and run the below command: 
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
 
-# Usage:
+## Usage:
+### Run from source code:
 ```bash
-./ui.py [-h] openrtist_server_ip
+./sinfonia_wrapper.py
 ```
-
-# GHC 9th floor Demo Setup:
-The [screensaver](screensaver) and [stream_for_screensaver.sh](stream_for_screensaver.sh) configures the GHC 9th floor Openrtist screensaver demo setup.

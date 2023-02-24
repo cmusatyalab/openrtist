@@ -16,20 +16,26 @@
 
 import argparse
 import asyncio
-from PyQt5 import QtWidgets
-from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QCursor
-from PyQt5.QtGui import QPainter, QFont, QPainterPath, QPen, QBrush
-from PyQt5.QtGui import QPixmap, QFontMetrics
-from PyQt5.QtGui import QImage
-import capture_adapter
+import logging
 import os
 import sys  # We need sys so that we can pass argv to QApplication
-import design  # This file holds our MainWindow and all design related things
-import logging
+
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import QRectF, Qt, QThread, pyqtSignal
+from PyQt5.QtGui import (
+    QBrush,
+    QCursor,
+    QFont,
+    QFontMetrics,
+    QImage,
+    QPainter,
+    QPainterPath,
+    QPen,
+    QPixmap,
+)
+
+from . import design  # This file holds our MainWindow and all design related things
+from . import capture_adapter
 
 
 class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
@@ -51,7 +57,9 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         fm = QFontMetrics(font)
         textWidthInPixels = fm.width(text)
         textHeightInPixels = fm.height()
-        rect = QRectF(0, thumbnail.height()+5, textWidthInPixels+10, textHeightInPixels+35)
+        rect = QRectF(
+            0, thumbnail.height() + 5, textWidthInPixels + 10, textHeightInPixels + 35
+        )
 
         # Add the rect to path.
         path.addRect(rect)
@@ -98,7 +106,7 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         except IOError:
             artist_info = str_name + " (Unknown)"
         artist_info = artist_info.replace("(", "\n -")
-        artist_info = artist_info.replace(')', '')
+        artist_info = artist_info.replace(")", "")
         pixmap = pixmap.scaledToWidth(256)
         painter = QPainter()
         painter.begin(pix)
@@ -127,8 +135,12 @@ class ClientThread(QThread):
         def consume_rgb_frame_style(rgb_frame, style, style_image):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
 
-        client = capture_adapter.create_client(self._server_ip, consume_rgb_frame_style, video_source=self._video_source
-                                            , capture_device=self._capture_device)
+        client = capture_adapter.create_client(
+            self._server_ip,
+            consume_rgb_frame_style,
+            video_source=self._video_source,
+            capture_device=self._capture_device,
+        )
         client.launch()
 
     def stop(self):
@@ -143,14 +155,16 @@ def main():
         "server_ip", action="store", help="IP address for Openrtist Server"
     )
     parser.add_argument(
-        "-v", "--video", metavar="URL", type=str, help="video stream (default: try to use USB webcam)"
+        "-v",
+        "--video",
+        metavar="URL",
+        type=str,
+        help="video stream (default: try to use USB webcam)",
     )
     parser.add_argument(
         "-d", "--device", type=int, default=-1, help="Capture device (default: -1)"
     )
-    parser.add_argument(
-        "--fullscreen", action="store_true"
-    )
+    parser.add_argument("--fullscreen", action="store_true")
     inputs = parser.parse_args()
 
     app = QtWidgets.QApplication(sys.argv)

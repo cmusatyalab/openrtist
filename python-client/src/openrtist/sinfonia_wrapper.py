@@ -16,6 +16,7 @@
 
 import argparse
 import logging
+import os  # to get the path of the current running file
 import socket
 import subprocess
 import sys
@@ -59,13 +60,15 @@ def launchServer(application_args, backend):
         + str([sys.executable, "-m", "sinfonia_wrapper", "-s"] + application_args)
     )
 
+    print(os.path.dirname(os.path.abspath(__file__)))
+
     status = sinfonia_tier3(
         str(tier1_url),
         sinfonia_uuid,
         [
             sys.executable,
             "-m",
-            "sinfonia_wrapper",  # TODO: add relative path to sinfonia_wrapper
+            "openrtist.sinfonia_wrapper",  # TODO: add relative path to sinfonia_wrapper
             "-s",
             "-b",
             backend,
@@ -105,7 +108,7 @@ def stage(application_args, backend):
         cmd = [
             sys.executable,
             "-m",
-            "ui",  # TODO: getting UI path
+            "openrtist.ui",  # TODO: getting UI path
             OPENRTIST_BACKENDS[backend]["dns"],
         ] + application_args
         subprocess.run(cmd)
