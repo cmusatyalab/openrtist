@@ -1,1 +1,0 @@
-../../models/dido_carthage.txt
