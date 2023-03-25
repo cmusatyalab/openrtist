@@ -1,1 +1,0 @@
-../../models/rain_princess.txt

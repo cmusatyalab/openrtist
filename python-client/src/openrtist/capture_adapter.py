@@ -1,8 +1,8 @@
 from threading import Thread
 from time import sleep
-from adapter import Adapter
+from .adapter import Adapter
 from gabriel_client.websocket_client import WebsocketClient
-import config
+from . import config
 import cv2
 import logging
 

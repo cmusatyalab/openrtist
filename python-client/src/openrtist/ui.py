@@ -25,10 +25,10 @@ from PyQt5.QtGui import QCursor
 from PyQt5.QtGui import QPainter, QFont, QPainterPath, QPen, QBrush
 from PyQt5.QtGui import QPixmap, QFontMetrics
 from PyQt5.QtGui import QImage
-import capture_adapter
+from . import capture_adapter
 import os
 import sys  # We need sys so that we can pass argv to QApplication
-import design  # This file holds our MainWindow and all design related things
+from . import design  # This file holds our MainWindow and all design related things
 import logging
 
 

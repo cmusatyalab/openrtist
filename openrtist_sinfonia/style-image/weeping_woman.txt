@@ -1,1 +1,0 @@
-../../models/weeping_woman.txt

@@ -68,7 +68,6 @@ def launchServer(application_args, backend):
         [
             sys.executable,
             "-m",
-            # os.path.dirname(os.path.abspath(__file__)) + "/sinfonia_wrapper",
             "openrtist.sinfonia_wrapper",  # TODO: add relative path to sinfonia_wrapper
             "-s",
             "-b",

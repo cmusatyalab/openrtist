@@ -14,12 +14,12 @@
 
 from gabriel_client.opencv_adapter import OpencvAdapter
 import cv2
-import config
+from . import config
 import numpy as np
 import random
 import logging
 
-import openrtist_pb2
+from . import openrtist_pb2
 
 
 logger = logging.getLogger(__name__)
