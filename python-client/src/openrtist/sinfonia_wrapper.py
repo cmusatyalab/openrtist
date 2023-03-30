@@ -16,7 +16,7 @@
 
 import argparse
 import logging
-import os # to get the path of the current running file
+import os  # to get the path of the current running file
 import socket
 import subprocess
 import sys
