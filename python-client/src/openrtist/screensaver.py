@@ -16,9 +16,9 @@
 
 import argparse
 import os
-import cv2
-import capture_adapter
 
+import capture_adapter
+import cv2
 
 STYLE_DIR_PATH = "style-image"
 

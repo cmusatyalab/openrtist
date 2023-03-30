@@ -1,11 +1,12 @@
+import logging
 from threading import Thread
 from time import sleep
-from .adapter import Adapter
-from gabriel_client.websocket_client import WebsocketClient
-from . import config
-import cv2
-import logging
 
+import cv2
+from gabriel_client.websocket_client import WebsocketClient
+
+from . import config
+from .adapter import Adapter
 
 logger = logging.getLogger(__name__)
 

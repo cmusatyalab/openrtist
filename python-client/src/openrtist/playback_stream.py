@@ -1,9 +1,10 @@
-from gabriel_client.measurement_client import MeasurementClient
-from gabriel_client.websocket_client import WebsocketClient
-from adapter import Adapter
+import argparse
+
 import config
 import cv2
-import argparse
+from adapter import Adapter
+from gabriel_client.measurement_client import MeasurementClient
+from gabriel_client.websocket_client import WebsocketClient
 
 
 def main():

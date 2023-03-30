@@ -16,20 +16,26 @@
 
 import argparse
 import asyncio
-from PyQt5 import QtWidgets
-from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QCursor
-from PyQt5.QtGui import QPainter, QFont, QPainterPath, QPen, QBrush
-from PyQt5.QtGui import QPixmap, QFontMetrics
-from PyQt5.QtGui import QImage
-from . import capture_adapter
+import logging
 import os
 import sys  # We need sys so that we can pass argv to QApplication
+
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import QRectF, Qt, QThread, pyqtSignal
+from PyQt5.QtGui import (
+    QBrush,
+    QCursor,
+    QFont,
+    QFontMetrics,
+    QImage,
+    QPainter,
+    QPainterPath,
+    QPen,
+    QPixmap,
+)
+
 from . import design  # This file holds our MainWindow and all design related things
-import logging
+from . import capture_adapter
 
 
 class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
