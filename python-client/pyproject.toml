@@ -5,6 +5,12 @@ description = "Openrtist Python Client with Sinfonia to control selection and co
 authors = ["Carnegie Mellon University <satya+group@cs.cmu.edu>"]
 license = "Apache-2.0"
 readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Environment :: X11 Applications",
+    "Intended Audience :: End Users/Desktop",
+]
 packages = [{include = "openrtist", from = "src"}]
 
 [tool.poetry.dependencies]
