@@ -43,7 +43,7 @@ exclude = '''
 profile = "black"
 
 [tool.poetry.scripts]
-openrtist = "sinfonia_wrapper:main"
+openrtist = "openrtist.sinfonia_wrapper:main"
 
 [build-system]
 requires = ["poetry-core"]
