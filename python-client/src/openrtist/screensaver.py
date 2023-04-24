@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import argparse
+import importlib.resources
 import os
 
 import capture_adapter
@@ -36,10 +37,14 @@ def main():
     inputs = parser.parse_args()
 
     style_name_to_image = {}
-    for image_name in os.listdir(STYLE_DIR_PATH):
-        im = cv2.imread(os.path.join(STYLE_DIR_PATH, image_name))
+    style_dir_path = importlib.resources.files("openrtist.style_image")
+    for style in style_dir_path.iterdir():
+        if style.name.endswith(".txt"):
+            continue
+
+        im = cv2.imdecode(style.read_bytes())
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-        style_name_to_image[os.path.splitext(image_name)[0]] = im
+        style_name_to_image[os.path.splitext(style.name)[0]] = im
 
     if not os.path.exists(inputs.output_pipe_path):
         os.mkfifo(inputs.output_pipe_path)

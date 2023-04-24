@@ -16,9 +16,11 @@
 
 import argparse
 import asyncio
+import importlib.resources
 import logging
 import os
 import sys  # We need sys so that we can pass argv to QApplication
+from pathlib import Path
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QRectF, Qt, QThread, pyqtSignal
@@ -84,6 +86,7 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
         pix = QPixmap.fromImage(img)
         pix = pix.scaledToWidth(1200)
 
+        # print(f"UI STYLE {str_name}")
         # w = self.label_image.maximumWidth();
         # h = self.label_image.maximumHeight();
         # pix = pix.scaled(QSize(w, h), Qt.KeepAspectRatio, Qt.SmoothTransformation);
@@ -98,13 +101,15 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             pixmap = QPixmap.fromImage(img)
         else:
             pixmap = QPixmap()
-            pixmap.load(os.path.join("style-image", str_name))
-        # print("UI STYLE {}".format('style-image/' + str_name))
+            image_data = importlib.resources.read_binary("openrtist.style_image", str_name)
+            pixmap.loadFromData(image_data)
+
         try:
-            with open(os.path.join("style-image", "{}.txt".format(str_name)), "r") as f:
-                artist_info = f.read()
+            artist_info_path = Path(str_name).with_suffix(".txt")
+            artist_info = importlib.resources.read_text("openrtist.style_image", artist_info_path)
         except IOError:
             artist_info = str_name + " (Unknown)"
+
         artist_info = artist_info.replace("(", "\n -")
         artist_info = artist_info.replace(")", "")
         pixmap = pixmap.scaledToWidth(256)
