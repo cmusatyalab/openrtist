@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-
-# Copyright 2018 Carnegie Mellon University
+#
+# Copyright 2018-2023 Carnegie Mellon University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -127,9 +127,9 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
 class ClientThread(QThread):
     pyqt_signal = pyqtSignal(object, str, object)
 
-    def __init__(self, server_ip, video_source=None, capture_device=-1):
+    def __init__(self, server, video_source=None, capture_device=-1):
         super().__init__()
-        self._server_ip = server_ip
+        self._server = server
         self._video_source = video_source
         self._capture_device = capture_device
 
@@ -141,7 +141,7 @@ class ClientThread(QThread):
             self.pyqt_signal.emit(rgb_frame, style, style_image)
 
         client = capture_adapter.create_client(
-            self._server_ip,
+            self._server,
             consume_rgb_frame_style,
             video_source=self._video_source,
             capture_device=self._capture_device,
@@ -152,12 +152,12 @@ class ClientThread(QThread):
         self._client.stop()
 
 
-def main():
+def main(argv=sys.argv):
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "server_ip", action="store", help="IP address for Openrtist Server"
+        "server", help="IP address (and optional :port) for OpenRTiST Server"
     )
     parser.add_argument(
         "-v",
@@ -170,21 +170,22 @@ def main():
         "-d", "--device", type=int, default=-1, help="Capture device (default: -1)"
     )
     parser.add_argument("--fullscreen", action="store_true")
-    inputs = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(argv)
     ui = UI()
     ui.show()
-    if inputs.fullscreen:
+    if args.fullscreen:
         ui.showFullScreen()
         app.setOverrideCursor(QCursor(Qt.BlankCursor))
-    clientThread = ClientThread(inputs.server_ip, inputs.video, inputs.device)
+
+    clientThread = ClientThread(args.server, args.video, args.device)
     clientThread.pyqt_signal.connect(ui.set_image)
     clientThread.finished.connect(app.exit)
     clientThread.start()
 
-    sys.exit(app.exec())  # return Dialog Code
+    return app.exec()  # return Dialog Code
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

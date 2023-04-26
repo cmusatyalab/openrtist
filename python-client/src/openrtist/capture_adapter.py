@@ -98,18 +98,22 @@ class CaptureAdapter:
 
 
 def create_client(
-    server_ip, consume_rgb_frame_style, video_source=None, capture_device=-1
+    server, consume_rgb_frame_style, video_source=None, capture_device=-1
 ):
     """
     consume_rgb_frame_style should take one rgb_frame parameter and one
     style parameter.
     """
+    # split "server" into host + port
+    host, *_port = server.rsplit(":", 1)
+    try:
+        port = int(_port[0])
+    except (IndexError, ValueError):
+        port = config.PORT
 
     adapter = CaptureAdapter(
         consume_rgb_frame_style,
         video_source=video_source,
         capture_device=capture_device,
     )
-    return WebsocketClient(
-        server_ip, config.PORT, adapter.producer_wrappers, adapter.consumer
-    )
+    return WebsocketClient(host, port, adapter.producer_wrappers, adapter.consumer)
