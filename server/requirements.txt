@@ -1,5 +1,6 @@
 gabriel-server==2.1.1
 opencv-python>=3, <5
+pillow<7
 torchvision>=0.3, <0.5
 py-cpuinfo
 #required for MS Face Cognitive Service
