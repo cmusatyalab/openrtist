@@ -8,8 +8,8 @@ exclude = '''
    | \.venv
   )/
   # don't rewrite generated files
-  | python-client/design.py
-  | python-client/openrtist_pb2.py
+  | python-client/openrtist/src/design.py
+  | python-client/openrtist/src/openrtist_pb2.py
   | server/openrtist_pb2.py
 )
 '''

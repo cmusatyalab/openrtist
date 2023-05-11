@@ -101,12 +101,16 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             pixmap = QPixmap.fromImage(img)
         else:
             pixmap = QPixmap()
-            image_data = importlib.resources.read_binary("openrtist.style_image", str_name)
+            image_data = importlib.resources.read_binary(
+                "openrtist.style_image", str_name
+            )
             pixmap.loadFromData(image_data)
 
         try:
             artist_info_path = Path(str_name).with_suffix(".txt")
-            artist_info = importlib.resources.read_text("openrtist.style_image", artist_info_path)
+            artist_info = importlib.resources.read_text(
+                "openrtist.style_image", artist_info_path
+            )
         except IOError:
             artist_info = str_name + " (Unknown)"
 
