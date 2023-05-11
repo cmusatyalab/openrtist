@@ -105,11 +105,8 @@ def create_client(
     style parameter.
     """
     # split "server" into host + port
-    host, *_port = server.rsplit(":", 1)
-    try:
-        port = int(_port[0])
-    except (IndexError, ValueError):
-        port = config.PORT
+    host, _port = (server.rsplit(":", 1) + [config.PORT])[:2]
+    port = int(_port)
 
     adapter = CaptureAdapter(
         consume_rgb_frame_style,
