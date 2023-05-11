@@ -18,7 +18,6 @@ import argparse
 import asyncio
 import importlib.resources
 import logging
-import os
 import sys  # We need sys so that we can pass argv to QApplication
 from pathlib import Path
 
@@ -111,7 +110,7 @@ class UI(QtWidgets.QMainWindow, design.Ui_MainWindow):
             artist_info = importlib.resources.read_text(
                 "openrtist.style_image", artist_info_path
             )
-        except IOError:
+        except OSError:
             artist_info = str_name + " (Unknown)"
 
         artist_info = artist_info.replace("(", "\n -")

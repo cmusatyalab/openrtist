@@ -16,3 +16,7 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+files = ["python-client/src"]

@@ -49,6 +49,6 @@ ffserver -f ffserver.conf
 ```
 * If one wants to do everything using containers
 ```
-docker run --rm --name ffserver -v `pwd`:/config --entrypoint 
+docker run --rm --name ffserver -v `pwd`:/config --entrypoint
 docker run --rm -v /tmp/.X11-unix:/tmp/.X11-unix -e uid=$(id -u) -e gid=$(id -g) -e DISPLAY=$DISPLAY --privileged --entrypoint cvlc --name vlc quay.io/galexrt/vlc -q http://172.17.0.1:8090/camera.mjpeg
 ```

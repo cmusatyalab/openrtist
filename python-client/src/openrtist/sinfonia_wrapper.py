@@ -16,9 +16,7 @@
 
 import argparse
 import logging
-import os  # to get the path of the current running file
 import socket
-import subprocess
 import sys
 from time import sleep, time
 
@@ -88,15 +86,12 @@ def sinfonia_wait_for_port(host, port, timeout=DEFAULT_TIMEOUT):
 
 def launchUI(server, application_args):
     # split "server" into host + port
-    host, *_port = server.rsplit(":", 1)
-    try:
-        port = int(_port[0])
-    except (IndexError, ValueError):
-        port = OPENRTIST_DEFAULT_PORT
+    host, _port = (server.rsplit(":", 1) + [OPENRTIST_DEFAULT_PORT])[:2]
+    port = int(_port)
 
     logging.info("Staging, waiting for backend server to start...")
     if not sinfonia_wait_for_port(host, port):
-        log.error("Connection to backend server failed")
+        logging.error("Connection to backend server failed")
         sys.exit(1)
 
     try:
@@ -104,7 +99,7 @@ def launchUI(server, application_args):
 
         ret = ui.main(application_args + [server])
         logging.info("Frontend terminated.")
-    except Exception as e:
+    except Exception:
         logging.exception("Caught exception...")
         ret = 2
     sys.exit(ret)

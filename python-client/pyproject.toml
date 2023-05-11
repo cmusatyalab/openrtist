@@ -42,6 +42,10 @@ exclude = '''
 [tool.isort]
 profile = "black"
 
+[tool.mypy]
+check_untyped_defs = true
+files = ["src"]
+
 [tool.poetry.scripts]
 openrtist = "openrtist.sinfonia_wrapper:main"
 
