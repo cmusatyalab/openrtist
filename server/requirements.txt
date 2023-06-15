@@ -1,8 +1,9 @@
 gabriel-server==2.1.1
 opencv-python>=3, <5
 pillow<7
-torchvision>=0.3, <0.5
+torchvision>=0.3, <0.13
 py-cpuinfo
 #required for MS Face Cognitive Service
 azure-cognitiveservices-vision-face
 asyncio
+protobuf==3.20.3
