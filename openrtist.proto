@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package openrtist;
+
+option java_package = "edu.cmu.cs.openrtist";
+option java_outer_classname = "Protos";
+
+message Extras {
+    // From https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/wrappers.proto#L120
+    // TODO: Switch to google.protobuf.BytesValue once MobilEdgeX supports protobuf-javalite
+    message BytesValue {
+        // The bytes value.
+        bytes value = 1;
+    }
+
+    string style = 1;
+    map<string, string> style_list = 2;
+    BytesValue style_image = 3;
+    int32 depth_threshold = 4;
+    BytesValue depth_map = 5;
+}

@@ -166,6 +166,7 @@ public class GabrielClientActivity extends AppCompatActivity implements
         Const.STYLES_RETRIEVED = false;
         Const.ITERATION_STARTED = false;
 
+        // Set ContentView based on the mode
         if (Const.STEREO_ENABLED) {
             setContentView(R.layout.activity_stereo);
         } else {
@@ -370,6 +371,9 @@ public class GabrielClientActivity extends AppCompatActivity implements
             out.flush();
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                     Uri.fromFile(imageFile)));
+//            MediaScannerConnection.scanFile(context,
+//                    new String[]{file.toString()},
+//                    null, null);
             Toast.makeText(this, getString(R.string.screenshot_taken, path), Toast.LENGTH_LONG).show();
             out.close();
         } catch (IOException e) {

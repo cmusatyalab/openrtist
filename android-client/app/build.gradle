@@ -126,6 +126,7 @@ android {
             }
         }
     }
+    namespace 'edu.cmu.cs.openrtist'
 }
 
 dependencies {
