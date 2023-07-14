@@ -41,12 +41,17 @@ android {
         arcore {
             java.srcDirs('src/arcore/java')
         }
+
+        measurementDB2 {
+            java.srcDirs('src/common/java')
+        }
     }
 
     compileSdkVersion 29
 
     defaultConfig {
         applicationId "edu.cmu.cs.openrtist"
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 29
         multiDexEnabled true
     }
@@ -62,17 +67,17 @@ android {
     productFlavors {
         standard {
             isDefault = true
-            minSdkVersion 24
+            minSdkVersion 29
         }
         measurement {
-            minSdkVersion 24
+            minSdkVersion 29
         }
 
         if (artifactory_user != null) {
             mobilEdgeX {
                 apply plugin: 'com.jfrog.artifactory'
 
-                minSdkVersion 24
+                minSdkVersion 29
                 repositories {
                     maven {
                         credentials {
@@ -90,12 +95,16 @@ android {
             dimension 'version'
             applicationIdSuffix 'ar'
             versionNameSuffix '-ar'
-            minSdkVersion 24
+            minSdkVersion 29
             multiDexEnabled true
         }
 
         measurementDB {
-            minSdkVersion 26
+            minSdkVersion 29
+        }
+        measurementDB2 {
+//            dimension 'version'
+            minSdkVersion 29
         }
     }
 
@@ -149,12 +158,9 @@ dependencies {
         mobilEdgeXImplementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     }
 
-    standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    implementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementDBImplementation 'org.influxdb:influxdb-java:2.19'
-    
-    arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    measurementDB2Implementation 'org.influxdb:influxdb-java:2.19'
     arcoreImplementation 'com.google.ar:core:1.21.0'
     arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
 }
