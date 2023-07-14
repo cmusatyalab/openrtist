@@ -28,10 +28,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="edu.cmu.cs.gabriel.MeasurementClientActivity"
+            android:name="edu.cmu.cs.openrtist.MeasurementClientActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            android:theme="@style/Theme.AppCompat.NoActionBar">
 
             <!-- Enable this intent-filter for regular Android Application -->
             <!-- <intent-filter> -->

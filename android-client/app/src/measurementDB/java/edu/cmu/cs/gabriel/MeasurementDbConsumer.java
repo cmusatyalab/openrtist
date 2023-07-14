@@ -1,4 +1,4 @@
-package edu.cmu.cs.measurementDb;
+package edu.cmu.cs.gabriel;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -22,14 +22,19 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.function.Consumer;
 
-import edu.cmu.cs.openrtist.GabrielClientActivity;
 import edu.cmu.cs.gabriel.client.observer.IntervalMeasurement;
+import edu.cmu.cs.openrtist.GabrielClientActivity;
+import edu.cmu.cs.measurementDb.InfluxDBHelper;
+import edu.cmu.cs.measurementDb.*;
+import edu.cmu.cs.openrtist.R;
+
 
 import static androidx.core.app.ActivityCompat.requestPermissions;
 
@@ -49,7 +54,8 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
     private String carrier_name = "NA";
     private String country_name = "NA";
     private String phone_type;
-
+    private String influxhost = "192.168.8.153";// set for real in preferences
+    private int influxport = 8086; // set for real in preferences
 
     private static final int MEASURMEMENT_DB_PERMISSION_REQUEST_CODE = 31001;
 
@@ -61,6 +67,9 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
         gabrielClientActivity = pgabrielClientActivity;
         serverURL = endpoint;
         this.checkPermissions();
+        SharedPreferences settings = fetchSettings(pgabrielClientActivity.getApplicationContext());
+        influxhost = settings.getString("influxdb_ip",influxhost);
+//        influxport = settings.getInt("influxdb_port",influxport);
         // Get the Connection Information
         ConnectivityManager conMan =
                 (ConnectivityManager) this.gabrielClientActivity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -95,22 +104,22 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
         }
 
         // Set up the Database
-        String serverBase = serverURL.split(":")[0]; // Assumes InfluxDB on same server as OpenRTIST
-        influxhelper = new InfluxDBHelper(serverBase, this.getServerPort());
+        influxhelper = new InfluxDBHelper(influxhost, influxport);
         influxhelper.setSessionID();
-//        // Run Traceroute
-        String typestr = "traceroute";
-        MeasurementFactory.Measurement tmeasure =
-                new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
-                        serverURL, connect_type, phone_type, carrier_name, country_name,
-                        "NULL1", "NULL2");
-        influxhelper.AsyncWritePoint(tmeasure);
+        // Run Traceroute
+//        String typestr = "traceroute";
+//        MeasurementFactory.Measurement tmeasure =
+//                new MeasurementFactory.Measurement(typestr, MANUFACTURER, MODEL,
+//                        serverURL, connect_type, phone_type, carrier_name, country_name,
+//                        "NULL1", "NULL2");
+//        influxhelper.AsyncWritePoint(tmeasure);
     }
 
     @Override
     @SuppressLint({"MissingPermission", "DefaultLocale"})
     public void accept(IntervalMeasurement intervalMeasurement) {
         // Framerate
+
         double ifps = round(intervalMeasurement.getIntervalFps(), 1);
         double ofps = round(intervalMeasurement.getOverallFps(), 1); // TODO
         String msg = String.format("FRAMERATE: INTERVALFPS = %.1f OVERALLFPS = %.1f", ifps, ofps);
@@ -336,6 +345,11 @@ public class MeasurementDbConsumer implements Consumer<IntervalMeasurement > {
             Log.i(TAG,String.format("Permission Attempts OK: %d of %d" ,permAttempts,MAX_PERM_ATTEMPTS));
             return true;
         }
+    }
+
+    public SharedPreferences fetchSettings(Context context) {
+        PreferenceManager.setDefaultValues(context, R.xml.preferences, false);
+        return PreferenceManager.getDefaultSharedPreferences(context);
     }
     @SuppressLint("ApplySharedPref")
     private void incrementPermAttempts () {
