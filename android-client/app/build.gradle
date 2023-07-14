@@ -47,6 +47,7 @@ android {
 
     defaultConfig {
         applicationId "edu.cmu.cs.openrtist"
+//        noinspection ExpiredTargetSdkVersion
         targetSdkVersion 29
         multiDexEnabled true
     }
@@ -95,7 +96,7 @@ android {
         }
 
         measurementDB {
-            minSdkVersion 26
+            minSdkVersion 29
         }
     }
 
@@ -149,12 +150,8 @@ dependencies {
         mobilEdgeXImplementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     }
 
-    standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    implementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementDBImplementation 'org.influxdb:influxdb-java:2.19'
-    
-    arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     arcoreImplementation 'com.google.ar:core:1.21.0'
     arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
 }
