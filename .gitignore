@@ -8,3 +8,5 @@ local.properties
 **/app/src/main/assets/
 env/
 dist/
+.classpath
+.project
