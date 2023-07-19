@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "openrtist"
+version = "0.1.0"
+description = "Openrtist Python Client with Sinfonia to control selection and connection with backends."
+authors = ["Carnegie Mellon University <satya+group@cs.cmu.edu>"]
+license = "Apache-2.0"
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Environment :: X11 Applications",
+    "Intended Audience :: End Users/Desktop",
+]
+packages = [{include = "openrtist", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+gabriel-client = "2.1.1"
+pyqt5 = "5.14.2"
+protobuf = "<=3.18.1"
+sinfonia-tier3 = "^0.7.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+isort = "^5.12.0"
+
+[tool.black]
+#skip-string-normalization = true
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+     \.git
+   | \.venv
+  )/
+  # don't rewrite generated files
+  | src/openrtist/design.py
+  | src/openrtist/openrtist_pb2.py
+)
+'''
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+files = ["src"]
+
+[tool.poetry.scripts]
+openrtist = "openrtist.sinfonia_wrapper:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

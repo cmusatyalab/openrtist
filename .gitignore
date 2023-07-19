@@ -6,3 +6,7 @@ __pycache__/
 local.properties
 **/app/build/
 **/app/src/main/assets/
+env/
+dist/
+.classpath
+.project

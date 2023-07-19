@@ -8,7 +8,15 @@ exclude = '''
    | \.venv
   )/
   # don't rewrite generated files
-  | gabriel-client-openrtist-python/design.py
-  | protocol/openrtist_pb2.py
+  | python-client/openrtist/src/design.py
+  | python-client/openrtist/src/openrtist_pb2.py
+  | server/openrtist_pb2.py
 )
 '''
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+files = ["python-client/src"]

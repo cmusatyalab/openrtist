@@ -31,6 +31,8 @@ import android.os.Bundle;
 import android.Manifest;
 import android.os.Build;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.content.Context;
 import android.hardware.camera2.CameraManager;
@@ -40,25 +42,17 @@ import java.util.Map;
 
 import edu.cmu.cs.gabriel.Const;
 import edu.cmu.cs.gabriel.client.socket.SocketWrapper;
+import edu.cmu.cs.gabriel.serverlist.Server;
+import edu.cmu.cs.gabriel.serverlist.ServerListFragment;
 
 
 public class ServerListActivity extends AppCompatActivity  {
-    ListView listView;
-    EditText serverName;
-    EditText serverAddress;
-    ImageView add;
-    ArrayList<Server> ItemModelList;
-    ServerListAdapter serverListAdapter;
-    CameraManager camMan = null;
+      CameraManager camMan = null;
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
 
-    void loadPref(Context c, String key, Object value) {
-        Const.loadPref(c, key, value);
-    }
-
-    ServerListAdapter createServerListAdapter() {
-        return new ServerListAdapter(this, ItemModelList);
+    void loadPref(SharedPreferences sharedPreferences, String key) {
+        Const.loadPref(sharedPreferences, key);
     }
 
     //activity menu
@@ -104,24 +98,24 @@ public class ServerListActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_serverlist);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
-        listView = (ListView) findViewById(R.id.listServers);
-        serverName = (EditText) findViewById(R.id.addServerName);
-        serverAddress = (EditText) findViewById(R.id.addServerAddress);
-        add = (ImageView) findViewById(R.id.imgViewAdd);
-        ItemModelList = new ArrayList<Server>();
-        serverListAdapter = createServerListAdapter();
-        listView.setAdapter(serverListAdapter);
+        String pkg = getApplicationContext().getPackageName();
+
+        Fragment fragment =  new ServerListFragment(pkg,pkg+ ".GabrielClientActivity");
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_serverlist, fragment)
+                .commitNow();
+
         mSharedPreferences=PreferenceManager.getDefaultSharedPreferences(this);
         Map<String, ?> m = mSharedPreferences.getAll();
         for(Map.Entry<String,?> entry : m.entrySet()){
             Log.d("SharedPreferences",entry.getKey() + ": " +
                     entry.getValue().toString());
-            this.loadPref(this.getApplicationContext(), entry.getKey(), entry.getValue());
+            this.loadPref(mSharedPreferences, entry.getKey());
 
         }
         camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
-        initServerList();
+
     }
 
     void requestPermissionHelper(String permissions[]) {
@@ -139,56 +133,4 @@ public class ServerListActivity extends AppCompatActivity  {
         this.requestPermissionHelper(permissions);
     }
 
-
-    void initServerList() {
-        Map<String, ?> prefs = mSharedPreferences.getAll();
-        for (Map.Entry<String,?> pref : prefs.entrySet())
-            if(pref.getKey().startsWith("server:")) {
-                Server s = new Server(
-                        pref.getKey().substring("server:".length()), pref.getValue().toString());
-                ItemModelList.add(s);
-                serverListAdapter.notifyDataSetChanged();
-            }
-
-        if (prefs.isEmpty()) {
-            // Add demo server if there are no other servers present
-            Server s = new Server(getString(R.string.demo_server), getString(R.string.demo_dns));
-            ItemModelList.add(s);
-            serverListAdapter.notifyDataSetChanged();
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString("server:".concat(getString(R.string.demo_server)),getString(R.string.demo_dns));
-            editor.commit();
-        }
-
-        // local execution
-        Server s = new Server(getString(R.string.local_execution),
-                getString(R.string.local_execution_dns_placeholder));
-        ItemModelList.add(s);
-        serverListAdapter.notifyDataSetChanged();
-    }
-
-    public void addValue(View v) {
-        add.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-        String name = serverName.getText().toString();
-        String endpoint = serverAddress.getText().toString();
-        if (name.isEmpty() || endpoint.isEmpty()) {
-            Toast.makeText(getApplicationContext(), R.string.error_empty ,
-                    Toast.LENGTH_SHORT).show();
-        } else if (!SocketWrapper.validUri(endpoint, Const.PORT)) {
-            Toast.makeText(getApplicationContext(), R.string.error_invalidURI,
-                    Toast.LENGTH_SHORT).show();
-        }  else if(mSharedPreferences.contains("server:".concat(name))) {
-            Toast.makeText(getApplicationContext(), R.string.error_exists,
-                Toast.LENGTH_SHORT).show();
-        } else {
-            Server s = new Server(name, endpoint);
-            ItemModelList.add(s);
-            serverListAdapter.notifyDataSetChanged();
-            serverName.setText("");
-            serverAddress.setText("");
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putString("server:".concat(name),endpoint);
-            editor.commit();
-        }
-    }
 }

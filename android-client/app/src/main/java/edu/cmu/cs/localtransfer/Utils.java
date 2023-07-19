@@ -24,11 +24,8 @@ import android.renderscript.Type;
 
 public class Utils {
     // Convert to RGB using Intrinsic render script
-    public static float[] convertYuvToRgb(RenderScript rs, byte[] data,
-                                             Camera.Size imageSize) {
-
-        int imageWidth = imageSize.width ;
-        int imageHeight = imageSize.height ;
+    public static float[] convertYuvToRgb(RenderScript rs, byte[] data, int imageWidth,
+                                          int imageHeight) {
 
         ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs,
                 Element.RGBA_8888(rs));

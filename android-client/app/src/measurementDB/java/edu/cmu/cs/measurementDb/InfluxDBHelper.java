@@ -73,7 +73,7 @@ public class InfluxDBHelper {
         Log.i(TAG, result);
     }
     private void runOnPostExecute(MeasurementFactory.Measurement msre, String result) {
-        Log.i(TAG, result);
+        Log.d(TAG, result);
     }
 
     private class InfluxDBTask extends AsyncTask<String, Void, String> {

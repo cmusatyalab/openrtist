@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:keepScreenOn="true"
@@ -23,12 +22,12 @@
             android:id="@+id/style_image"
             android:layout_width="128dp"
             android:layout_height="128dp"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:adjustViewBounds="true"
             android:background="@color/transparent"
             android:elevation="@dimen/activity_vertical_margin"
-            android:gravity="left"
+            android:gravity="start"
             android:scaleType="fitXY"
             android:visibility="invisible"
             android:src="@drawable/ic_question_mark"/>
@@ -37,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TextureView
+            <androidx.camera.view.PreviewView
                 android:id="@+id/camera_preview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
@@ -54,14 +53,14 @@
                 android:layout_width="@android:dimen/notification_large_icon_width"
                 android:layout_height="@android:dimen/notification_large_icon_height"
                 android:layout_gravity="bottom|start"
-                android:layout_marginLeft="60dp"
+                android:layout_marginStart="60dp"
                 android:background="@color/transparent"
                 android:elevation="@dimen/activity_vertical_margin"
                 android:focusable="false"
                 android:hapticFeedbackEnabled="true"
                 android:rotation="0"
                 android:src="@drawable/ic_baseline_videocam_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="visible" />
 
             <ImageView
@@ -76,7 +75,7 @@
                 android:hapticFeedbackEnabled="true"
                 android:rotation="0"
                 android:src="@drawable/ic_play"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="visible" />
 
             <ImageView
@@ -88,7 +87,7 @@
                 android:focusable="false"
                 android:hapticFeedbackEnabled="true"
                 android:src="@drawable/ic_baseline_photo_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="visible" />
 
             <ImageView
@@ -101,40 +100,21 @@
                 android:focusable="false"
                 android:hapticFeedbackEnabled="true"
                 android:src="@drawable/ic_baseline_camera_front_24px"
-                android:tint="@color/colorPrimary"
-                android:visibility="gone" />
-
-            <ImageView
-                android:id="@+id/imgRotate"
-                android:layout_width="@android:dimen/notification_large_icon_width"
-                android:layout_height="@android:dimen/notification_large_icon_height"
-                android:layout_gravity="top|end"
-                android:layout_marginTop="24dp"
-                android:layout_marginRight="48dp"
-                android:elevation="@dimen/activity_vertical_margin"
-                android:focusable="false"
-                android:hapticFeedbackEnabled="true"
-                android:src="@drawable/ic_baseline_rotate_left_24px"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="gone" />
 
             <TextView
                 android:id="@+id/fpsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="top|right"
+                android:layout_gravity="top|end"
                 android:background="@color/navigationBarColor"
-                android:text="FPS: 0"
-                android:textAlignment="center"
-                android:textColor="@color/colorPrimary"
+                android:text="@string/fps_0"
+                android:gravity="center_horizontal"
+                android:textColor="@color/textColorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
-
         </FrameLayout>
-
     </RelativeLayout>
-
-
-
 </LinearLayout>

@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="edu.cmu.cs.openrtist"
-    android:versionCode="17"
-    android:versionName="2.0.1">
+    android:versionCode="18"
+    android:versionName="2.1">
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature
@@ -47,10 +47,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="edu.cmu.cs.gabriel.GabrielClientActivity"
+            android:name=".GabrielClientActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            android:theme="@style/Theme.AppCompat.NoActionBar">
 
             <!-- Enable this intent-filter for regular Android Application -->
             <!-- <intent-filter> -->
@@ -61,7 +61,8 @@
 
             <!-- Enable below for Google Glass -->
             <intent-filter>
-                <action android:name="com.google.android.glass.action.VOICE_TRIGGER" />
+                <action android:name="edu.cmu.cs.openrtist.GabrielClientActivity" />
+                <category android:name="android:android.intent.category.DEFAULT" />
             </intent-filter>
 
             <meta-data

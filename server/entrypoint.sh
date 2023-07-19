@@ -2,4 +2,4 @@
 args=$*
 source /opt/intel/openvino/bin/setupvars.sh
 /usr/bin/nvidia-smi -a
-./main.py $args
+python3.7 ./main.py $args

@@ -21,12 +21,6 @@ android {
     }
 
     sourceSets {
-        main {
-            proto {
-                // In addition to the default 'src/main/proto'
-                srcDir '../protos'
-            }
-        }
         standard {
             java.srcDirs('src/common/java')
         }
@@ -43,12 +37,21 @@ android {
         measurementDB {
             java.srcDirs('src/common/java')
         }
+
+        arcore {
+            java.srcDirs('src/arcore/java')
+        }
+
+        measurementDB2 {
+            java.srcDirs('src/common/java')
+        }
     }
 
     compileSdkVersion 29
 
     defaultConfig {
         applicationId "edu.cmu.cs.openrtist"
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 29
         multiDexEnabled true
     }
@@ -64,17 +67,17 @@ android {
     productFlavors {
         standard {
             isDefault = true
-            minSdkVersion 24
+            minSdkVersion 29
         }
         measurement {
-            minSdkVersion 24
+            minSdkVersion 29
         }
 
         if (artifactory_user != null) {
             mobilEdgeX {
                 apply plugin: 'com.jfrog.artifactory'
 
-                minSdkVersion 24
+                minSdkVersion 29
                 repositories {
                     maven {
                         credentials {
@@ -92,15 +95,20 @@ android {
             dimension 'version'
             applicationIdSuffix 'ar'
             versionNameSuffix '-ar'
-            minSdkVersion 24
-            multiDexEnabled false
+            minSdkVersion 29
+            multiDexEnabled true
         }
 
         measurementDB {
-            minSdkVersion 26
+            minSdkVersion 29
+        }
+        measurementDB2 {
+//            dimension 'version'
+            minSdkVersion 29
         }
     }
 
+    // We can't use protoc:3.8.0 because MobileEdgeX uses an old version of protobuf
     protobuf {
         protoc {
             // You still need protoc like in the non-Android case
@@ -130,10 +138,13 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support.constraint:constraint-layout:2.0.2'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'com.android.support:multidex:1.0.3'
-    implementation 'edu.cmu.cs.gabriel:client:2.2.1'
+    implementation 'edu.cmu.cs.gabriel:client:2.3.0'
+    implementation 'edu.cmu.cs.gabriel:camera:2.3.0'
+    implementation 'edu.cmu.cs.gabriel:serverlist:2.3.0'
+    implementation 'androidx.preference:preference:1.1.0'
 
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
@@ -144,16 +155,12 @@ dependencies {
         mobilEdgeXImplementation "io.grpc:grpc-stub:${grpcVersion}"
         mobilEdgeXImplementation "io.grpc:grpc-protobuf-lite:${grpcVersion}"
         mobilEdgeXImplementation 'edu.cmu.cs.gabriel:protocol-for-mobiledgex:2.0.1'
+        mobilEdgeXImplementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     }
 
-    standardImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-
-    // This must be 2.14 to have the correct version of okhttp
-    measurementDBImplementation 'org.influxdb:influxdb-java:2.14'
-    
-    arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    arcoreImplementation 'com.google.ar:core:1.20.0'
+    implementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
+    measurementDBImplementation 'org.influxdb:influxdb-java:2.19'
+    measurementDB2Implementation 'org.influxdb:influxdb-java:2.19'
+    arcoreImplementation 'com.google.ar:core:1.21.0'
     arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
 }
