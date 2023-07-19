@@ -14,15 +14,15 @@ public class MeasurementClientActivity extends GabrielClientActivity {
     private MeasurementComm measurementComm;
     private ImageView imgView;
     private ImageView iconView;
-    // Stereo views
-    private ImageView stereoView1;
-    private ImageView stereoView2;
+
+
 
 
     @Override
     void setupComm() {
         int port = getPort();
-        imgView = super.getImageView();
+        imgView = findViewById(R.id.guidance_image);
+        iconView = findViewById(R.id.style_image);
 
         ImageViewUpdater imageViewUpdater = new ImageViewUpdater(this.imgView);
 

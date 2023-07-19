@@ -867,9 +867,5 @@ public class GabrielClientActivity extends AppCompatActivity implements
     public void onNothingSelected(AdapterView<?> arg0) {
     }
 
-    protected ImageView getImageView() {
-        return this.imgView;
-    }
-
     // **************** End of onItemSelected ****************
 }
