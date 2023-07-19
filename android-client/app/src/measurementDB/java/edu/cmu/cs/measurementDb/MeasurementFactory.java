@@ -85,7 +85,8 @@ public class MeasurementFactory {
                 .tag("CONNECTYPE",msre.connect_type)
                 .tag("PHONETYPE",msre.phone_type)
                 .tag("CARRIER",msre.carrier_name)
-                .tag("COUNTRY",msre.country_name);
+                .tag("COUNTRY",msre.country_name)
+                .tag("ERROR",trres.errorcode);
 
         Point retpoint = parseTraceRoute(bldpt,trres);
         return retpoint;
