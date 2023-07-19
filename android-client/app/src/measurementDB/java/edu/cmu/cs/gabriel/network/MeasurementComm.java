@@ -1,46 +1,75 @@
 package edu.cmu.cs.gabriel.network;
 
 import android.app.Application;
-import android.os.Handler;
+import android.util.Log;
+import android.widget.ImageView;
+
+import com.google.protobuf.ByteString;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.openrtist.GabrielClientActivity;
+import edu.cmu.cs.gabriel.MeasurementDbConsumer;
 import edu.cmu.cs.gabriel.client.comm.MeasurementServerComm;
+import edu.cmu.cs.gabriel.client.comm.ServerComm;
+import edu.cmu.cs.gabriel.protocol.Protos;
+import edu.cmu.cs.openrtist.GabrielClientActivity;
 import edu.cmu.cs.gabriel.protocol.Protos.ResultWrapper;
-import edu.cmu.cs.measurementDb.MeasurementDbConsumer;
 
 public class MeasurementComm {
-    private final MeasurementServerComm measurementServerComm;
-    private final OpenrtistComm openrtistComm;
+    private MeasurementServerComm measurementServerComm;
+    private final ErrorConsumer onDisconnect;
+    private static OpenrtistComm openrtistComm;
 
-    public MeasurementComm(
+    private String LOG_TAG = "MeasurementComm";
+
+    public static MeasurementComm createMeasurementComm(
             String endpoint, int port, GabrielClientActivity gabrielClientActivity,
-            Handler returnMsgHandler, String tokenLimit) {
+            ImageView referenceView, Consumer<ByteString> imageView, String tokenLimit) {
+        MeasurementServerComm serverComm;
         Consumer<ResultWrapper> consumer = new ResultConsumer(
-                returnMsgHandler, gabrielClientActivity);
-        ErrorConsumer onDisconnect = new ErrorConsumer(returnMsgHandler, gabrielClientActivity);
+                referenceView, imageView, gabrielClientActivity);
+        ErrorConsumer onDisconnect = new ErrorConsumer(gabrielClientActivity);
         MeasurementDbConsumer measurementDbconsumer = new MeasurementDbConsumer(
                 gabrielClientActivity, endpoint);
         Application application = gabrielClientActivity.getApplication();
         if (tokenLimit.equals("None")) {
-            this.measurementServerComm = MeasurementServerComm.createMeasurementServerComm(
-                    consumer, endpoint, port, application, onDisconnect, measurementDbconsumer);
+            serverComm = MeasurementServerComm.createMeasurementServerComm(
+                    consumer, endpoint, port, application, onDisconnect,measurementDbconsumer);
         } else {
-            this.measurementServerComm = MeasurementServerComm.createMeasurementServerComm(
-                    consumer, endpoint, port, application, onDisconnect, measurementDbconsumer,
-                    Integer.parseInt(tokenLimit));
+            serverComm = MeasurementServerComm.createMeasurementServerComm(
+                    consumer, endpoint, port, application, onDisconnect,
+                    measurementDbconsumer,Integer.parseInt(tokenLimit));
+        }
+        openrtistComm = new OpenrtistComm(serverComm, onDisconnect);
+        return new MeasurementComm(serverComm, onDisconnect);
+    }
+
+    MeasurementComm(ServerComm serverComm, ErrorConsumer onDisconnect) {
+        this.measurementServerComm = measurementServerComm;
+        this.onDisconnect = onDisconnect;
+    }
+
+    public void sendSupplier(Supplier<Protos.InputFrame> supplier) {
+        if (!this.measurementServerComm.isRunning()) {
+            return;
         }
 
-        this.openrtistComm = new OpenrtistComm(this.measurementServerComm, onDisconnect);
+        this.measurementServerComm.sendSupplier(supplier, Const.SOURCE_NAME, /* wait */ false);
+    }
+
+    public void stop() {
+        this.measurementServerComm.stop();
+    }
+
+    public double computeOverallFps() {
+        Log.i(LOG_TAG,"ComputeOverallFps");
+//        return this.measurementServerComm.computeOverallFps(Const.SOURCE_NAME);
+        return 0;
     }
 
     public OpenrtistComm getOpenrtistComm() {
         return openrtistComm;
-    }
-
-    public double computeOverallFps() {
-        return this.measurementServerComm.computeOverallFps(Const.SOURCE_NAME);
     }
 }
