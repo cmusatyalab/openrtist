@@ -22,7 +22,7 @@ public class InfluxDBHelper {
     private static final int DEFPort = 8086;
 
     private static final String INFLUXDBHOST = "127.0.0.1";
-    private static final int INFLUXDBPORT = ADVPort;
+    private static final int INFLUXDBPORT = DEFPort;
 
     private String hostname;
     private int port;
