@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="fragment"
+            type="edu.cmu.cs.sinfonia.SinfoniaFragment" />
+
+        <variable
+            name="item"
+            type="edu.cmu.cs.sinfonia.Backend" />
+
+        <variable
+            name="uuid"
+            type="String" />
+
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:theme="@style/Theme.MaterialComponents.Light">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/backend_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/backend"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/deploy_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:nextFocusDown="@id/backend_name_label"
+                android:nextFocusForward="@id/backend_name_label"
+                android:text="@string/launch_text"
+                android:onClickListener="@{(view) -> fragment.onLaunchClicked(view, item)}"
+                android:theme="@style/MyGabrielMaterialTheme"
+                app:layout_constraintBaseline_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/backend_name_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:labelFor="@+id/backend_name_text"
+                android:text="@string/backend_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/backend_title" />
+
+            <TextView
+                android:id="@+id/backend_name_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/backend_name"
+                android:nextFocusUp="@id/deploy_button"
+                android:nextFocusDown="@id/resource_text"
+                android:nextFocusForward="@id/resource_text"
+                android:text="@{item.name}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/backend_name_label"
+                tools:text="Normal" />
+
+            <TextView
+                android:id="@+id/resource_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/backend_name_text"
+                android:layout_marginTop="8dp"
+                android:labelFor="@+id/application_key_text"
+                android:text="@string/resource_label"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/backend_name_text"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/resource_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/resource_label"
+                android:contentDescription="@string/resource_label"
+                android:nextFocusUp="@id/backend_name_text"
+                android:text="@{item.resource}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/resource_label"
+                tools:text="Intel CPU Core i9-12900"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/version_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/resource_text"
+                android:layout_marginTop="8dp"
+                android:labelFor="@+id/version_text"
+                android:text="@string/version_label"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/resource_text"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/version_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/version_label"
+                android:contentDescription="@string/version_label"
+                android:nextFocusUp="@id/resource_text"
+                android:text="@{item.version}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/version_label"
+                tools:text="2.1"
+                tools:visibility="visible" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+</layout>

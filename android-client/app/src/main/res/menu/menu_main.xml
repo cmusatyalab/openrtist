@@ -4,12 +4,14 @@
 
     <item android:id="@+id/settings"
         android:title="@string/settings_menu"
-        android:orderInCategory="100"
-        />
+        android:orderInCategory="100" />
 
     <item android:id="@+id/about"
         android:title="@string/about_menu"
-        android:orderInCategory="100"
-        />
+        android:orderInCategory="100" />
+
+    <item android:id="@+id/find_cloudlets"
+        android:title="@string/find_cloudlets_menu"
+        android:orderInCategory="100" />
 
 </menu>

@@ -14,6 +14,7 @@
 
 package edu.cmu.cs.openrtist;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,15 +22,9 @@ import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
-import android.widget.ListView;
-import android.widget.ImageView;
 import androidx.appcompat.widget.Toolbar;
 import android.os.Bundle;
 import android.Manifest;
-import android.os.Build;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
@@ -37,19 +32,18 @@ import android.util.Log;
 import android.content.Context;
 import android.hardware.camera2.CameraManager;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 import edu.cmu.cs.gabriel.Const;
-import edu.cmu.cs.gabriel.client.socket.SocketWrapper;
-import edu.cmu.cs.gabriel.serverlist.Server;
 import edu.cmu.cs.gabriel.serverlist.ServerListFragment;
+import edu.cmu.cs.sinfonia.SinfoniaActivity;
 
 
 public class ServerListActivity extends AppCompatActivity  {
-      CameraManager camMan = null;
+    CameraManager camMan = null;
     private SharedPreferences mSharedPreferences;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 23;
+    private static final String TAG = "OpenRTiST/ServerListActivity";
 
     void loadPref(SharedPreferences sharedPreferences, String key) {
         Const.loadPref(sharedPreferences, key);
@@ -63,12 +57,14 @@ public class ServerListActivity extends AppCompatActivity  {
         return true;
     }
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        Intent intent;
         switch (id) {
             case R.id.about:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -79,10 +75,14 @@ public class ServerListActivity extends AppCompatActivity  {
                 dialog.show();
                 return true;
             case R.id.settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
+                intent = new Intent(this, SettingsActivity.class);
                 //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 //intent.putExtra("", faceTable);
                 this.startActivity(intent);
+                return true;
+            case R.id.find_cloudlets:
+                intent = new Intent(this, SinfoniaActivity.class);
+                startActivity(intent);
                 return true;
             default:
                 return false;
@@ -94,7 +94,7 @@ public class ServerListActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestPermission();
-        
+
         setContentView(R.layout.activity_serverlist);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
@@ -114,20 +114,17 @@ public class ServerListActivity extends AppCompatActivity  {
 
         }
         camMan = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-
-
     }
 
-    void requestPermissionHelper(String permissions[]) {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            ActivityCompat.requestPermissions(this,
-                    permissions,
-                    MY_PERMISSIONS_REQUEST_CAMERA);
-        }
+    void requestPermissionHelper(String[] permissions) {
+        ActivityCompat.requestPermissions(this,
+                permissions,
+                MY_PERMISSIONS_REQUEST_CAMERA);
     }
 
     void requestPermission() {
-        String permissions[] = {Manifest.permission.CAMERA,
+        String[] permissions = {
+                Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         };
         this.requestPermissionHelper(permissions);

@@ -43,11 +43,12 @@ android {
         }
     }
 
-    compileSdkVersion 29
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "edu.cmu.cs.openrtist"
-        targetSdkVersion 29
+        minSdk 24
+        targetSdkVersion 33
         multiDexEnabled true
     }
 
@@ -56,6 +57,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+    }
+
+    buildFeatures {
+        dataBinding true
     }
 
     flavorDimensions "version"
@@ -88,6 +93,7 @@ android {
 
         arcore {
             dimension 'version'
+            //noinspection GradlePath
             applicationIdSuffix 'ar'
             versionNameSuffix '-ar'
             minSdkVersion 24
@@ -126,19 +132,26 @@ android {
             }
         }
     }
+    namespace 'edu.cmu.cs.openrtist'
 }
 
 dependencies {
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'edu.cmu.cs.gabriel:client:2.3.0'
     implementation 'edu.cmu.cs.gabriel:camera:2.3.0'
     implementation 'edu.cmu.cs.gabriel:serverlist:2.3.0'
-    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
     implementation 'org.pytorch:pytorch_android:1.4.0-SNAPSHOT'
     implementation 'org.pytorch:pytorch_android_torchvision:1.4.0-SNAPSHOT'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
+    implementation project(':sinfonia')
 
     if (artifactory_user != null) {
         mobilEdgeXImplementation 'com.mobiledgex:matchingengine:1.4.11'
@@ -153,8 +166,9 @@ dependencies {
     measurementImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementDBImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
     measurementDBImplementation 'org.influxdb:influxdb-java:2.19'
-    
+
     arcoreImplementation 'edu.cmu.cs.gabriel:protocol-old-protobuf:2.0.1'
-    arcoreImplementation 'com.google.ar:core:1.21.0'
+    arcoreImplementation 'com.google.ar:core:1.38.0'
     arcoreImplementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
 }
+
