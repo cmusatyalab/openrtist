@@ -156,4 +156,23 @@ public class SinfoniaFragment extends Fragment {
         materialButton.setEnabled(true);
         onFinished();
     }
+
+    public void onCleanupClick(View view) {
+        Log.i(TAG, "onCloseTunnelClick");
+
+        MaterialButton materialButton = (MaterialButton) view;
+        if (!materialButton.isEnabled()) return;
+        materialButton.setEnabled(false);
+
+        Intent intent = new Intent(SinfoniaService.ACTION_START)
+                .setPackage(SinfoniaService.PACKAGE_NAME)
+                .putStringArrayListExtra(
+                        "application",
+                        new ArrayList<>(Collections.singletonList(mActivity.getPackageName()))
+                );
+
+        mActivity.getSinfoniaService().cleanup(intent);
+        materialButton.setEnabled(true);
+        onFinished();
+    }
 }
