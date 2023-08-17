@@ -27,9 +27,11 @@ spec:
             - containerPort: {{ .Values.service.targetPort }}
               hostPort: {{ .Values.service.port }}
               protocol: {{ .Values.deployment.protocol }}
-          # resources:
-          #  limits:
-          #    nvidia.com/gpu: 1
+		{{- if .Values.deployment.gpu }}
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+		{{- end }}
           volumeMounts:
             - name: shared-data
               mountPath: /usr/share/openrtist
