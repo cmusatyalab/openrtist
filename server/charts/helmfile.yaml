@@ -1,0 +1,16 @@
+values:
+- openscout_namespace: openscout
+- openrtist_namespace: openrtist
+releases:
+- name: openscout
+  namespace: {{ .Values.openscout_namespace }}
+  chart: ./openscout
+  installed: true
+  values:
+  - openscout/values_arm64.yaml
+- name: openrtist
+  namespace: {{ .Values.openrtist_namespace }}
+  chart: ./openrtist
+  installed: true
+  values:
+  - openrtist/values.yaml

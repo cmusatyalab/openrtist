@@ -1,0 +1,20 @@
+# Default values for openrtist service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+deployment:
+  replicas: 1
+  port: 9099
+  protocol: TCP
+
+image:
+  repository: cmusatyalab/openrtist
+  tag: arm64
+  pullPolicy: IfNotPresent
+
+service:
+  name: openrtist-svc
+  type: NodePort
+  port: 9098
+  targetPort: 9099
+  nodePort: 30099

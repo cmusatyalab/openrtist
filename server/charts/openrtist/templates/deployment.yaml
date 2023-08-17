@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "openrtist.fullname" . }}
+  labels:
+    app: {{ template "openrtist.name" . }}
+    chart: {{ template "openrtist.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "openrtist.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "openrtist.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+              hostPort: {{ .Values.service.port }}
+              protocol: {{ .Values.deployment.protocol }}
+          # resources:
+          #  limits:
+          #    nvidia.com/gpu: 1
+          volumeMounts:
+            - name: shared-data
+              mountPath: /usr/share/openrtist
+      volumes:
+        - name: shared-data
+          emptyDir: {}
