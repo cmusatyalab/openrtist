@@ -10,7 +10,7 @@ deployment:
 
 image:
   repository: cmusatyalab/openrtist
-  tag: arm64
+  tag: stable
   pullPolicy: IfNotPresent
 
 service:
