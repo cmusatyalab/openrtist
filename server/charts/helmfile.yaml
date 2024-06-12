@@ -1,0 +1,9 @@
+values:
+- openrtist_namespace: openrtist
+releases:
+- name: openrtist
+  namespace: {{ .Values.openrtist_namespace }}
+  chart: ./openrtist
+  installed: true
+  values:
+  - openrtist/values.yaml
